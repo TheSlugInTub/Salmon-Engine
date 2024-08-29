@@ -4,10 +4,11 @@
 #include <vector>
 #include <functional>
 
-int componentCounter = 0;
+inline int componentCounter = 0;
 
 typedef unsigned long long EntityID;
 const int MAX_COMPONENTS = 32;
+const int MAX_ENTITIES = 500;
 typedef std::bitset<MAX_COMPONENTS> ComponentMask;
 
 typedef unsigned int EntityIndex;
@@ -33,14 +34,6 @@ inline bool IsEntityValid(EntityID id)
   	// Check if the index is our invalid index
   	return (id >> 32) != EntityIndex(-1);
 }
-inline bool ValidIndex()
-{
-  	return
-    	// It's a valid entity ID
-    	IsEntityValid(pScene->entities[index].id) &&
-    	// It has the correct component mask
-    	(all || mask == (mask & pScene->entities[index].mask));
-}
 
 #define INVALID_ENTITY CreateEntityId(EntityIndex(-1), 0)
 
@@ -51,6 +44,31 @@ int GetId()
 	static int componentId = componentCounter++;
 	return componentId;
 }
+
+// Memory pool
+struct ComponentPool
+{
+	ComponentPool(size_t elementsize)
+	{
+	  	// We'll allocate enough memory to hold MAX_ENTITIES, each with element size
+	  	elementSize = elementsize;
+	  	pData = new char[elementSize * MAX_ENTITIES];
+	}
+
+	~ComponentPool()
+	{
+	  	delete[] pData;
+	}
+
+	inline void* get(size_t index)
+	{
+	  	// looking up the component at the desired index
+	  	return pData + index * elementSize;
+	}
+
+	char* pData{ nullptr };
+	size_t elementSize{ 0 };
+};
 
 struct Scene
 {
@@ -130,35 +148,23 @@ struct Scene
 	  	freeEntities.push_back(GetEntityIndex(id));
 	}
 
+	void AddSystem(std::function<void()> sys)
+	{
+		systems.push_back(sys);
+	}
+
+	void UpdateSystems()
+	{
+		for (auto system : systems)
+		{
+			system();
+		}
+	}
+
   	std::vector<EntityDesc> entities;
   	std::vector<EntityIndex> freeEntities;
-  	std::vector<ComponentPool> componentPools;
-  	std::vector<std::function<void>> systems;
-};
-
-// Memory pool
-struct ComponentPool
-{
-	ComponentPool(size_t elementsize)
-	{
-	  	// We'll allocate enough memory to hold MAX_ENTITIES, each with element size
-	  	elementSize = elementsize;
-	  	pData = new char[elementSize * MAX_ENTITIES];
-	}
-
-	~ComponentPool()
-	{
-	  	delete[] pData;
-	}
-
-	inline void* get(size_t index)
-	{
-	  	// looking up the component at the desired index
-	  	return pData + index * elementSize;
-	}
-
-	char* pData{ nullptr };
-	size_t elementSize{ 0 };
+  	std::vector<ComponentPool*> componentPools;
+  	std::vector<std::function<void()>> systems;
 };
 
 template<typename... ComponentTypes>
@@ -199,6 +205,15 @@ struct SceneView
 	    {
 	     	return index != other.index && index != pScene->entities.size();
 	    }
+
+		bool ValidIndex()
+		{
+		  	return
+		    	// It's a valid entity ID
+		    	IsEntityValid(pScene->entities[index].id) &&
+		    	// It has the correct component mask
+		    	(all || mask == (mask & pScene->entities[index].mask));
+		}
 
 	    Iterator& operator++()
 	    {

@@ -12,11 +12,23 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 include_directories(include)
 
 # Gather all source files
-file(GLOB SOURCES src/*.cpp)
+file(GLOB SOURCES src/*.cpp src/*.c)
 
 # Add the executable
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} 
+    ${SOURCES}
+    )
 
-target_link_libraries(${PROJECT_NAME}
-    ../lib/glfw3
-)
+# Link appropriate libraries with the operating system
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    message(STATUS "Configuring for Windows")
+    target_link_libraries(${PROJECT_NAME} 
+        ../lib/glfw3
+    )
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    message(STATUS "Configuring for Linux")
+    target_link_libraries(${PROJECT_NAME} 
+        ../lib/libglfw3
+    )
+endif()
