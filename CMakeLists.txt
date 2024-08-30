@@ -14,6 +14,8 @@ include_directories(include)
 # Gather all source files
 file(GLOB SOURCES src/*.cpp src/*.c)
 
+# Comment to reload CMake, Counter: 1
+
 # Add the executable
 add_executable(${PROJECT_NAME} 
     ${SOURCES}
@@ -29,6 +31,6 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     message(STATUS "Configuring for Linux")
     target_link_libraries(${PROJECT_NAME} 
-        ../lib/libglfw3
+        ../lib/libglfw3.a
     )
 endif()

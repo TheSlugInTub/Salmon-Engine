@@ -1,3 +1,13 @@
+# Salmon Engine 0.05
+30/8/2024 - August
+
+A basic 2D OpenGL renderer has been added to the engine alongside a SpriteRenderer component,
+and a transform component. There's a new camera class for rendering and two new shaders.
+A vertex shader, and a fragment shader. The renderer renders all entities with four vertices,
+like any 2D renderer would, but the renderer uses perspective projection instead of orthographic,
+so it renders 2D entities in a 3D space, this will be helpful in the future for rendering 3D.
+There is a also a new scene_manager.h file, which only has the current scene in it for now.
+
 # Salmon Engine 0.02
 29/8/2024 - August
 

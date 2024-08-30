@@ -14,6 +14,8 @@ typedef std::bitset<MAX_COMPONENTS> ComponentMask;
 typedef unsigned int EntityIndex;
 typedef unsigned int EntityVersion;
 
+inline std::vector<std::function<void()>> systems;
+
 inline EntityID CreateEntityId(EntityIndex index, EntityVersion version)
 {
   	// Shift the index up 32, and put the version in the bottom
@@ -148,24 +150,24 @@ struct Scene
 	  	freeEntities.push_back(GetEntityIndex(id));
 	}
 
-	void AddSystem(std::function<void()> sys)
-	{
-		systems.push_back(sys);
-	}
-
-	void UpdateSystems()
-	{
-		for (auto system : systems)
-		{
-			system();
-		}
-	}
-
   	std::vector<EntityDesc> entities;
   	std::vector<EntityIndex> freeEntities;
   	std::vector<ComponentPool*> componentPools;
-  	std::vector<std::function<void()>> systems;
 };
+
+inline void AddSystem(std::function<void()> sys)
+{
+	std::cout << "System has been added\n";
+	systems.push_back(sys);
+}
+
+inline void UpdateSystems()
+{
+	for (auto system : systems)
+	{
+		system();
+	}
+}
 
 template<typename... ComponentTypes>
 struct SceneView
@@ -252,3 +254,9 @@ struct SceneView
   	ComponentMask componentMask;
   	bool all{ false };
 };
+
+#define REGISTER_SYSTEM(scriptClass) \
+    static bool scriptClass##_registered = []() { \
+    	AddSystem(scriptClass); \
+        return true; \
+    }();

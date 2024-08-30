@@ -15,3 +15,11 @@ struct Info
 	std::string name = "";
 	std::string tag = "";
 };
+
+struct SpriteRenderer
+{
+	unsigned int texture;
+	std::string texturePath = "";
+	glm::vec4 color = glm::vec4(1.0f);
+	bool flipped = false;
+};
