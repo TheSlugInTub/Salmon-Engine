@@ -8,6 +8,9 @@
 #include <sstream>
 #include <iostream>
 
+// Shader class for the engine
+// Courtesy of https://learnopengl.com
+
 class Shader
 {
 public:

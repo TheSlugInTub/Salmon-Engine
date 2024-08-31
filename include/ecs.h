@@ -3,17 +3,25 @@
 #include <bitset>
 #include <vector>
 #include <functional>
+#include <iostream>
 
+// This file implements a basic ECS which is the core of the engine
+
+// Counter to keep track of all the components
 inline int componentCounter = 0;
 
-typedef unsigned long long EntityID;
+// Max constants
 const int MAX_COMPONENTS = 32;
 const int MAX_ENTITIES = 500;
-typedef std::bitset<MAX_COMPONENTS> ComponentMask;
 
+// Typedefs to aid in reading
+typedef std::bitset<MAX_COMPONENTS> ComponentMask;
+typedef unsigned long long EntityID;
 typedef unsigned int EntityIndex;
 typedef unsigned int EntityVersion;
 
+// All the systems that are registered
+// Systems don't depend on scenes, that's probably bad but it was just easier this way
 inline std::vector<std::function<void()>> systems;
 
 inline EntityID CreateEntityId(EntityIndex index, EntityVersion version)
@@ -47,7 +55,7 @@ int GetId()
 	return componentId;
 }
 
-// Memory pool
+// Memory pool for the components
 struct ComponentPool
 {
 	ComponentPool(size_t elementsize)
@@ -72,6 +80,7 @@ struct ComponentPool
 	size_t elementSize{ 0 };
 };
 
+// Scene struct, holds all the entities
 struct Scene
 {
 	// Struct to store all the information needed for an entity
@@ -155,12 +164,14 @@ struct Scene
   	std::vector<ComponentPool*> componentPools;
 };
 
+// Adds a system to the list of systems
 inline void AddSystem(std::function<void()> sys)
 {
 	std::cout << "System has been added\n";
 	systems.push_back(sys);
 }
 
+// Updates all the systems by calling them
 inline void UpdateSystems()
 {
 	for (auto system : systems)
@@ -168,6 +179,12 @@ inline void UpdateSystems()
 		system();
 	}
 }
+
+/* 
+This struct is used to make it easier to iterate through
+a list of entities with the components that you specify
+It looks like this ' SceneView<Transform, Info>(scene) '
+*/
 
 template<typename... ComponentTypes>
 struct SceneView
@@ -255,6 +272,7 @@ struct SceneView
   	bool all{ false };
 };
 
+// Macro for registering systems outside the main function
 #define REGISTER_SYSTEM(scriptClass) \
     static bool scriptClass##_registered = []() { \
     	AddSystem(scriptClass); \

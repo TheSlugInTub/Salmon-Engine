@@ -3,6 +3,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+// Courtesy of https://learnopengl.com
+
+// Enum for camera movement
 enum class CameraMovement {
     FORWARD,
     BACKWARD,
@@ -12,6 +15,7 @@ enum class CameraMovement {
     DOWN
 };
 
+// Camera class for the engine
 class Camera {
 public:
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 1.0f),
@@ -19,13 +23,21 @@ public:
         float yaw = -90.0f,
         float pitch = 0.0f);
 
+    // Moves the camera based on the direction enum
     void ProcessKeyboard(CameraMovement direction, float deltaTime);
+    // Rotates the camera based on the xoffset, and yoffset (mouse x and y)
     void ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = true);
+    // Zooms the camera up and down depending on the yoffset (mouse scroll)
     void ProcessMouseScroll(float yoffset);
+
+    // Logs the position, front, up and right vectors
     void PrintValues();
 
+    // Gets the view matrix (glm::lookAt)
     glm::mat4 GetViewMatrix();
+    // Gets the projection matrix (glm::perspective)
     glm::mat4 GetProjMatrix();
+    // Gets the zoom level of the camera
     float GetZoom();
 
     glm::vec3 Position;
@@ -35,6 +47,7 @@ public:
 private:
     void updateCameraVectors();
 
+    // Up direction (acts as a constant)
     glm::vec3 WorldUp;
 
     float Yaw;

@@ -13,12 +13,14 @@ include_directories(include)
 
 # Gather all source files
 file(GLOB SOURCES src/*.cpp src/*.c)
+file(GLOB INCLUDESOURCES include/smphys/*.cpp include/smphys/*.c)
 
-# Comment to reload CMake, Counter: 1
+# Comment to reload CMake, Counter: 2
 
 # Add the executable
 add_executable(${PROJECT_NAME} 
     ${SOURCES}
+    ${INCLUDESOURCES}
     )
 
 # Link appropriate libraries with the operating system

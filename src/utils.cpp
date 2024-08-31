@@ -43,4 +43,14 @@ unsigned int LoadTexture(const char* path)
     return textureID;
 }
 
+template<typename T>
+int IndexInVec(std::vector<T>& v, T& K)
+{
+    auto it = std::find(v.begin(), v.end(), K);
+    if (it != v.end()) {
+        return std::distance(v.begin(), it);
+    }
+    return -1; 
+}
+
 }

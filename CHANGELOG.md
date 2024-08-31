@@ -1,3 +1,12 @@
+# Salmon Engine 0.08
+30/8/2024 - August
+
+I thought about using Box2D as the physics engine, but I decided to make my own.
+I am following a book called 'Physics engine design' by Ian Millington,
+he makes a 3d physics engine in the book.
+The renderer is going to display 3d cubes instead of quads for now.
+I'll make the physics engine 2d in the future.
+
 # Salmon Engine 0.05
 30/8/2024 - August
 
