@@ -6,6 +6,7 @@
 #include <scene_manager.h>
 #include <renderer.h>
 #include <chrono>
+#include <editor_layer.h>
 #include <box2d/box2d/box2d.h>
 
 const int screenWidth = 1920;
@@ -74,22 +75,29 @@ int main(int argc, char* argv[])
     scene.Assign<Transform>(ent);
     scene.Assign<RigidBody2D>(ent);
     scene.Get<RigidBody2D>(ent)->type = b2_dynamicBody;
-    scene.Get<SpriteRenderer>(ent)->texture = Utils::LoadTexture("res/Slugarius.png");
+    scene.Get<SpriteRenderer>(ent)->texture = Utils::LoadTexture("res/textures/Slugarius.png");
+
+    scene.Assign<Info>(ent);
+    scene.Get<Info>(ent)->name = "Physics Box";
 
     EntityID ent2 = scene.AddEntity();
     scene.Assign<SpriteRenderer>(ent2);
     scene.Assign<Transform>(ent2);
     scene.Get<Transform>(ent2)->position = glm::vec3(4.5f, -3.0f, 0.0f);
     scene.Get<Transform>(ent2)->scale = glm::vec3(10.0f, 1.0f, 10.0f);
-    scene.Get<SpriteRenderer>(ent2)->texture = Utils::LoadTexture("res/background.png");
+    scene.Get<SpriteRenderer>(ent2)->texture = Utils::LoadTexture("res/textures/background.png");
 
     scene.Assign<RigidBody2D>(ent2);
     scene.Get<RigidBody2D>(ent2)->bodyScale = glm::vec2(4.0f, 0.5f);
+
+    scene.Assign<Info>(ent2);
+    scene.Get<Info>(ent2)->name = "Ground";
 
     b2World world(b2Vec2(0.0f, -5.0f));
     Utils::globalWorld = &world;
 
     Renderer::Init();
+    EditorLayer::Init();
 
     while (!window.ShouldClose())
     {
@@ -129,16 +137,24 @@ int main(int argc, char* argv[])
 #pragma endregion
         std::cout << "FPS: " << FPS << std::endl;
 
+        EditorLayer::NewFrame();
+
         glClear(GL_COLOR_BUFFER_BIT);
         glClear(GL_DEPTH_BUFFER_BIT);
         
         UpdateSystems();
         processInput(window.window);
 
+        EditorLayer::DrawHierarchy();
+        ImGui::ShowStyleEditor();
+
         world.Step(timeStep, velocityIterations, positionIterations);
 
+        EditorLayer::Render();
         window.Update();
     }
+
+    EditorLayer::Terminate();
 
     return 0;
 }

@@ -1,3 +1,10 @@
+# Salmon Engine 0.099
+1/9/2024 - September
+
+I have added ImGui to the project for the editor, there are two new files an EditorLayer.h,
+and a EditorLayer.cpp, this is layer between ImGui and the rest of the project.
+There is an ImGui window which displays the entities in a scene.
+
 # Salmon Engine 0.09
 1/9/2024 - September
 
