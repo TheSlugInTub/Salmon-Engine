@@ -1,3 +1,10 @@
+# Salmon Engine 0.09
+1/9/2024 - September
+
+Scrap the custom physics engine, I'm just gonna use box2d, maybe another day.
+There is a new shader, a line shader to display the vertices of a box2d body to make
+it easier to see the colliders. There is a new Rigidbody2D component.
+
 # Salmon Engine 0.08
 30/8/2024 - August
 

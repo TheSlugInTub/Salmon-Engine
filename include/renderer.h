@@ -13,8 +13,11 @@ namespace Renderer
 void Init();
 // Renders an entity, gets its transform, and sprite renderer components
 void Render(EntityID ent, const glm::mat4& view, const glm::mat4& projection);
+// Renders an entity's b2Body
+void RenderBody(EntityID ent, const glm::mat4& view, const glm::mat4& projection);
 
 inline unsigned int VAO, VBO, EBO;
 inline Shader defaultShader;
+inline Shader lineShader;
 
 }

@@ -4,6 +4,7 @@
 #include <camera.h>
 #include <string>
 #include <vector>
+#include <box2d/box2d/box2d.h>
 
 // Utils class
 // Has a bunch of useful functions that are used across the engine
@@ -14,6 +15,7 @@ namespace Utils
 inline Window* globalWindow;
 inline Camera* globalCamera;
 inline float deltaTime;
+inline b2World* globalWorld;
 
 // Loads a texture using stb_image and returns an OpenGL texture identifier
 unsigned int LoadTexture(const char* path);

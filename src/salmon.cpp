@@ -6,7 +6,7 @@
 #include <scene_manager.h>
 #include <renderer.h>
 #include <chrono>
-#include <smphys/smphys.h>
+#include <box2d/box2d/box2d.h>
 
 const int screenWidth = 1920;
 const int screenHeight = 1080;
@@ -18,7 +18,12 @@ float lastX = (float)screenWidth / 2.0;
 float lastY = (float)screenHeight / 2.0;
 bool firstMouse = true;
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+// Data for Box2D physics
+float timeStep = 1.0f / 60.0f;
+int32 velocityIterations = 6;
+int32 positionIterations = 2;
+
+Camera camera(glm::vec3(0.0f, 0.0f, 10.0f));
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
@@ -60,21 +65,29 @@ int main(int argc, char* argv[])
 
     Window window("Slug's Window", screenWidth, screenHeight, false);
     glfwSetCursorPosCallback(window.window, mouse_callback);
+    glfwSwapInterval(1);
     Utils::globalWindow = &window;
     Utils::globalCamera = &camera;
 
     EntityID ent = scene.AddEntity();
     scene.Assign<SpriteRenderer>(ent);
     scene.Assign<Transform>(ent);
-    scene.Assign<SmBody>(ent);
+    scene.Assign<RigidBody2D>(ent);
+    scene.Get<RigidBody2D>(ent)->type = b2_dynamicBody;
     scene.Get<SpriteRenderer>(ent)->texture = Utils::LoadTexture("res/Slugarius.png");
 
     EntityID ent2 = scene.AddEntity();
     scene.Assign<SpriteRenderer>(ent2);
     scene.Assign<Transform>(ent2);
-    scene.Get<Transform>(ent2)->position = glm::vec3(0.0f, -3.0f, 0.0f);
+    scene.Get<Transform>(ent2)->position = glm::vec3(4.5f, -3.0f, 0.0f);
     scene.Get<Transform>(ent2)->scale = glm::vec3(10.0f, 1.0f, 10.0f);
     scene.Get<SpriteRenderer>(ent2)->texture = Utils::LoadTexture("res/background.png");
+
+    scene.Assign<RigidBody2D>(ent2);
+    scene.Get<RigidBody2D>(ent2)->bodyScale = glm::vec2(4.0f, 0.5f);
+
+    b2World world(b2Vec2(0.0f, -5.0f));
+    Utils::globalWorld = &world;
 
     Renderer::Init();
 
@@ -118,16 +131,11 @@ int main(int argc, char* argv[])
 
         glClear(GL_COLOR_BUFFER_BIT);
         glClear(GL_DEPTH_BUFFER_BIT);
-
-        if (glfwGetKey(window.window, GLFW_KEY_T) == GLFW_PRESS)
-        {
-            BodyAddForce(scene.Get<SmBody>(ent), glm::vec3(10.5f, 10.5f, 0.0f));
-        }
-
-        BodyAddForce(scene.Get<SmBody>(ent), glm::vec3(0.0f, -30.0f, 0.0f));
         
         UpdateSystems();
         processInput(window.window);
+
+        world.Step(timeStep, velocityIterations, positionIterations);
 
         window.Update();
     }

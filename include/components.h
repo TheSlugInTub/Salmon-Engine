@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <string>
+#include <box2d/box2d/box2d.h>
 
 // Useful components for the game engine
 
@@ -27,4 +28,12 @@ struct SpriteRenderer
 	std::string texturePath = "";
 	glm::vec4 color = glm::vec4(1.0f);
 	bool flipped = false;
+};
+
+struct RigidBody2D
+{
+	glm::vec2 bodyScale = glm::vec2(0.5f);
+	b2Body* body = nullptr;
+	b2BodyType type = b2_staticBody;
+	bool start = true;
 };

@@ -9,13 +9,16 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Add the include directory so that it is available globally
-include_directories(include)
+include_directories(
+    include
+    include/box2d
+    )
 
-# Gather all source files
-file(GLOB SOURCES src/*.cpp src/*.c)
-file(GLOB INCLUDESOURCES include/smphys/*.cpp include/smphys/*.c)
+# Gather all source files recursively
+file(GLOB_RECURSE SOURCES src/*.cpp src/*.c)
+file(GLOB_RECURSE INCLUDESOURCES include/*.cpp include/*.c)
 
-# Comment to reload CMake, Counter: 2
+# Comment to reload CMake, Counter: 3
 
 # Add the executable
 add_executable(${PROJECT_NAME} 
