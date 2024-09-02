@@ -22,7 +22,6 @@ public:
 	bool ShouldClose();
 	
 	GLFWwindow* window;
-private:
 	unsigned int width, height;
 	const char* title;
 };

@@ -25,15 +25,17 @@ struct Info
 struct SpriteRenderer
 {
 	unsigned int texture;
-	std::string texturePath = "";
+	std::string texturePath = "res/textures/DefaultTexture.png";
 	glm::vec4 color = glm::vec4(1.0f);
 	bool flipped = false;
 };
 
+// Rigidbody, adds physics to an entity's transform
 struct RigidBody2D
 {
 	glm::vec2 bodyScale = glm::vec2(0.5f);
 	b2Body* body = nullptr;
 	b2BodyType type = b2_staticBody;
+	// First frame of rigidbody's existence (used for making a b2Body at first frame)
 	bool start = true;
 };

@@ -7,8 +7,10 @@
 namespace SceneManager
 {
 
+// Current scene you're in
 inline Scene* currentScene;
 
+// Sets the currentScene to the param
 void SetCurrentScene(Scene& scene);
 
 }

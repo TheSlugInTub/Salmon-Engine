@@ -24,6 +24,8 @@ void Render();
 void Terminate();
 // Draws the scene hierarchy
 void DrawHierarchy();
+// Draws the inspector, which lets you see the components of an entity
+void DrawInspector();
 // ImGui style theme courtesy of https://github.com/janekb04
 void EmbraceTheDarkness();
 

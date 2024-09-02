@@ -7,6 +7,7 @@
 #include <renderer.h>
 #include <chrono>
 #include <editor_layer.h>
+#include <input.h>
 #include <box2d/box2d/box2d.h>
 
 const int screenWidth = 1920;
@@ -43,7 +44,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     lastX = xpos;
     lastY = ypos;
 
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS)
+    if (Input::GetMouseButton(MouseKey::RightClick))
     {
         camera.ProcessMouseMovement(xoffset, yoffset);
     }
@@ -66,7 +67,6 @@ int main(int argc, char* argv[])
 
     Window window("Slug's Window", screenWidth, screenHeight, false);
     glfwSetCursorPosCallback(window.window, mouse_callback);
-    glfwSwapInterval(1);
     Utils::globalWindow = &window;
     Utils::globalCamera = &camera;
 
@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
         processInput(window.window);
 
         EditorLayer::DrawHierarchy();
-        ImGui::ShowStyleEditor();
+        EditorLayer::DrawInspector();
 
         world.Step(timeStep, velocityIterations, positionIterations);
 

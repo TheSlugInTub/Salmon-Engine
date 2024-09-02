@@ -39,6 +39,8 @@ public:
     glm::mat4 GetProjMatrix();
     // Gets the zoom level of the camera
     float GetZoom();
+    // Converts screen coordinates to world coordinates
+    glm::vec3 ScreenToWorld(const glm::ivec2& pos);
 
     glm::vec3 Position;
     glm::vec3 Front;

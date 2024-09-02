@@ -2,6 +2,8 @@
 #include <utils.h>
 #include <scene_manager.h>
 #include <components.h>
+#include <ecs.h>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace EditorLayer
 {
@@ -89,10 +91,15 @@ void DrawHierarchy()
         auto& object = currentScene->entities[i];
         ImGui::PushID(static_cast<int>(i));
 
+        std::string entName = "Null info component";
         auto infoComp = currentScene->Get<Info>(object.id);
+        if (infoComp)
+        {
+        	entName = infoComp->name;
+        }
 
         bool selected = selectedObjectIndex == static_cast<int>(i);
-        if (ImGui::Selectable(infoComp->name.c_str(), selected)) {
+        if (ImGui::Selectable(entName.c_str(), selected)) {
             selectedObjectIndex = static_cast<int>(i);
         }
 
@@ -115,6 +122,45 @@ void DrawHierarchy()
 
         ImGui::PopID();
     }
+    ImGui::End();
+}
+
+void DrawInspector()
+{
+    ImGui::Begin("Inspector");
+
+	Scene* currentScene = SceneManager::currentScene;
+
+    if (selectedObjectIndex != -1)
+    {
+        EntityID currentEnt = currentScene->entities[selectedObjectIndex].id;
+
+        auto trans = SceneManager::currentScene->Get<Transform>(currentEnt);
+        auto infoComp = SceneManager::currentScene->Get<Info>(currentEnt);
+
+        char nameBuffer[128];
+        std::strncpy(nameBuffer, infoComp->name.c_str(), sizeof(nameBuffer));
+        if (ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer))) {
+            infoComp->name = std::string(nameBuffer);
+        }
+
+        char tagBuffer[128];
+        std::strncpy(tagBuffer, infoComp->tag.c_str(), sizeof(tagBuffer));
+        if (ImGui::InputText("Tag", tagBuffer, sizeof(tagBuffer))) {
+            infoComp->tag = std::string(tagBuffer);
+        }
+
+        if (ImGui::CollapsingHeader("Transform"))
+        {
+            ImGui::DragFloat3("Position", glm::value_ptr(trans->position), 0.1f);
+            ImGui::DragFloat3("Rotation", glm::value_ptr(trans->rotation), 0.1f);
+            ImGui::DragFloat3("Scale", glm::value_ptr(trans->scale), 0.1f); 
+        }
+    }else
+    {
+        ImGui::Text("No entity selected.");
+    }
+
     ImGui::End();
 }
 

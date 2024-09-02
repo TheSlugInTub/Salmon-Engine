@@ -1,3 +1,11 @@
+# Salmon Engine 0.1
+2/9/2024 - September
+
+I have added an inspector window, it only shows the info and transform components for now.
+There is also easy input in the engine now, with GetKey and GetKeyDown functions and the same
+functions for mouse input as well. There is a new ScreenToWorld function in the camera class
+which makes it easy to convert from screen coordinates to world coordinates
+
 # Salmon Engine 0.099
 1/9/2024 - September
 
