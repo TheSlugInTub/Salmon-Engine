@@ -36,11 +36,11 @@ public:
     // Gets the view matrix (glm::lookAt)
     glm::mat4 GetViewMatrix();
     // Gets the projection matrix (glm::perspective)
-    glm::mat4 GetProjMatrix();
+    glm::mat4 GetProjMatrix(float aspectRatio);
     // Gets the zoom level of the camera
     float GetZoom();
     // Converts screen coordinates to world coordinates
-    glm::vec3 ScreenToWorld(const glm::ivec2& pos);
+    glm::vec3 ScreenToWorld(int windowWidth, int windowHeight, const glm::ivec2& pos);
 
     glm::vec3 Position;
     glm::vec3 Front;

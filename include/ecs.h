@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bitset>
+#include <unordered_map>
 #include <vector>
 #include <functional>
 #include <iostream>
@@ -59,7 +60,7 @@ int GetId()
 struct ComponentPool
 {
 	ComponentPool(size_t elementsize)
-	{
+    {
 	  	// We'll allocate enough memory to hold MAX_ENTITIES, each with element size
 	  	elementSize = elementsize;
 	  	pData = new char[elementSize * MAX_ENTITIES];
@@ -79,6 +80,7 @@ struct ComponentPool
 	char* pData{ nullptr };
 	size_t elementSize{ 0 };
 };
+
 
 // Scene struct, holds all the entities
 struct Scene
@@ -127,6 +129,28 @@ struct Scene
 	    entities[GetEntityIndex(id)].mask.set(componentId);
 	    return pComponent;
 	}
+
+    template<typename T, typename... Args>
+    T* AssignParam(EntityID id, Args&&... args)
+    {
+        int componentId = GetId<T>();
+
+        if (componentPools.size() <= componentId) // Not enough component pool
+        {
+            componentPools.resize(componentId + 1, nullptr);
+        }
+        if (componentPools[componentId] == nullptr) // New component, make a new pool
+        {
+            componentPools[componentId] = new ComponentPool(sizeof(T));
+        }
+
+        // Look up the component in the pool, and use placement new to initialize it with the provided arguments
+        T* pComponent = new (componentPools[componentId]->get(GetEntityIndex(id))) T(std::forward<Args>(args)...);
+
+        // Set the bit for this component to true and return the created component
+        entities[GetEntityIndex(id)].mask.set(componentId);
+        return pComponent;
+    }
 
 	// Retrieves a given component from an entity id
 	template<typename T>

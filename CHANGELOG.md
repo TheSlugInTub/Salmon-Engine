@@ -1,3 +1,8 @@
+# Salmon Engine 0.2
+2/9/2024 - September
+
+Starting from scratch for performance.
+
 # Salmon Engine 0.1
 2/9/2024 - September
 

@@ -1,6 +1,5 @@
 #include <camera.h>
 #include <iostream>
-#include <utils.h>
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     : Front(glm::vec3(0.0f, 0.0f, -1.0f)),
@@ -73,9 +72,9 @@ glm::mat4 Camera::GetViewMatrix()
     return glm::lookAt(Position, Position + Front, Up);
 }
 
-glm::mat4 Camera::GetProjMatrix() 
+glm::mat4 Camera::GetProjMatrix(float aspectRatio) 
 {
-    return glm::perspective(glm::radians(45.0f), Utils::globalWindow->GetAspectRatio(), 0.1f, 100.0f);
+    return glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
 }
 
 float Camera::GetZoom() 
@@ -94,23 +93,24 @@ void Camera::updateCameraVectors()
     Up = glm::normalize(glm::cross(Right, Front));
 }
 
-glm::vec3 Camera::ScreenToWorld(const glm::ivec2& pos)
+glm::vec3 Camera::ScreenToWorld(int windowWidth, int windowHeight, const glm::ivec2& pos)
 {
-    glm::vec2 viewportSize(Utils::globalWindow->width, Utils::globalWindow->height);
+    float ar = (float)windowWidth / (float)windowHeight;
+
+    glm::vec2 viewportSize(windowHeight, windowHeight);
 
     float zDepth = Position.z * 1.87f;
 
-    glm::mat4 projection = glm::perspective(glm::radians(GetZoom()), Utils::globalWindow->GetAspectRatio(), 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(GetZoom()), ar, 0.1f, 100.0f);
     glm::mat projInverse = glm::inverse(projection);
 
     float mouse_x = pos.x;
     float mouse_y = pos.y;
 
-    float ndc_x = (2.0f * mouse_x) / Utils::globalWindow->width - 1.0f;
-    float ndc_y = 1.0f - (2.0f * mouse_y) / Utils::globalWindow->height;
+    float ndc_x = (2.0f * mouse_x) / windowWidth - 1.0f;
+    float ndc_y = 1.0f - (2.0f * mouse_y) / windowHeight;
 
     double focal_length = 1.0f / glm::tan(glm::radians(45.0f / 2.0f));
-    float ar = (float)Utils::globalWindow->height / (float)Utils::globalWindow->width;
     glm::vec3 ray_view(ndc_x / focal_length, (ndc_y * ar) / focal_length, 1.0f);
 
     glm::vec4 ray_ndc_4d(ndc_x, ndc_y, 1.0f, 1.0f);

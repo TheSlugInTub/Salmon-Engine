@@ -1,7 +1,7 @@
 #include <input.h>
 #include <unordered_map>
-#include <utils.h>
 #include <map>
+#include <GLFW/glfw3.h>
 
 namespace Input
 {
@@ -63,66 +63,66 @@ std::unordered_map<MouseKey, int> mouseKeyMap = {
     { MouseKey::RightClick, GLFW_MOUSE_BUTTON_RIGHT }
 };
 
-bool GetKeyDown(Key key) {
-    static std::map<Key, bool> keyState;
-    static std::map<Key, bool> keyStatePrev;
-
-    int glfwKey = keyMap[key];
-    keyStatePrev[key] = keyState[key];
-    keyState[key] = glfwGetKey(Utils::globalWindow->window, glfwKey) == GLFW_PRESS;
-
-    return keyState[key] && !keyStatePrev[key];
-}
-
-bool GetKey(Key key)
-{
-    auto it = keyMap.find(key);
-    if (it != keyMap.end())
-    {
-        int glfwKey = it->second;
-        return glfwGetKey(Utils::globalWindow->window, glfwKey) == GLFW_PRESS;
-    }
-    return false;
-}
-
-bool GetMouseButtonDown(MouseKey mouseKey) {
-    static std::map<MouseKey, bool> mouseButtonState;
-    static std::map<MouseKey, bool> mouseButtonStatePrev;
-
-    int glfwMouseButton = mouseKeyMap[mouseKey];
-    mouseButtonStatePrev[mouseKey] = mouseButtonState[mouseKey];
-    mouseButtonState[mouseKey] = glfwGetMouseButton(Utils::globalWindow->window, glfwMouseButton) == GLFW_PRESS;
-
-    return mouseButtonState[mouseKey] && !mouseButtonStatePrev[mouseKey];
-}
-
-bool GetMouseButton(MouseKey mouseKey)
-{
-    auto it = mouseKeyMap.find(mouseKey);
-    if (it != mouseKeyMap.end())
-    {
-        int glfwMouseButton = it->second;
-        return glfwGetMouseButton(Utils::globalWindow->window, glfwMouseButton) == GLFW_PRESS;
-    }
-    return false;
-}
-
-double GetMouseInputHorizontal()
-{
-    double mouseX, mouseY;
-
-    glfwGetCursorPos(Utils::globalWindow->window, &mouseX, &mouseY);
-
-    return mouseX;
-}
-
-double GetMouseInputVertical()
-{
-    double mouseX, mouseY;
-
-    glfwGetCursorPos(Utils::globalWindow->window, &mouseX, &mouseY);
-
-    return mouseY;
-}
+// bool GetKeyDown(Key key) {
+//     static std::map<Key, bool> keyState;
+//     static std::map<Key, bool> keyStatePrev;
+// 
+//     int glfwKey = keyMap[key];
+//     keyStatePrev[key] = keyState[key];
+//     keyState[key] = glfwGetKey(Utils::globalWindow->window, glfwKey) == GLFW_PRESS;
+// 
+//     return keyState[key] && !keyStatePrev[key];
+// }
+// 
+// bool GetKey(Key key)
+// {
+//     auto it = keyMap.find(key);
+//     if (it != keyMap.end())
+//     {
+//         int glfwKey = it->second;
+//         return glfwGetKey(Utils::globalWindow->window, glfwKey) == GLFW_PRESS;
+//     }
+//     return false;
+// }
+// 
+// bool GetMouseButtonDown(MouseKey mouseKey) {
+//     static std::map<MouseKey, bool> mouseButtonState;
+//     static std::map<MouseKey, bool> mouseButtonStatePrev;
+// 
+//     int glfwMouseButton = mouseKeyMap[mouseKey];
+//     mouseButtonStatePrev[mouseKey] = mouseButtonState[mouseKey];
+//     mouseButtonState[mouseKey] = glfwGetMouseButton(Utils::globalWindow->window, glfwMouseButton) == GLFW_PRESS;
+// 
+//     return mouseButtonState[mouseKey] && !mouseButtonStatePrev[mouseKey];
+// }
+// 
+// bool GetMouseButton(MouseKey mouseKey)
+// {
+//     auto it = mouseKeyMap.find(mouseKey);
+//     if (it != mouseKeyMap.end())
+//     {
+//         int glfwMouseButton = it->second;
+//         return glfwGetMouseButton(Utils::globalWindow->window, glfwMouseButton) == GLFW_PRESS;
+//     }
+//     return false;
+// }
+// 
+// double GetMouseInputHorizontal()
+// {
+//     double mouseX, mouseY;
+// 
+//     glfwGetCursorPos(Utils::globalWindow->window, &mouseX, &mouseY);
+// 
+//     return mouseX;
+// }
+// 
+// double GetMouseInputVertical()
+// {
+//     double mouseX, mouseY;
+// 
+//     glfwGetCursorPos(Utils::globalWindow->window, &mouseX, &mouseY);
+// 
+//     return mouseY;
+// }
 
 }
