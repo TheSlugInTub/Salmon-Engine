@@ -46,15 +46,15 @@ public:
     glm::vec3 Front;
     glm::vec3 Up;
     glm::vec3 Right;
-private:
-    void updateCameraVectors();
-
-    // Up direction (acts as a constant)
-    glm::vec3 WorldUp;
 
     float Yaw;
     float Pitch;
     float MovementSpeed;
     float MouseSensitivity;
     float Zoom;
+private:
+    void updateCameraVectors();
+
+    // Up direction (acts as a constant)
+    glm::vec3 WorldUp;
 };

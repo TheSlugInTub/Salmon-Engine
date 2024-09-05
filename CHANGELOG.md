@@ -1,3 +1,8 @@
+# Salmon Engine 0.23
+5/9/2024 - September
+
+3d rendering in the engine with model importing with assimp. No lighting yet tho ;)
+
 # Salmon Engine 0.2
 2/9/2024 - September
 

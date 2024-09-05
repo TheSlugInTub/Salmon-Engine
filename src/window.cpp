@@ -1,4 +1,5 @@
 #include <window.h>
+#include <engine.h>
 
 Window::Window(const char* title, int width, int height, bool fullscreen)
 	: title(title), width(width), height(height)
@@ -30,8 +31,7 @@ Window::Window(const char* title, int width, int height, bool fullscreen)
         exit(1);
     }
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    engineState.window = this;
 }
 
 Window::~Window()

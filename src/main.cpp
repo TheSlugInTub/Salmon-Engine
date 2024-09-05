@@ -1,120 +1,61 @@
+#include <salmon.h>
 #include <iostream>
-#include <ecs.h>
-#include <window.h>
-#include <camera.h>
-#include <input.h>
-#include <chrono>
 
-const int screenWidth = 1920;
-const int screenHeight = 1080;
+// settings
+const unsigned int SCR_WIDTH = 1920;
+const unsigned int SCR_HEIGHT = 1080;
 
-void processInput(GLFWwindow* window);
+// camera
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
-// Mouse stuff.
-float lastX = (float)screenWidth / 2.0;
-float lastY = (float)screenHeight / 2.0;
-bool firstMouse = true;
+// timing
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
-Camera camera(glm::vec3(0.0f, 0.0f, 10.0f));
-
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+int main()
 {
-    float xpos = static_cast<float>(xposIn);
-    float ypos = static_cast<float>(yposIn);
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
+    Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false);
+    glfwSetInputMode(window.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    Model ourModel("res/models/Box.obj");
+    unsigned int tex = Utils::LoadTexture("res/textures/Slugarius.png");
+    unsigned int groundTex = Utils::LoadTexture("res/textures/background.png");
 
-    lastX = xpos;
-    lastY = ypos;
-}
+    Scene scene;
+    EntityID ent = scene.AddEntity();
+    scene.AssignParam<Transform>(ent, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    scene.AssignParam<MeshRenderer>(ent, ourModel, glm::vec4(1.0f), tex);
 
-Scene scene;
+    EntityID ground = scene.AddEntity();
+    scene.AssignParam<Transform>(ground, glm::vec3(0.0f, -2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(10.0f, 1.0f, 10.0f));
+    scene.AssignParam<MeshRenderer>(ground, ourModel, glm::vec4(1.0f), groundTex);
 
-// FPS stuff.
-std::string FPS;
-auto lastTime = std::chrono::high_resolution_clock::now();
-int frameCount = 0;
-float fps = 0.0f;
-double prevTime = 0.0;
-double currentTime = 0.0;
-unsigned int counter = 0;
+    engineState.SetScene(scene);
+    engineState.SetCamera(camera);
 
-int main(int argc, char* argv[])
-{
-    Window window("Slug's Window", screenWidth, screenHeight, false);
-    glfwSetCursorPosCallback(window.window, mouse_callback);
+    Renderer::Init();
 
+    // render loop
+    // -----------
     while (!window.ShouldClose())
     {
-#pragma region FPS
-        auto currentTime = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<float> elapsed = currentTime - lastTime;
+        // per-frame time logic
+        // --------------------
+        float currentFrame = static_cast<float>(glfwGetTime());
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
-        // Update frame count
-        frameCount++;
+        ClearScreen();
 
-        // Calculate the duration between the last frame and the current frame
-        std::chrono::duration<float> deltaTimeCh = currentTime - lastTime;
-
-        // Convert duration to seconds
-        float deltaTime = deltaTimeCh.count();
-
-        // Update the last frame time
-        lastTime = currentTime;
-
-        // Accumulate time
-        static float timeAccumulator = 0.0f;
-        timeAccumulator += elapsed.count();
-
-        // Update FPS every second
-        if (timeAccumulator >= 0.1f) {
-            fps = frameCount / timeAccumulator;
-
-            // Reset counters
-            frameCount = 0;
-            timeAccumulator = 0.0f;
-
-            // Update the FPS string
-            FPS = std::to_string(fps);
+        // Do stuff here
+        if (Input::GetKey(Key::Up))
+        {
+            scene.Get<Transform>(ent)->position.x += 0.016f;
         }
-#pragma endregion
-        std::cout << "FPS: " << FPS << std::endl;
 
-
-        glClear(GL_COLOR_BUFFER_BIT);
-        glClear(GL_DEPTH_BUFFER_BIT);
-        
         UpdateSystems();
-        
-        processInput(window.window);
-
         window.Update();
     }
 
     return 0;
-}
-
-void processInput(GLFWwindow* window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(CameraMovement::UP, 0.02f);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(CameraMovement::DOWN, 0.02f);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(CameraMovement::LEFT, 0.02f);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(CameraMovement::RIGHT, 0.02f);
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        camera.ProcessKeyboard(CameraMovement::FORWARD, 0.02f);
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        camera.ProcessKeyboard(CameraMovement::BACKWARD, 0.02f);
 }

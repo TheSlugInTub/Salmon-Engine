@@ -20,7 +20,7 @@ include_directories(
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.c)
 file(GLOB_RECURSE INCLUDESOURCES include/*.cpp include/*.c)
 
-# Comment to reload CMake, Counter: 8
+# Comment to reload CMake, Counter: 11
 
 # Add the executable
 add_executable(${PROJECT_NAME} 
@@ -34,6 +34,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     message(STATUS "Configuring for Windows")
     target_link_libraries(${PROJECT_NAME} 
         ../lib/glfw3
+        ../lib/assimp-vc143-mtd
     )
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     message(STATUS "Configuring for Linux")
