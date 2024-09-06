@@ -17,3 +17,5 @@ struct MeshRenderer
     unsigned int texture;
     std::string texturePath = "";
 };
+
+

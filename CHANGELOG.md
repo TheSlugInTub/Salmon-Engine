@@ -1,3 +1,9 @@
+# Salmon Engine 0.25
+6/9/2024 - September
+
+Jolt physics has been integrated, well not really integrated it's just all in the main file.
+It's going to be integrated and have its own RigidBody3D component in the next update.
+
 # Salmon Engine 0.23
 5/9/2024 - September
 
