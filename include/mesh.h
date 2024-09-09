@@ -1,6 +1,9 @@
 #ifndef MESH_H
 #define MESH_H
 
+// Mesh class for the engine, courtesy of https://learnopengl.com
+// This class is here because a model can store multiple meshes
+
 #include <glad/glad.h> // holds all OpenGL type declarations
 
 #include <glm/glm.hpp>

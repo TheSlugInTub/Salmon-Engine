@@ -6,6 +6,7 @@
 namespace Input
 {
 
+// Maps all the enum members of 'Key' to their corresponding members for GLFW
 std::unordered_map<Key, int> keyMap = {
     { Key::A, GLFW_KEY_A },
     { Key::B, GLFW_KEY_B },
@@ -57,6 +58,7 @@ std::unordered_map<Key, int> keyMap = {
     { Key::Delete, GLFW_KEY_DELETE },
 };
 
+// Same as the key map but for mouse buttons
 std::unordered_map<MouseKey, int> mouseKeyMap = {
     { MouseKey::LeftClick, GLFW_MOUSE_BUTTON_LEFT },
     { MouseKey::MiddleClick, GLFW_MOUSE_BUTTON_MIDDLE },

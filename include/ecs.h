@@ -24,6 +24,8 @@ typedef unsigned int EntityVersion;
 // All the systems that are registered
 // Systems don't depend on scenes, that's probably bad but it was just easier this way
 inline std::vector<std::function<void()>> systems;
+// Start systems, meant to only be called at the start
+inline std::vector<std::function<void()>> startSystems;
 
 inline EntityID CreateEntityId(EntityIndex index, EntityVersion version)
 {
@@ -57,6 +59,7 @@ int GetId()
 }
 
 // Memory pool for the components
+// Just stores chars
 struct ComponentPool
 {
 	ComponentPool(size_t elementsize)
@@ -82,7 +85,7 @@ struct ComponentPool
 };
 
 
-// Scene struct, holds all the entities
+// Scene struct, holds all the entities, basically a registry of entities
 struct Scene
 {
 	// Struct to store all the information needed for an entity
@@ -107,7 +110,7 @@ struct Scene
 	  	return entities.back().id;
 	}
 
-	// Assigns a component to an entity id
+	// Assigns a component to an entity ID
 	template<typename T>
 	T* Assign(EntityID id)
 	{
@@ -130,6 +133,7 @@ struct Scene
 	    return pComponent;
 	}
 
+    // Assigns a component to an entity ID with a list of parameters (a constructor). use: <ent, 1.0f, 2.0f...>
     template<typename T, typename... Args>
     T* AssignParam(EntityID id, Args&&... args)
     {
@@ -152,7 +156,7 @@ struct Scene
         return pComponent;
     }
 
-	// Retrieves a given component from an entity id
+	// Retrieves a pointer to a given component from an entity id, use: Get<Type>(ent)
 	template<typename T>
 	T* Get(EntityID id)
 	{
@@ -164,6 +168,7 @@ struct Scene
 	  	return pComponent;
 	}
 
+    // Removes a component from an entity ID
 	template<typename T>
 	void Remove(EntityID id)
 	{
@@ -175,6 +180,7 @@ struct Scene
 	  	entities[GetEntityIndex(id)].mask.reset(componentId);
 	}
 
+    // Destroys an entity, resets its mask, adds the given entity's index to the list of free entities
 	void DestroyEntity(EntityID id)
 	{
 	  	EntityID newID = CreateEntityId(EntityIndex(-1), GetEntityVersion(id) + 1);
@@ -195,7 +201,15 @@ inline void AddSystem(std::function<void()> sys)
 	systems.push_back(sys);
 }
 
-// Updates all the systems by calling them
+// Adds a system to the list of start systems
+inline void AddStartSystem(std::function<void()> sys)
+{
+	std::cout << "Start System has been added\n";
+	startSystems.push_back(sys);
+}
+
+
+// Updates all the systems by calling them, call this function every frame to update all the systems each frame
 inline void UpdateSystems()
 {
 	for (auto system : systems)
@@ -204,9 +218,17 @@ inline void UpdateSystems()
 	}
 }
 
+// Updates all the start systems, call this only on the start of the program
+inline void StartStartSystems()
+{
+    for (auto system : startSystems)
+    {
+        system();
+    }
+}
+
 /* 
-This struct is used to make it easier to iterate through
-a list of entities with the components that you specify
+This struct is used to make it easier to iterate through a list of entities with the components that you specify
 It looks like this ' SceneView<Transform, Info>(scene) '
 */
 
@@ -300,5 +322,12 @@ struct SceneView
 #define REGISTER_SYSTEM(scriptClass) \
     static bool scriptClass##_registered = []() { \
     	AddSystem(scriptClass); \
+        return true; \
+    }();
+
+// Macro for registering start systems outside the main function
+#define REGISTER_START_SYSTEM(scriptClass) \
+    static bool scriptClass##_registered = []() { \
+    	AddStartSystem(scriptClass); \
         return true; \
     }();

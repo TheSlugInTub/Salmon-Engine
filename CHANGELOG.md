@@ -1,3 +1,9 @@
+# Salmon Engine 0.3
+9/9/2024
+
+Jolt physics has been integrated with a RigidBody3D component, along with some functions related
+to intializing and stepping jolt physics.
+
 # Salmon Engine 0.25
 6/9/2024 - September
 

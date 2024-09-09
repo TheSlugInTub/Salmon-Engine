@@ -9,9 +9,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Specify the C++ standard (optional but recommended)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-# Use the static runtime libraries
-set(CMAKE_CXX_FLAGS_DEBUG "/MT")
-set(CMAKE_CXX_FLAGS_RELEASE "/MT")
 
 # Add the include directory so that it is available globally
 include_directories(
@@ -37,7 +34,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     target_link_libraries(${PROJECT_NAME} 
         ../lib/glfw3
         ../lib/assimp-vc143-mtd
-        ../lib/Jolt
+        #../lib/Jolt
     )
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     message(STATUS "Configuring for Linux")

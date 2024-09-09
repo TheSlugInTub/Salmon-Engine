@@ -1,6 +1,8 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+// Model class for the engine, courtesy of https://learnopeng.com
+
 #include <glad/glad.h> 
 
 #include <glm/glm.hpp>

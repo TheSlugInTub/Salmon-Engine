@@ -2,6 +2,19 @@
 #include <glm/glm.hpp>
 #include <model.h>
 #include <string>
+#include <physics.h>
+
+// Enum to specify what shape the collider is
+enum ColliderType
+{
+    Box = 0, Circle, Cylinder, Capsule
+};
+
+// Do it move?
+enum BodyState
+{
+    Dynamic = 0, Static
+};
 
 struct Transform
 {
@@ -18,4 +31,16 @@ struct MeshRenderer
     std::string texturePath = "";
 };
 
+struct RigidBody3D
+{
+    ColliderType colliderType;
+    BodyState state;
+    glm::vec3 boxSize;
+    float circleRadius = 1.0f;
 
+    Body* body = nullptr;
+    
+    RigidBody3D(ColliderType type, BodyState state, glm::vec3 size)
+        : colliderType(type), boxSize(size), state(state)
+    {}
+};

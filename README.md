@@ -14,5 +14,5 @@ to get it to run properly.
 
 ### DISCLAIMER:
 
-There are assimp and jolt libraries in the 'lib' folder, which are .lib files, this will not work on linux!
-I was too lazy to compile these libraries for linux so just compile them yourself.
+There is an assimp library in the 'lib' folder, which is a .lib file, this will not work on linux!
+I was too lazy to compile the library for linux so just compile it yourself.

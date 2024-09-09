@@ -2,6 +2,7 @@
 
 // Input functions
 
+// Key enum for specifying keyboard input
 enum class Key
 {
     A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
@@ -17,15 +18,18 @@ enum class MouseKey
 namespace Input
 {
 
-// Key input functions
+// Only returns true on the first frame that a key is pressed
 bool GetKeyDown(Key key);
+// Returns true if the key is pressed
 bool GetKey(Key key);
 
-// Mouse input functions
+// Much like the key functions but with mouse input
+
 bool GetMouseButtonDown(MouseKey mouseKey);
 bool GetMouseButton(MouseKey mouseKey);
 
-// Mouse cursor input  functions
+// These functions get the screen-space position of the mouse
+
 double GetMouseInputHorizontal();
 double GetMouseInputVertical();
 
