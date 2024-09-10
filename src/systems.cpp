@@ -110,7 +110,6 @@ void RigidBody3DSys()
 
 		RVec3 positionOfSphere = bodyInterface.GetCenterOfMassPosition(rigid->body->GetID());
 
-		std::cout << "Jolt Pos: " << positionOfSphere.GetX() << ", " << positionOfSphere.GetY() << ", " << positionOfSphere.GetZ() << std::endl;
 		Quat rotationOfSphere = bodyInterface.GetRotation(rigid->body->GetID());
 
 		float x = rotationOfSphere.GetX();

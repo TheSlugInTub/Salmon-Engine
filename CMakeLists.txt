@@ -27,6 +27,8 @@ add_executable(${PROJECT_NAME}
     ${INCLUDESOURCES}
     )
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE JPH_DEBUG_RENDERER)
+
 # Link appropriate libraries with the operating system
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")

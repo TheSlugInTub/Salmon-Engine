@@ -59,55 +59,42 @@ void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& vie
     model->model.Draw(defaultShader);
 }
 
-void RenderLine(glm::vec3 inPoint, glm::vec3 outPoint)
+void RenderLine(glm::vec3 inPoint, glm::vec3 outPoint, const glm::mat4& projection, const glm::mat4& view)
 {
-    glm::mat4 projection = engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio());
-    glm::mat4 view = engineState.camera->GetViewMatrix();
+    std::vector<glm::vec3> points = {inPoint, outPoint};
 
-    std::vector<glm::vec3> vertices;
+    GLuint lVAO, lVBO;
+    glGenVertexArrays(1, &lVAO);
+    glGenBuffers(1, &lVBO);
 
-    vertices.push_back(inPoint);
-    vertices.push_back(outPoint);
-    
-    // Create and bind VAO and VBO
-    GLuint VAO, VBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    glBindVertexArray(lVAO);
 
-    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, lVBO);
+    glBufferData(GL_ARRAY_BUFFER, points.size() * sizeof(glm::vec3), points.data(), GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec2), vertices.data(), GL_STATIC_DRAW);
-
-    // Define vertex attribute
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Use the shader program
     lineShader.use();
 
-    // Set shader uniforms
     lineShader.setMat4("view", view);
     lineShader.setMat4("projection", projection);
-    lineShader.setVec4("lineColor", glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
 
     glm::mat4 model = glm::mat4(1.0f);
     lineShader.setMat4("model", model);
 
-    // Draw the polygon outline
-    glLineWidth(2.0f);
-    glDrawArrays(GL_LINE_LOOP, 0, vertices.size());
+    // Draw line
+    glLineWidth(200.0f);
+    glDrawArrays(GL_LINES, 0, points.size());
 
-    // Draw points to highlight the vertices
-    glPointSize(10.0f);  
-    glDrawArrays(GL_POINTS, 0, vertices.size());
+    // Draw points
+    glPointSize(10.0f);
+    glDrawArrays(GL_POINTS, 0, points.size());
 
-    // Unbind and delete VAO and VBO
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-    glDeleteBuffers(1, &VBO);
-    glDeleteVertexArrays(1, &VAO);
-
+    glDeleteBuffers(1, &lVBO);
+    glDeleteVertexArrays(1, &lVAO);
 }
 
 }

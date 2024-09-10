@@ -54,7 +54,8 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        ClearScreen();
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
 
 	    BodyInterface& bodyInterface = physicsSystem.GetBodyInterface();
         auto box_id = scene.Get<RigidBody3D>(ent)->body->GetID();
@@ -71,10 +72,20 @@ int main()
             bodyInterface.AddForce(box_id, force);
         }
 
-        //MyDebugRenderer* debugRenderer = new MyDebugRenderer();
-        //physicsSystem.DrawBodies(JPH::BodyManager::DrawSettings(), debugRenderer);
+        MyDebugRenderer debugRenderer;
 
         UpdateSystems();
+
+        debugRenderer.DrawLines();
+
+		float aspectRatio = engineState.window->GetAspectRatio();
+        glm::vec3 point1(0.0f, 0.0f, 0.0f);
+        glm::vec3 point2(1.0f, 1.0f, 0.0f);
+        glm::vec3 point3(-1.0f, 2.0f, 3.0f);
+
+        Renderer::RenderLine(point1, point2, engineState.camera->GetProjMatrix(aspectRatio), engineState.camera->GetViewMatrix());
+        Renderer::RenderLine(point2, point3, engineState.camera->GetProjMatrix(aspectRatio), engineState.camera->GetViewMatrix());
+        
         window.Update();
 
         StepPhysics(deltaTime);

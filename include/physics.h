@@ -3,7 +3,6 @@
 // This file contains all of the stuff related to Jolt Physics
 // Contains stuff like structs and initialization of various things because jolt needs them
 
-
 #include "input.h"
 #include <Jolt/Jolt.h>
 
@@ -19,7 +18,22 @@
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 #include <renderer.h>
+#include <engine.h>
 
+#ifdef JPH_DEBUG_RENDERER
+	#include <Jolt/Renderer/DebugRenderer.h>
+#else
+	// Hack to still compile DebugRenderer inside the test framework when Jolt is compiled without
+	#define JPH_DEBUG_RENDERER
+	// Make sure the debug renderer symbols don't get imported or exported
+	#define JPH_DEBUG_RENDERER_EXPORT
+	#include <Jolt/Renderer/DebugRenderer.h>
+	#undef JPH_DEBUG_RENDERER
+	#undef JPH_DEBUG_RENDERER_EXPORT
+#endif
+
+#include <Jolt/Core/Mutex.h>
+#include <Jolt/Core/UnorderedMap.h>
 
 // STL includes
 #include <iostream>
@@ -175,36 +189,58 @@ inline void DestroyPhysics()
 	Factory::sInstance = nullptr;
 }
 
-//class MyDebugRenderer : public JPH::DebugRenderer {
-//public:
-//    void DrawLine(RVec3Arg inFrom, RVec3Arg inTo, ColorArg inColor) override {
-//        Renderer::RenderLine(glm::vec3(inFrom.GetX(), inFrom.GetY(), inFrom.GetZ()), glm::vec3(inTo.GetX(), inTo.GetY(), inTo.GetZ()));
-//    }
-//
-//	void DrawTriangle(RVec3Arg inV1, RVec3Arg inV2, RVec3Arg inV3, ColorArg inColor, ECastShadow inCastShadow = ECastShadow::Off) override
-//    {
-//        //fuck off
-//    }
-//
-//	virtual Batch CreateTriangleBatch(const Triangle *inTriangles, int inTriangleCount)
-//    {
-//        //fuck off
-//        return Batch{};
-//    }
-//
-//	virtual Batch CreateTriangleBatch(const Vertex *inVertices, int inVertexCount, const uint32 *inIndices, int inIndexCount)
-//    {
-//        return Batch{};
-//    }
-//
-//	virtual void DrawGeometry(RMat44Arg inModelMatrix, const AABox &inWorldSpaceBounds, float inLODScaleSq, ColorArg inModelColor, const GeometryRef &inGeometry, ECullMode inCullMode = ECullMode::CullBackFace, ECastShadow inCastShadow = ECastShadow::On, EDrawMode inDrawMode = EDrawMode::Solid)
-//    {
-//        //fuck off
-//    }
-//
-//	virtual void DrawText3D(RVec3Arg inPosition, const string_view &inString, ColorArg inColor = Color::sWhite, float inHeight = 0.5f)
-//    {
-//        //fuck off
-//    }
-//};
+struct LineSeg
+{
+    RVec3Arg inFrom;
+    RVec3Arg inTo;
+};
+
+class MyDebugRenderer final : public JPH::DebugRenderer {
+public:
+	JPH_OVERRIDE_NEW_DELETE
+
+    MyDebugRenderer()
+    {}
+
+    inline void DrawLine(RVec3Arg inFrom, RVec3Arg inTo, ColorArg inColor) override {
+        lines.push_back(LineSeg(inFrom, inTo));
+    }
+
+	inline void DrawTriangle(RVec3Arg inV1, RVec3Arg inV2, RVec3Arg inV3, ColorArg inColor, ECastShadow inCastShadow = ECastShadow::Off) override
+    {
+        //fuck off
+    }
+
+	inline virtual Batch CreateTriangleBatch(const Triangle *inTriangles, int inTriangleCount)
+    {
+        //fuck off
+        return Batch{};
+    }
+
+	inline virtual Batch CreateTriangleBatch(const Vertex *inVertices, int inVertexCount, const uint32 *inIndices, int inIndexCount)
+   	{
+       	return Batch{};
+   	}
+
+	inline virtual void DrawGeometry(RMat44Arg inModelMatrix, const AABox &inWorldSpaceBounds, float inLODScaleSq, ColorArg inModelColor, const GeometryRef &inGeometry, ECullMode inCullMode = ECullMode::CullBackFace, ECastShadow inCastShadow = ECastShadow::On, EDrawMode inDrawMode = EDrawMode::Solid)
+   	{
+        //fuck off
+   	}
+
+	inline virtual void DrawText3D(RVec3Arg inPosition, const string_view &inString, ColorArg inColor = Color::sWhite, float inHeight = 0.5f)
+   	{
+   	    //fuck off
+   	}
+
+    inline void DrawLines()
+    {
+        for (auto& line : lines)
+        {
+		    float aspectRatio = engineState.window->GetAspectRatio();
+            Renderer::RenderLine(glm::vec3(line.inFrom.GetX(), line.inFrom.GetY(), line.inFrom.GetZ()), glm::vec3(line.inTo.GetX(), line.inTo.GetY(), line.inTo.GetZ()), engineState.camera->GetProjMatrix(aspectRatio), engineState.camera->GetViewMatrix());
+        }
+    }
+
+    std::vector<LineSeg> lines;
+};
 

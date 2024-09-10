@@ -16,7 +16,7 @@ void Init();
 void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& view);
 
 // Renders a line from one vec3 to another vec3, uses the line shader
-void RenderLine(glm::vec3 inPoint, glm::vec3 outPoint);
+void RenderLine(glm::vec3 inPoint, glm::vec3 outPoint, const glm::mat4& projection, const glm::mat4& view);
 
 // Default 3D shader
 inline Shader defaultShader;
