@@ -1,6 +1,6 @@
-# Prism
+# Syslocked
 
-Prism is a 3D quake-like game made for the showcase and for the design of Snail Engine.
+Syslocked is a 3D quake-like game made for the showcase and for the design of Snail Engine.
 
 Art style: Quake but crispier and more pixelly and stylish.
 

@@ -27,6 +27,8 @@ inline std::vector<std::function<void()>> systems;
 // Start systems, meant to only be called at the start
 inline std::vector<std::function<void()>> startSystems;
 
+// Functions for the validation of entities and entity versions, please don't use these in your code
+
 inline EntityID CreateEntityId(EntityIndex index, EntityVersion version)
 {
   	// Shift the index up 32, and put the version in the bottom

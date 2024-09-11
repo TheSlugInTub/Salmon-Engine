@@ -84,7 +84,7 @@ void RenderLine(glm::vec3 inPoint, glm::vec3 outPoint, const glm::mat4& projecti
     lineShader.setMat4("model", model);
 
     // Draw line
-    glLineWidth(200.0f);
+    glLineWidth(3.0f);
     glDrawArrays(GL_LINES, 0, points.size());
 
     // Draw points

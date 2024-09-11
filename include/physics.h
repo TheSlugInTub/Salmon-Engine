@@ -14,6 +14,7 @@
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
@@ -191,8 +192,8 @@ inline void DestroyPhysics()
 
 struct LineSeg
 {
-    RVec3Arg inFrom;
-    RVec3Arg inTo;
+    glm::vec3 inFrom;
+    glm::vec3 inTo;
 };
 
 class MyDebugRenderer final : public JPH::DebugRenderer {
@@ -202,13 +203,16 @@ public:
     MyDebugRenderer()
     {}
 
-    inline void DrawLine(RVec3Arg inFrom, RVec3Arg inTo, ColorArg inColor) override {
-        lines.push_back(LineSeg(inFrom, inTo));
+    virtual void DrawLine(RVec3Arg inFrom, RVec3Arg inTo, ColorArg inColor) override {
+        LineSeg line(glm::vec3(inFrom.GetX(), inFrom.GetY(), inFrom.GetZ()), glm::vec3(inTo.GetX(), inTo.GetY(), inTo.GetZ()));
+
+		float aspectRatio = engineState.window->GetAspectRatio();
+    	Renderer::RenderLine(line.inFrom, line.inTo, engineState.camera->GetProjMatrix(aspectRatio), engineState.camera->GetViewMatrix());
     }
 
 	inline void DrawTriangle(RVec3Arg inV1, RVec3Arg inV2, RVec3Arg inV3, ColorArg inColor, ECastShadow inCastShadow = ECastShadow::Off) override
     {
-        //fuck off
+        std::cout << "Triangle has been drawn!";
     }
 
 	inline virtual Batch CreateTriangleBatch(const Triangle *inTriangles, int inTriangleCount)
@@ -224,23 +228,12 @@ public:
 
 	inline virtual void DrawGeometry(RMat44Arg inModelMatrix, const AABox &inWorldSpaceBounds, float inLODScaleSq, ColorArg inModelColor, const GeometryRef &inGeometry, ECullMode inCullMode = ECullMode::CullBackFace, ECastShadow inCastShadow = ECastShadow::On, EDrawMode inDrawMode = EDrawMode::Solid)
    	{
-        //fuck off
+        std::cout << "Geometry has been drawn!";
    	}
 
 	inline virtual void DrawText3D(RVec3Arg inPosition, const string_view &inString, ColorArg inColor = Color::sWhite, float inHeight = 0.5f)
    	{
    	    //fuck off
    	}
-
-    inline void DrawLines()
-    {
-        for (auto& line : lines)
-        {
-		    float aspectRatio = engineState.window->GetAspectRatio();
-            Renderer::RenderLine(glm::vec3(line.inFrom.GetX(), line.inFrom.GetY(), line.inFrom.GetZ()), glm::vec3(line.inTo.GetX(), line.inTo.GetY(), line.inTo.GetZ()), engineState.camera->GetProjMatrix(aspectRatio), engineState.camera->GetViewMatrix());
-        }
-    }
-
-    std::vector<LineSeg> lines;
 };
 

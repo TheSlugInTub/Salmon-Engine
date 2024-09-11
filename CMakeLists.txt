@@ -19,13 +19,15 @@ include_directories(
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.c)
 file(GLOB_RECURSE INCLUDESOURCES include/*.cpp include/*.c)
 
-# Comment to reload CMake, Counter: 17
+# Comment to reload CMake, Counter: 18
 
 # Add the executable
 add_executable(${PROJECT_NAME} 
     ${SOURCES}
     ${INCLUDESOURCES}
     )
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE JPH_DEBUG_RENDERER)
 

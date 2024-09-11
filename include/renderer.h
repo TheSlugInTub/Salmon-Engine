@@ -8,7 +8,7 @@
 namespace Renderer
 {
 
-// Intializes OpenGL (only makes the defaultShader at the moment)
+// Intializes OpenGL (only makes the shaders at the moment)
 void Init();
 
 // Takes an entityID, gets its Transform and MeshRenderer components

@@ -6,6 +6,7 @@
 // Macro for clearing the screen
 #define ClearScreen() glClear(GL_COLOR_BUFFER_BIT); glClear(GL_DEPTH_BUFFER_BIT)
 
+// Macro for initializing Jolt physics, this isn't a function because it doesn't register the default allocator if it is a function for some reason
 #define StartPhysics() \
     RegisterDefaultAllocator(); \
 	Trace = TraceImpl; \
@@ -18,7 +19,6 @@
 	ObjectVsBroadPhaseLayerFilterImpl objectVsBroadphaseLayerFilter; \
 	ObjectLayerPairFilterImpl objectVsObjectLayerFilter; \
     physicsSystem.Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, broadPhaseLayerInterface, objectVsBroadphaseLayerFilter, objectVsObjectLayerFilter);
-
 
 #include <glm/gtc/quaternion.hpp>
 #include <utils.h>
