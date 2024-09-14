@@ -1,3 +1,10 @@
+# Salmon Engine 0.34
+14/9/2024
+
+Shadow mapping has been added to the engine, although it's integrated quite terribly.
+I'll make a better and more elegant integration later that actually handles multiple lights.
+Also capsule colliders have been added in the previous commits.
+
 # Salmon Engine 0.3
 9/9/2024
 

@@ -4,10 +4,10 @@
 - [X] 3D physics
 - [X] Debug rendering of 3D physics
 - [X] Model importing
-- [ ] Capsule colliders
+- [X] Capsule colliders
 - [ ] Sphere colliders
 - [ ] Lighting
-- [ ] Shadows
+- [X] Shadows
 - [ ] Audio
 - [ ] Particle effects
 - [ ] Skeletal animation importing

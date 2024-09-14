@@ -38,11 +38,12 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     target_link_libraries(${PROJECT_NAME} 
         ../lib/glfw3
         ../lib/assimp-vc143-mtd
-        #../lib/Jolt
     )
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     message(STATUS "Configuring for Linux")
-    target_link_libraries(${PROJECT_NAME} 
-        ../lib/libglfw3.a
+    # Directly specify the absolute or relative paths without -l
+    target_link_libraries(${PROJECT_NAME}
+        ${CMAKE_SOURCE_DIR}/lib/libglfw3.a
+        ${CMAKE_SOURCE_DIR}/lib/libassimp.so
     )
 endif()

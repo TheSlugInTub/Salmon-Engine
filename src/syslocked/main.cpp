@@ -36,6 +36,9 @@ int main()
     scene.AssignParam<MeshRenderer>(ground, ourModel, glm::vec4(1.0f), groundTex);
     scene.AssignParam<RigidBody3D>(ground, ColliderType::Box, BodyState::Static, glm::vec3(10.0f, 1.0f, 10.0f));
 
+    EntityID light = scene.AddEntity();
+    scene.AssignParam<Light>(light, glm::vec3(5.0f, 5.0f, 1.0f));
+
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
 
@@ -43,7 +46,7 @@ int main()
 
     StartStartSystems();
 
-	physicsSystem.OptimizeBroadPhase();
+    physicsSystem.OptimizeBroadPhase();
 
     // render loop
     // -----------
@@ -55,10 +58,7 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        glClear(GL_DEPTH_BUFFER_BIT);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-	    BodyInterface& bodyInterface = physicsSystem.GetBodyInterface();
+	BodyInterface& bodyInterface = physicsSystem.GetBodyInterface();
         auto box_id = scene.Get<RigidBody3D>(ent)->body->GetID();
         auto body = scene.Get<RigidBody3D>(ent)->body;
 

@@ -8,24 +8,53 @@
 
 void MeshRendererSys()
 {
-	for (EntityID ent : SceneView<Transform, MeshRenderer>(engineState.scene))
-	{
-		float aspectRatio = engineState.window->GetAspectRatio();
-		Renderer::RenderModel(ent, engineState.camera->GetProjMatrix(aspectRatio), engineState.camera->GetViewMatrix());
-	}
+    float aspectRatio = engineState.window->GetAspectRatio();
+
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    glBindFramebuffer(GL_FRAMEBUFFER, Renderer::depthMapFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    Renderer::depthShader.use();
+
+    for (unsigned int i = 0; i < 6; ++i)
+        Renderer::depthShader.setMat4("shadowMatrices[" + std::to_string(i) + "]", Renderer::lights[0].shadowTransforms[i]);
+    Renderer::depthShader.setFloat("farPlane", 25.0f);
+    Renderer::depthShader.setVec3("lightPos", Renderer::lights[0].position);
+
+    for (EntityID ent : SceneView<Transform, MeshRenderer>(engineState.scene))
+    {
+        auto trans = engineState.scene.Get<Transform>(ent);
+        auto model = engineState.scene.Get<MeshRenderer>(ent);
+
+        glm::mat4 transform = Renderer::MakeModelTransform(trans);
+
+        Renderer::depthShader.setMat4("model", transform);
+        model->model.Draw(Renderer::depthShader);
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); // Unbind the framebuffer after rendering
+
+    glViewport(0, 0, engineState.window->width, engineState.window->height);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    for (EntityID ent : SceneView<Transform, MeshRenderer>(engineState.scene))
+    {
+        Renderer::RenderModel(ent, engineState.camera->GetProjMatrix(aspectRatio), engineState.camera->GetViewMatrix());
+    }
 }
 
 void CameraMoveSys()
 {
-	float deltaTime = 0.016f;
-	if (glfwGetKey(engineState.window->window, GLFW_KEY_W) == GLFW_PRESS)
-		engineState.camera->ProcessKeyboard(CameraMovement::FORWARD, deltaTime);
-	if (glfwGetKey(engineState.window->window, GLFW_KEY_S) == GLFW_PRESS)
-		engineState.camera->ProcessKeyboard(CameraMovement::BACKWARD, deltaTime);
-	if (glfwGetKey(engineState.window->window, GLFW_KEY_A) == GLFW_PRESS)
-		engineState.camera->ProcessKeyboard(CameraMovement::LEFT, deltaTime);
-	if (glfwGetKey(engineState.window->window, GLFW_KEY_D) == GLFW_PRESS)
-		engineState.camera->ProcessKeyboard(CameraMovement::RIGHT, deltaTime);
+    float deltaTime = 0.016f;
+    if (glfwGetKey(engineState.window->window, GLFW_KEY_W) == GLFW_PRESS)
+	engineState.camera->ProcessKeyboard(CameraMovement::FORWARD, deltaTime);
+    if (glfwGetKey(engineState.window->window, GLFW_KEY_S) == GLFW_PRESS)
+	    engineState.camera->ProcessKeyboard(CameraMovement::BACKWARD, deltaTime);
+    if (glfwGetKey(engineState.window->window, GLFW_KEY_A) == GLFW_PRESS)
+	    engineState.camera->ProcessKeyboard(CameraMovement::LEFT, deltaTime);
+    if (glfwGetKey(engineState.window->window, GLFW_KEY_D) == GLFW_PRESS)
+	    engineState.camera->ProcessKeyboard(CameraMovement::RIGHT, deltaTime);
 }
 
 void CameraLookSys()
@@ -154,7 +183,31 @@ void RigidBody3DSys()
 	}
 }
 
+void LightStartSys()
+{
+    std::cout << "Light start has ran";
+
+    for (EntityID ent : SceneView<Light>(engineState.scene))
+    {
+        auto light = engineState.scene.Get<Light>(ent);
+
+        glm::vec3 lightPos = light->position;
+
+        glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, 1.0f, 25.0f);
+
+        light->shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+        light->shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+        light->shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)));
+        light->shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)));
+        light->shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+        light->shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+
+        Renderer::lights.push_back(*light);
+    }
+}
+
 REGISTER_START_SYSTEM(RigidBody3DStartSys);
+REGISTER_START_SYSTEM(LightStartSys);
 REGISTER_SYSTEM(RigidBody3DSys);
 REGISTER_SYSTEM(CameraLookSys);
 REGISTER_SYSTEM(MeshRendererSys);

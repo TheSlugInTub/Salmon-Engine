@@ -12,51 +12,95 @@
 namespace Renderer
 {
 
+// This function is run at the very start of the program
 void Init()
 {
-	Shader newShader("shaders/vertex.shad", "shaders/fragment.shad");
+    Shader newShader("shaders/vertex.shad", "shaders/fragment.shad");
     defaultShader = newShader;
     Shader newLineShader("shaders/linevertex.shad", "shaders/linefragment.shad");
     lineShader = newLineShader;
+    Shader newDepthShader("shaders/shadowvertex.shad", "shaders/shadowfragment.shad", "shaders/shadowgeometry.shad");
+    depthShader = newDepthShader;
 
     stbi_set_flip_vertically_on_load(true);
 
     // Enable the DEPTH_TEST, basically just so faces don't draw on top of eachother in weird ways
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
+    glGenFramebuffers(1, &depthMapFBO);
+    // create depth cubemap texture
+    glGenTextures(1, &depthCubemap);
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    // attach depth texture as FBO's depth buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+// This function is run for every model in the scene
 void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& view)
 {
-    // Activate the shader program
- 	defaultShader.use();
-	
     // Gets the components of the entity
     auto trans = engineState.scene.Get<Transform>(ent);
     auto model = engineState.scene.Get<MeshRenderer>(ent);
 
+    glm::mat4 transform = MakeModelTransform(trans);
+
+    // Activate the shader program
+    defaultShader.use();
+	
+    // Setting all the uniforms.
+    defaultShader.setMat4("model", transform);
+    defaultShader.setMat4("view", view);
+    defaultShader.setMat4("projection", projection);
+    defaultShader.setFloat("farPlane", 25.0f);
+    defaultShader.setTexture2D("texture_diffuse", model->texture, 0);
+
+    //glActiveTexture(GL_TEXTURE0);
+    //glBindTexture(GL_TEXTURE_2D, model->texture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+
+    for (int i = 0; i < lights.size(); ++i)
+    {
+        std::string baseName = "lights[" + std::to_string(i) + "]";
+        defaultShader.setVec3(baseName + ".pos", lights[i].position);
+        defaultShader.setFloat(baseName + ".radius", lights[i].radius);
+        defaultShader.setVec4(baseName + ".color", lights[i].color);
+        defaultShader.setFloat(baseName + ".intensity", lights[i].intensity);
+        defaultShader.setBool(baseName + ".on", true);
+    }
+
+    // Draws the model
+    model->model.Draw(defaultShader);
+
+}
+
+glm::mat4 MakeModelTransform(Transform* trans)
+{
     glm::mat4 transform = glm::mat4(1.0f);
 
     // Matrix multiplication to calculate the transform.
     transform = glm::translate(transform, trans->position);
-
-    // Apply rotations around each axis (x, y, z) based on trans->rotation
     transform = glm::rotate(transform, trans->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotation around X-axis
     transform = glm::rotate(transform, trans->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)); // Rotation around Y-axis
     transform = glm::rotate(transform, trans->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f)); // Rotation around Z-axis
-
-    // Scales the transform
     transform = glm::scale(transform, trans->scale);
 
-    // Setting all the uniforms.
-	defaultShader.setMat4("model", transform);
-	defaultShader.setMat4("view", view);
-	defaultShader.setMat4("projection", projection);
-
-    // Binds the texture of the MeshRenderer component
-    glBindTexture(GL_TEXTURE_2D, model->texture);
-
-    // Draws the model
-    model->model.Draw(defaultShader);
+    return transform;
 }
 
 void RenderLine(glm::vec3 inPoint, glm::vec3 outPoint, const glm::mat4& projection, const glm::mat4& view)
