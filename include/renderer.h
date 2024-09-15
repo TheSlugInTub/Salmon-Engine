@@ -18,6 +18,8 @@ struct Light
     float innerRadius = 0.1f;
     float intensity = 1.0f;
     std::vector<glm::mat4> shadowTransforms;
+    unsigned int depthMapFBO;
+    unsigned int depthCubemap;
 };
 
 // 3D renderer for the engine
@@ -45,8 +47,5 @@ inline Shader depthShader;
 
 // All the lights in the scene
 inline std::vector<Light> lights;
-
-inline unsigned int depthCubemap;
-inline unsigned int depthMapFBO;
 
 }

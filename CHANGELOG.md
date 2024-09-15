@@ -1,3 +1,8 @@
+# Salmon Engine 0.38
+14/9/2024
+
+Shadow mapping has been fully integrated into the engine with support for multiple lights and shadows. 
+
 # Salmon Engine 0.34
 14/9/2024
 

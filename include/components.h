@@ -31,6 +31,8 @@ struct MeshRenderer
     glm::vec4 color = glm::vec4(1.0f);
     unsigned int texture;
     std::string texturePath = "";
+    unsigned int depthMapFBO = 0;
+    unsigned int depthCubemap = 0;
 };
 
 // Component that simulates physics on the entity's transform with Jolt Physics

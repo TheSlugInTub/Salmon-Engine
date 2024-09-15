@@ -5,11 +5,13 @@ in vec2 TexCoords;
 in vec3 FragPos;
 in vec3 Normal;
 
+const int MAX_LIGHTS = 10;
+
 uniform sampler2D texture_diffuse;
-uniform samplerCube depthMap;
+uniform samplerCube depthMaps[MAX_LIGHTS];
 uniform float farPlane;
 
-struct Light 
+struct Light
 {
     vec3 pos;
     vec4 color;
@@ -18,7 +20,6 @@ struct Light
     bool on;
 };
 
-const int MAX_LIGHTS = 10;
 uniform Light lights[MAX_LIGHTS];
 
 // Pseudo-random number generator between min and max
@@ -34,15 +35,19 @@ float ShadowCalculation(vec3 fragPos, int lightIndex)
 {
     // get vector between fragment position and light position
     vec3 fragToLight = fragPos - lights[lightIndex].pos;
-    // use the light to fragment vector to sample from the depth map    
-    float closestDepth = texture(depthMap, fragToLight).r;
+    
+    // use the light to fragment vector to sample from the correct depth map    
+    float closestDepth = texture(depthMaps[lightIndex], fragToLight).r;
+    
     // it is currently in linear range between [0,1]. Re-transform back to original value
     closestDepth *= farPlane;
+    
     // now get current linear depth as the length between the fragment and light position
     float currentDepth = length(fragToLight);
+    
     // now test for shadows
-    float bias = 0.5; 
-    float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;
+    float bias = 0.5; // Set an appropriate bias to prevent shadow acne
+    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
 
     return shadow;
 }
@@ -61,6 +66,12 @@ void main()
             float shadow = ShadowCalculation(FragPos, i);
             shadowFactor *= (1.0 - shadow * 0.5); // 0.5 is the darkness factor
         }
+    }
+
+    shadowFactor = round(shadowFactor);
+    if (shadowFactor == 0)
+    {
+        shadowFactor = 0.5;
     }
 
     // Mix shadow with the texture color
