@@ -37,11 +37,8 @@ int main()
     scene.AssignParam<RigidBody3D>(ground, ColliderType::Box, BodyState::Static, glm::vec3(10.0f, 1.0f, 10.0f));
 
     EntityID light2 = scene.AddEntity();
-    scene.AssignParam<Light>(light2, glm::vec3(-5.0f, 5.0f, 0.0f));
-
-    EntityID light = scene.AddEntity();
-    scene.AssignParam<Light>(light, glm::vec3(0.0f, 5.0f, -5.0f));
-
+    scene.AssignParam<Light>(light2, glm::vec3(0.0f, 5.0f, 0.0f), 25.0f, 0.1f, 1.0f, glm::vec4(1.0f));
+ 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
 

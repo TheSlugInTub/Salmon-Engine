@@ -5,7 +5,7 @@
 - [X] Debug rendering of 3D physics
 - [X] Model importing
 - [X] Capsule colliders
-- [ ] Sphere colliders
+- [X] Sphere colliders
 - [ ] Lighting
 - [X] Shadows
 - [ ] Audio

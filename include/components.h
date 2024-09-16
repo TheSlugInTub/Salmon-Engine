@@ -7,7 +7,7 @@
 // Enum to specify what shape the collider is
 enum ColliderType
 {
-    Box = 0, Circle, Cylinder, Capsule
+    Box = 0, Sphere, Cylinder, Capsule
 };
 
 // Do it move?
@@ -41,7 +41,7 @@ struct RigidBody3D
     ColliderType colliderType;
     BodyState state;
     glm::vec3 boxSize;
-    float circleRadius = 1.0f;
+    float sphereRadius = 1.0f;
     float capsuleRadius = 1.0f;
     float capsuleHeight = 2.0f;
 
@@ -53,5 +53,9 @@ struct RigidBody3D
 
     RigidBody3D(ColliderType type, BodyState state, float capRad, float capHeight)
         : colliderType(type), capsuleHeight(capHeight), capsuleRadius(capRad), state(state)
+    {}
+
+    RigidBody3D(ColliderType type, BodyState state, float sphereRadius)
+        : colliderType(type),  sphereRadius(sphereRadius)
     {}
 };

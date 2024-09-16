@@ -20,6 +20,10 @@ struct Light
     std::vector<glm::mat4> shadowTransforms;
     unsigned int depthMapFBO;
     unsigned int depthCubemap;
+
+    Light(glm::vec3 position, float radius, float innerRadius, float intensity, glm::vec4 color)
+        : position(position), radius(radius), innerRadius(innerRadius), intensity(intensity), color(color)
+    {}
 };
 
 // 3D renderer for the engine

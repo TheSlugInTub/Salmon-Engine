@@ -47,7 +47,7 @@ void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& vie
     defaultShader.setMat4("projection", projection);
     defaultShader.setFloat("farPlane", 25.0f);
     defaultShader.setTexture2D("texture_diffuse", model->texture, 0);
-
+    
     for (int i = 0; i < lights.size(); ++i)
     {
         // Bind each light's shadow map to a different texture unit
@@ -112,11 +112,11 @@ void RenderLine(glm::vec3 inPoint, glm::vec3 outPoint, const glm::mat4& projecti
 
     // Draw line
     glLineWidth(3.0f);
-    glDrawArrays(GL_LINES, 0, points.size());
+    glDrawArrays(GL_LINES, 0, (GLsizei)points.size());
 
     // Draw points
     glPointSize(10.0f);
-    glDrawArrays(GL_POINTS, 0, points.size());
+    glDrawArrays(GL_POINTS, 0, (GLsizei)points.size());
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);

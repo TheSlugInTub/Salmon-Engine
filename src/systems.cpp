@@ -21,7 +21,7 @@ void MeshRendererSys()
 
         for (unsigned int i = 0; i < 6; ++i)
             Renderer::depthShader.setMat4("shadowMatrices[" + std::to_string(i) + "]", light.shadowTransforms[i]);
-        Renderer::depthShader.setFloat("farPlane", 25.0f);
+        Renderer::depthShader.setFloat("farPlane", light.radius);
         Renderer::depthShader.setVec3("lightPos", light.position);
 
         for (EntityID ent : SceneView<Transform, MeshRenderer>(engineState.scene))
@@ -145,6 +145,31 @@ void RigidBody3DStartSys()
 
             // Create the actual rigid body
             rigid->body = bodyInterface.CreateBody(capsule_settings);
+
+            // Add it to the world
+            if (rigid->body != nullptr)
+            {
+                bodyInterface.AddBody(rigid->body->GetID(), EActivation::Activate);
+            }
+        }
+        else if (rigid->colliderType == ColliderType::Sphere)
+        {
+            float radius = rigid->sphereRadius; // Define sphere radius in RigidBody3D
+
+            // Sphere is defined by its radius
+            SphereShapeSettings sphere_shape_settings(radius);
+            sphere_shape_settings.SetEmbedded();
+
+            // Create the shape
+            ShapeSettings::ShapeResult sphere_shape_result = sphere_shape_settings.Create();
+            ShapeRefC sphere_shape = sphere_shape_result.Get();
+
+            BodyCreationSettings sphere_settings(sphere_shape, RtransPosition, Quat::sIdentity(),
+                                          rigid->state == BodyState::Dynamic ? EMotionType::Dynamic : EMotionType::Static,
+                                          rigid->state == BodyState::Dynamic ? Layers::MOVING : Layers::NON_MOVING);
+
+            // Create the actual rigid body
+            rigid->body = bodyInterface.CreateBody(sphere_settings);
 
             // Add it to the world
             if (rigid->body != nullptr)
