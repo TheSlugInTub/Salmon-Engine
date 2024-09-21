@@ -3,6 +3,8 @@
 #include <model.h>
 #include <string>
 #include <physics.h>
+#include <bone.h>
+#include <animation.h>
 
 // Enum to specify what shape the collider is
 enum ColliderType
@@ -59,3 +61,54 @@ struct RigidBody3D
         : colliderType(type),  sphereRadius(sphereRadius)
     {}
 };
+
+struct Animator
+{
+    bool playing = true;
+    std::vector<glm::mat4> boneMatrices;
+    Animation* currentAnimation;
+    float currentTime;
+    float deltaTime;
+
+    Animator(Animation* animation)
+        : currentAnimation(animation)
+    {}
+};
+
+inline void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform, Animator* anim)
+{
+    std::string nodeName = node->name;
+    glm::mat4 nodeTransform = node->transformation;
+
+    Bone* Bone = anim->currentAnimation->FindBone(nodeName);
+
+    if (Bone)
+    {
+	Bone->Update(anim->currentTime);
+	nodeTransform = Bone->GetLocalTransform();
+    }
+
+    glm::mat4 globalTransformation = parentTransform * nodeTransform;
+
+    auto boneInfoMap = anim->currentAnimation->GetBoneIDMap();
+    if (boneInfoMap.find(nodeName) != boneInfoMap.end())
+    {
+	int index = boneInfoMap[nodeName].id;
+	glm::mat4 offset = boneInfoMap[nodeName].offset;
+	anim->boneMatrices[index] = globalTransformation * offset;
+    }
+
+    for (int i = 0; i < node->childrenCount; i++)
+	CalculateBoneTransform(&node->children[i], globalTransformation, anim);
+}
+
+inline void UpdateAnimation(float dt, Animator* anim)
+{
+    anim->deltaTime = dt;
+    if (anim->currentAnimation)
+    {
+	anim->currentTime += anim->currentAnimation->GetTicksPerSecond() * dt;
+	anim->currentTime = fmod(anim->currentTime, anim->currentAnimation->GetDuration());
+	CalculateBoneTransform(&anim->currentAnimation->GetRootNode(), glm::mat4(1.0f), anim);
+    }
+}

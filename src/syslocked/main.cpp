@@ -16,20 +16,24 @@ int main()
 {
     Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false);
     glfwSetInputMode(window.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSwapInterval(1);
 
     StartPhysics();
 
     Model ourModel("res/models/Box.obj");
-    Model capsuleModel("res/models/Capsule.obj");
+    Model capsuleModel("res/models/dancing_vampire.dae");
     unsigned int tex = Utils::LoadTexture("res/textures/Slugarius.png");
     unsigned int groundTex = Utils::LoadTexture("res/textures/background.png");
 
+    Animation anim("res/models/dancing_vampire.dae", &capsuleModel);
+
     Scene scene;
     EntityID ent = scene.AddEntity();
-    scene.AssignParam<Transform>(ent, glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    scene.AssignParam<Transform>(ent, glm::vec3(0.0f, 20.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
     scene.AssignParam<MeshRenderer>(ent, capsuleModel, glm::vec4(1.0f), tex);
     //scene.AssignParam<RigidBody3D>(ent, ColliderType::Box, BodyState::Dynamic, glm::vec3(1.0f, 1.0f, 1.0f));
     scene.AssignParam<RigidBody3D>(ent, ColliderType::Capsule, BodyState::Dynamic, 1.0f, 2.0f);
+    scene.AssignParam<Animator>(ent, &anim);
 
     EntityID ground = scene.AddEntity();
     scene.AssignParam<Transform>(ground, glm::vec3(0.0f, -3.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(10.0f, 1.0f, 10.0f));
@@ -37,7 +41,7 @@ int main()
     scene.AssignParam<RigidBody3D>(ground, ColliderType::Box, BodyState::Static, glm::vec3(10.0f, 1.0f, 10.0f));
 
     EntityID light2 = scene.AddEntity();
-    scene.AssignParam<Light>(light2, glm::vec3(0.0f, 5.0f, 0.0f), 25.0f, 0.1f, 1.0f, glm::vec4(1.0f));
+    scene.AssignParam<Light>(light2, glm::vec3(0.0f, 5.0f, 0.0f), 25.0f, 0.1f, 1.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
  
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
@@ -78,7 +82,7 @@ int main()
 
         MyDebugRenderer debugRenderer;
  
-        const BodyDrawFilter *filter = nullptr; // Optional filter, can be null
+        const BodyDrawFilter *filter = nullptr; 
 
         BodyManager::DrawSettings settings;
         settings.mDrawShape = false;

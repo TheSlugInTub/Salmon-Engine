@@ -9,7 +9,6 @@ const int MAX_LIGHTS = 10;
 
 uniform sampler2D texture_diffuse;
 uniform samplerCube depthMaps[MAX_LIGHTS];
-uniform float farPlane;
 
 struct Light
 {
@@ -22,87 +21,59 @@ struct Light
 
 uniform Light lights[MAX_LIGHTS];
 
-// Pseudo-random number generator between min and max
-float random(float min, float max, vec2 seed) {
-    // Generate a pseudo-random number using the seed
-    float rnd = fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453);
-    
-    // Scale and shift the random value to the desired range [min, max]
-    return min + rnd * (max - min);
-}
-
-float ShadowCalculation(vec3 fragPos, vec3 normal, int lightIndex)
+float ShadowCalculation(vec3 fragToLight, vec3 normal, int lightIndex)
 {
-    // get vector between fragment position and light position
-    vec3 fragToLight = fragPos - lights[lightIndex].pos;
+    // Sample depth from cube map
+    float closestDepth = texture(depthMaps[lightIndex], fragToLight).r * lights[lightIndex].radius;
     
-    // use the light to fragment vector to sample from the correct depth map    
-    float closestDepth = texture(depthMaps[lightIndex], fragToLight).r;
-    
-    // it is currently in linear range between [0,1]. Re-transform back to original value
-    closestDepth *= farPlane;
-    
-    // now get current linear depth as the length between the fragment and light position
+    // Get current linear depth
     float currentDepth = length(fragToLight);
-    
-    // Calculate a bias based on the angle between the surface normal and the light direction
+
+    // Use a small bias for shadow acne prevention
     float lightDirDotNormal = dot(normalize(fragToLight), normalize(normal));
     float angleBias = clamp(0.05 * (1.0 - lightDirDotNormal), 0.0, 0.05);
-
-    // now test for shadows
-    float shadow = currentDepth - (0.5 + angleBias) > closestDepth ? 1.0 : 0.0;
-
-    return shadow;
+    
+    // Calculate shadow
+    return (currentDepth - (0.5 + angleBias)) > closestDepth ? 1.0 : 0.0;
 }
 
 void main()
 {    
-    // Base texture color
     vec4 texColor = texture(texture_diffuse, TexCoords);
-    
-    // Initialize the final color with ambient contribution
-    vec3 ambient = vec3(0.1) * texColor.rgb; // Fixed ambient intensity (can be changed)
-
-    // Accumulate the diffuse lighting
+    vec3 ambient = vec3(0.1) * texColor.rgb;
     vec3 diffuse = vec3(0.0);
-    
-    // Normalize the fragment normal
     vec3 norm = normalize(Normal);
 
-    // Shadow factor starts at 1.0 (fully lit)
     float shadowFactor = 1.0;
 
-    // Accumulate shadows and lighting from all lights
     for (int i = 0; i < MAX_LIGHTS; ++i) {
         if (lights[i].on) {
-            // Light direction
             vec3 lightDir = normalize(lights[i].pos - FragPos);
+            float distance = length(lights[i].pos - FragPos);
 
-            // Calculate shadow for current light if not too parallel (self-shadow prevention)
-            if(dot(norm, lightDir) > 0.1) {
-                float shadow = ShadowCalculation(FragPos, norm, i);
-                shadowFactor *= (1.0 - shadow * 0.5); // 0.5 is the darkness factor
+            // Precompute attenuation
+            float attenuation = 1.0 - min(distance / lights[i].radius, 1.0);
+
+            // Avoid calculating shadow if light is too parallel
+            float normDotLightDir = dot(norm, lightDir);
+            if (normDotLightDir > 0.1) {
+                vec3 fragToLight = FragPos - lights[i].pos;
+                float shadow = ShadowCalculation(fragToLight, norm, i);
+                shadowFactor *= (1.0 - shadow * 0.5); // Factor for shadow darkness
             }
 
-            // Diffuse component (Lambert's cosine law)
-            float diff = max(dot(norm, lightDir), 0.0);
-
-            // Accumulate diffuse lighting (light color * diffuse factor * light intensity)
-            diffuse += diff * lights[i].color.rgb * lights[i].intensity;
+            // Diffuse lighting
+            float diff = max(normDotLightDir, 0.0);
+            diffuse += diff * lights[i].color.rgb * lights[i].intensity * attenuation;
         }
     }
 
-    // Clamp shadow factor and apply minimal shadow if fully occluded
-    shadowFactor = round(shadowFactor);
-    if (shadowFactor == 0)
-    {
-        shadowFactor = 0.5;
-    }
+    // Avoid excessive clamping, apply shadow if fully occluded
+    shadowFactor = max(shadowFactor, 0.5);
 
-    // Final lighting (ambient + diffuse), modulated by shadow
+    // Final lighting
     vec3 lighting = clamp(ambient + diffuse, 0.23, 10.0) * shadowFactor;
 
-    // Combine lighting with the texture color
     FragColor = vec4(lighting * texColor.rgb, texColor.a);
 }
 

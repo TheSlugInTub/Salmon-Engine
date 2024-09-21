@@ -21,7 +21,6 @@ void Init()
     lineShader = newLineShader;
     Shader newDepthShader("shaders/shadowvertex.shad", "shaders/shadowfragment.shad", "shaders/shadowgeometry.shad");
     depthShader = newDepthShader;
-
     stbi_set_flip_vertically_on_load(true);
 
     // Enable the DEPTH_TEST, basically just so faces don't draw on top of eachother in weird ways
@@ -45,7 +44,6 @@ void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& vie
     defaultShader.setMat4("model", transform);
     defaultShader.setMat4("view", view);
     defaultShader.setMat4("projection", projection);
-    defaultShader.setFloat("farPlane", 25.0f);
     defaultShader.setTexture2D("texture_diffuse", model->texture, 0);
     
     for (int i = 0; i < lights.size(); ++i)
@@ -66,6 +64,18 @@ void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& vie
         defaultShader.setVec4(baseName + ".color", lights[i].color);
         defaultShader.setFloat(baseName + ".intensity", lights[i].intensity);
         defaultShader.setBool(baseName + ".on", true);
+    }
+
+    auto anim = engineState.scene.Get<Animator>(ent);
+
+    if (anim != nullptr)
+    {
+        auto transforms = anim->boneMatrices;
+        for (int i = 0; i < transforms.size(); ++i)
+        {
+            defaultShader.setBool("useAnim", true);
+            defaultShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+        }
     }
 
     // Draws the model

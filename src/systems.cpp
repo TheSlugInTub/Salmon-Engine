@@ -266,8 +266,37 @@ void LightStartSys()
     }
 }
 
+void AnimatorStartSys()
+{
+    for (EntityID ent : SceneView<Animator>(engineState.scene))
+    {
+        auto animator = engineState.scene.Get<Animator>(ent);
+
+	animator->currentTime = 0.0f;
+        animator->boneMatrices.reserve(100);
+
+	for (int i = 0; i < 100; i++)
+	    animator->boneMatrices.push_back(glm::mat4(1.0f));
+    }
+}
+
+void AnimatorSys()
+{
+    for (EntityID ent : SceneView<Animator>(engineState.scene))
+    {
+        auto anim = engineState.scene.Get<Animator>(ent);
+
+        UpdateAnimation(0.016f, anim);
+    }
+}
+
+// Start systems
 REGISTER_START_SYSTEM(RigidBody3DStartSys);
 REGISTER_START_SYSTEM(LightStartSys);
+REGISTER_START_SYSTEM(AnimatorStartSys);
+
+// Regular systems
+REGISTER_SYSTEM(AnimatorSys);
 REGISTER_SYSTEM(RigidBody3DSys);
 REGISTER_SYSTEM(CameraLookSys);
 REGISTER_SYSTEM(MeshRendererSys);

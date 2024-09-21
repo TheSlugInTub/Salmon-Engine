@@ -6,11 +6,11 @@
 - [X] Model importing
 - [X] Capsule colliders
 - [X] Sphere colliders
-- [ ] Lighting
+- [X] Lighting
 - [X] Shadows
-- [ ] Audio
-- [ ] Particle effects
 - [ ] Skeletal animation importing
+- [ ] Particle effects
 - [ ] Animation system
+- [ ] Audio
 - [ ] Text rendering with freetype
 - [ ] UI

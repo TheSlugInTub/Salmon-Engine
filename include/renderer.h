@@ -48,6 +48,8 @@ inline Shader defaultShader;
 inline Shader lineShader;
 // Depth shader used for shadows and shadow mapping
 inline Shader depthShader;
+// Shader for animations
+inline Shader animShader;
 
 // All the lights in the scene
 inline std::vector<Light> lights;
