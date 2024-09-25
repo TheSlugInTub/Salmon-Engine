@@ -2,6 +2,13 @@
 
 #include <string>
 #include <vector>
+#include <source_location>
+#include <filesystem>
+#include <iostream>
+
+#define dbgprint(message) \
+    std::source_location location = std::source_location::current(); \
+    std::cout << std::filesystem::path(location.file_name()).filename().string() << ": " << message << '\n';
 
 // Utils class
 // Has a bunch of useful functions that are used across the engine

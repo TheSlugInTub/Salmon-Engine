@@ -65,8 +65,9 @@ private:
 	{
 		int size = animation->mNumChannels;
 
-		auto& boneInfoMap = model.GetBoneInfoMap();//getting boneInfoMap from Model class
-		int& boneCount = model.GetBoneCount(); //getting the m_BoneCounter from Model class
+		auto& lboneInfoMap = model.GetBoneInfoMap();//getting boneInfoMap from Model class
+
+                int& boneCount = model.GetBoneCount(); //getting the m_BoneCounter from Model class
 
 		//reading channels(bones engaged in an animation and their keyframes)
 		for (int i = 0; i < size; i++)
@@ -74,16 +75,16 @@ private:
 			auto channel = animation->mChannels[i];
 			std::string boneName = channel->mNodeName.data;
 
-			if (boneInfoMap.find(boneName) == boneInfoMap.end())
+			if (lboneInfoMap.find(boneName) == lboneInfoMap.end())
 			{
-				boneInfoMap[boneName].id = boneCount;
+				lboneInfoMap[boneName].id = boneCount;
 				boneCount++;
 			}
 			bones.push_back(Bone(channel->mNodeName.data,
-				boneInfoMap[channel->mNodeName.data].id, channel));
+				lboneInfoMap[channel->mNodeName.data].id, channel));
 		}
 
-		boneInfoMap = boneInfoMap;
+		boneInfoMap = lboneInfoMap;
 	}
 
 	void ReadHierarchyData(AssimpNodeData& dest, const aiNode* src)

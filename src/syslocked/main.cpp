@@ -29,9 +29,8 @@ int main()
 
     Scene scene;
     EntityID ent = scene.AddEntity();
-    scene.AssignParam<Transform>(ent, glm::vec3(0.0f, 20.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    scene.AssignParam<Transform>(ent, glm::vec3(0.0f, 20.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.7f, -1.7f, -1.7f));
     scene.AssignParam<MeshRenderer>(ent, capsuleModel, glm::vec4(1.0f), tex);
-    //scene.AssignParam<RigidBody3D>(ent, ColliderType::Box, BodyState::Dynamic, glm::vec3(1.0f, 1.0f, 1.0f));
     scene.AssignParam<RigidBody3D>(ent, ColliderType::Capsule, BodyState::Dynamic, 1.0f, 2.0f);
     scene.AssignParam<Animator>(ent, &anim);
 
@@ -42,7 +41,7 @@ int main()
 
     EntityID light2 = scene.AddEntity();
     scene.AssignParam<Light>(light2, glm::vec3(0.0f, 5.0f, 0.0f), 25.0f, 0.1f, 1.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
- 
+
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
 

@@ -199,25 +199,23 @@ struct Scene
 // Adds a system to the list of systems
 inline void AddSystem(std::function<void()> sys)
 {
-	std::cout << "System has been added\n";
-	systems.push_back(sys);
+    systems.push_back(sys);
 }
 
 // Adds a system to the list of start systems
 inline void AddStartSystem(std::function<void()> sys)
 {
-	std::cout << "Start System has been added\n";
-	startSystems.push_back(sys);
+    startSystems.push_back(sys);
 }
 
 
 // Updates all the systems by calling them, call this function every frame to update all the systems each frame
 inline void UpdateSystems()
 {
-	for (auto system : systems)
-	{
-		system();
-	}
+    for (auto system : systems)
+    {
+    	system();
+    }
 }
 
 // Updates all the start systems, call this only on the start of the program

@@ -213,8 +213,6 @@ void RigidBody3DSys()
 
 void LightStartSys()
 {
-    std::cout << "Light start has ran";
-
     for (EntityID ent : SceneView<Light>(engineState.scene))
     {
         auto light = engineState.scene.Get<Light>(ent);

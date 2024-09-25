@@ -187,7 +187,6 @@ private:
 			{
 				BoneInfo newBoneInfo;
 				newBoneInfo.id = m_BoneCounter;
-				std::cout << "Bone index: " << boneIndex << "\n";
 				newBoneInfo.offset = AssimpGLMHelpers::ConvertMatrixToGLMFormat(mesh->mBones[boneIndex]->mOffsetMatrix);
 				m_BoneInfoMap[boneName] = newBoneInfo;
 				boneID = m_BoneCounter;
@@ -199,10 +198,6 @@ private:
 			}
 
 			assert(boneID != -1);
-
-			std::cout << "Processing Bone: " << boneName << " with boneID: " << boneID << std::endl;
-			
-			std::cout << "Mesh has " << mesh->mNumBones << " bones and " << mesh->mNumVertices << " vertices." << std::endl;
 
 			auto weights = mesh->mBones[boneIndex]->mWeights;
 			int numWeights = mesh->mBones[boneIndex]->mNumWeights;

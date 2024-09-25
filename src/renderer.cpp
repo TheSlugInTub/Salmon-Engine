@@ -1,9 +1,11 @@
 #include <renderer.h>
 #include <model.h>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/common.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include <engine.h>
 #include <components.h>
 #include <utils.h>
@@ -68,6 +70,8 @@ void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& vie
 
     auto anim = engineState.scene.Get<Animator>(ent);
 
+    defaultShader.setBool("useAnim", false);
+
     if (anim != nullptr)
     {
         auto transforms = anim->boneMatrices;
@@ -80,6 +84,8 @@ void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& vie
 
     // Draws the model
     model->model.Draw(defaultShader);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 glm::mat4 MakeModelTransform(Transform* trans)

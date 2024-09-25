@@ -5,6 +5,7 @@
 #include <physics.h>
 #include <bone.h>
 #include <animation.h>
+#include <utils.h>
 
 // Enum to specify what shape the collider is
 enum ColliderType
@@ -89,14 +90,14 @@ inline void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentT
     }
 
     glm::mat4 globalTransformation = parentTransform * nodeTransform;
-
+ 
     auto boneInfoMap = anim->currentAnimation->GetBoneIDMap();
     if (boneInfoMap.find(nodeName) != boneInfoMap.end())
     {
-	int index = boneInfoMap[nodeName].id;
-	glm::mat4 offset = boneInfoMap[nodeName].offset;
-	anim->boneMatrices[index] = globalTransformation * offset;
-    }
+        int index = boneInfoMap[nodeName].id;
+        glm::mat4 offset = boneInfoMap[nodeName].offset;
+        anim->boneMatrices[index] = globalTransformation * offset;
+    }    
 
     for (int i = 0; i < node->childrenCount; i++)
 	CalculateBoneTransform(&node->children[i], globalTransformation, anim);

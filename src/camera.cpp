@@ -104,8 +104,8 @@ glm::vec3 Camera::ScreenToWorld(int windowWidth, int windowHeight, const glm::iv
     glm::mat4 projection = glm::perspective(glm::radians(GetZoom()), ar, 0.1f, 100.0f);
     glm::mat projInverse = glm::inverse(projection);
 
-    float mouse_x = pos.x;
-    float mouse_y = pos.y;
+    float mouse_x = (float)pos.x;
+    float mouse_y = (float)pos.y;
 
     float ndc_x = (2.0f * mouse_x) / windowWidth - 1.0f;
     float ndc_y = 1.0f - (2.0f * mouse_y) / windowHeight;

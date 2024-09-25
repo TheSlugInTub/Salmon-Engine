@@ -19,7 +19,7 @@ include_directories(
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.c)
 file(GLOB_RECURSE INCLUDESOURCES include/*.cpp include/*.c)
 
-# Comment to reload CMake, Counter: 19
+# Comment to reload CMake, Counter: 20
 
 # Add the executable
 add_executable(${PROJECT_NAME} 
@@ -31,19 +31,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE JPH_DEBUG_RENDERER)
 
-# Link appropriate libraries with the operating system
-
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    message(STATUS "Configuring for Windows")
-    target_link_libraries(${PROJECT_NAME} 
-        ../lib/glfw3
-        ../lib/assimp-vc143-mtd
-    )
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    message(STATUS "Configuring for Linux")
-    # Directly specify the absolute or relative paths without -l
-    target_link_libraries(${PROJECT_NAME}
-        ${CMAKE_SOURCE_DIR}/lib/libglfw3.a
-        ${CMAKE_SOURCE_DIR}/lib/libassimp.so
-    )
-endif()
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    ../lib/glfw3
+    ../lib/Jolt
+    ../lib/assimp-vc143-mt
+)
