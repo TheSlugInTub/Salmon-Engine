@@ -27,8 +27,8 @@ public:
 		const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
 		assert(scene && scene->mRootNode);
 		auto animation = scene->mAnimations[0];
-		duration = animation->mDuration;
-		ticksPerSecond = animation->mTicksPerSecond;
+		duration = (float)animation->mDuration;
+		ticksPerSecond = (int)animation->mTicksPerSecond;
 		aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
 		globalTransformation = globalTransformation.Inverse();
 		ReadHierarchyData(rootNode, scene->mRootNode);
@@ -52,7 +52,7 @@ public:
 	}
 
 	
-	inline float GetTicksPerSecond() { return ticksPerSecond; }
+	inline float GetTicksPerSecond() { return (float)ticksPerSecond; }
 	inline float GetDuration() { return duration;}
 	inline const AssimpNodeData& GetRootNode() { return rootNode; }
 	inline const std::map<std::string,BoneInfo>& GetBoneIDMap() 

@@ -284,7 +284,10 @@ void AnimatorSys()
     {
         auto anim = engineState.scene.Get<Animator>(ent);
 
-        UpdateAnimation(0.016f, anim);
+        if (anim->playing)
+        {
+            UpdateAnimation(0.016f, anim);
+        }
     }
 }
 

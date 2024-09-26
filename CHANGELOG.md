@@ -1,3 +1,9 @@
+# Salmon Engine 0.4
+26/9/2024
+
+Skeletal animation has been integrated into the engine. There is an animation class,
+and an animator component which takes in an animation class as a parameter.
+
 # Salmon Engine 0.38
 14/9/2024
 

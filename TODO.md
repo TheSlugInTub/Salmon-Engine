@@ -8,9 +8,9 @@
 - [X] Sphere colliders
 - [X] Lighting
 - [X] Shadows
-- [ ] Skeletal animation importing
+- [X] Skeletal animation importing
+- [X] Animation system
 - [ ] Particle effects
-- [ ] Animation system
 - [ ] Audio
 - [ ] Text rendering with freetype
 - [ ] UI

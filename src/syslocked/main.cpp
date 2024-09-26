@@ -21,7 +21,7 @@ int main()
     StartPhysics();
 
     Model ourModel("res/models/Box.obj");
-    Model capsuleModel("res/models/dancing_vampire.dae");
+    Model capsuleModel("res/models/Capsule.obj");
     unsigned int tex = Utils::LoadTexture("res/textures/Slugarius.png");
     unsigned int groundTex = Utils::LoadTexture("res/textures/background.png");
 
@@ -29,10 +29,9 @@ int main()
 
     Scene scene;
     EntityID ent = scene.AddEntity();
-    scene.AssignParam<Transform>(ent, glm::vec3(0.0f, 20.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.7f, -1.7f, -1.7f));
+    scene.AssignParam<Transform>(ent, glm::vec3(0.0f, 20.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
     scene.AssignParam<MeshRenderer>(ent, capsuleModel, glm::vec4(1.0f), tex);
     scene.AssignParam<RigidBody3D>(ent, ColliderType::Capsule, BodyState::Dynamic, 1.0f, 2.0f);
-    scene.AssignParam<Animator>(ent, &anim);
 
     EntityID ground = scene.AddEntity();
     scene.AssignParam<Transform>(ground, glm::vec3(0.0f, -3.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(10.0f, 1.0f, 10.0f));
