@@ -63,6 +63,7 @@ struct RigidBody3D
     {}
 };
 
+// Component that takes in an animation and plays it every frame
 struct Animator
 {
     bool playing = true;

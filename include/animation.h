@@ -8,6 +8,8 @@
 #include <functional>
 #include <model.h>
 
+// Courtesy of https://learnopengl.com
+
 struct AssimpNodeData
 {
 	glm::mat4 transformation;
@@ -95,7 +97,7 @@ private:
 		dest.transformation = AssimpGLMHelpers::ConvertMatrixToGLMFormat(src->mTransformation);
 		dest.childrenCount = src->mNumChildren;
 
-		for (int i = 0; i < src->mNumChildren; i++)
+		for (int i = 0; i < (int)src->mNumChildren; i++)
 		{
 			AssimpNodeData newData;
 			ReadHierarchyData(newData, src->mChildren[i]);
@@ -108,4 +110,3 @@ private:
 	AssimpNodeData rootNode;
 	std::map<std::string, BoneInfo> boneInfoMap;
 };
-

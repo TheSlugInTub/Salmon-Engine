@@ -1,4 +1,5 @@
 #include <salmon.h>
+#include <syslocked/components.h>
 #include <iostream>
 #include <string>
 
@@ -15,7 +16,7 @@ float lastFrame = 0.0f;
 int main()
 {
     Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false);
-    glfwSetInputMode(window.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetInputMode(window.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSwapInterval(1);
 
     StartPhysics();
@@ -40,7 +41,7 @@ int main()
 
     EntityID light2 = scene.AddEntity();
     scene.AssignParam<Light>(light2, glm::vec3(0.0f, 5.0f, 0.0f), 25.0f, 0.1f, 1.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-
+    
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
 
@@ -49,6 +50,8 @@ int main()
     StartStartSystems();
 
     physicsSystem.OptimizeBroadPhase();
+
+    ImGuiLayer::Init();
 
     // render loop
     // -----------
@@ -63,6 +66,11 @@ int main()
 	BodyInterface& bodyInterface = physicsSystem.GetBodyInterface();
         auto box_id = scene.Get<RigidBody3D>(ent)->body->GetID();
         auto body = scene.Get<RigidBody3D>(ent)->body;
+
+        ImGuiLayer::NewFrame();
+
+        ImGui::Begin("Slug's Window!");
+        ImGui::End();
 
         if (Input::GetKey(Key::E))
         {
@@ -88,13 +96,15 @@ int main()
         settings.mDrawShapeWireframe = true;
 
         physicsSystem.DrawBodies(settings, &debugRenderer, filter);
-        
+ 
+        ImGuiLayer::EndFrame();
         window.Update();
 
         StepPhysics(deltaTime);
     }
 
     DestroyPhysics();
+    ImGuiLayer::Terminate();
 
     return 0;
 }

@@ -6,6 +6,8 @@
 #include<glm/glm.hpp>
 #include<glm/gtc/quaternion.hpp>
 
+// Courtesy of https://learnopengl.com
+
 class AssimpGLMHelpers
 {
 public:

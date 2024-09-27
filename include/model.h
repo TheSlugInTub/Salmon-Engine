@@ -1,7 +1,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-// Model class for the engine, courtesy of https://learnopeng.com
+// Model class for the engine, courtesy of https://learnopengl.com
 
 #include <glad/glad.h> 
 
@@ -146,15 +146,6 @@ private:
 		}
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-		vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-		vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-			textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-		std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-		std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-
 		ExtractBoneWeightForVertices(vertices,mesh,scene);
 
 		return Mesh(vertices, indices, textures);
@@ -177,7 +168,7 @@ private:
 	{
 		assert(mesh->mNumVertices == vertices.size());
 
-		for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+		for (int boneIndex = 0; boneIndex < (int)mesh->mNumBones; ++boneIndex)
 		{
 			int boneID = -1;
 			std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();

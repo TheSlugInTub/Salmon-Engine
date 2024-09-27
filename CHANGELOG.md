@@ -1,23 +1,23 @@
 # Salmon Engine 0.4
-26/9/2024
+26/9/2024 - September
 
 Skeletal animation has been integrated into the engine. There is an animation class,
 and an animator component which takes in an animation class as a parameter.
 
 # Salmon Engine 0.38
-14/9/2024
+14/9/2024 - September
 
 Shadow mapping has been fully integrated into the engine with support for multiple lights and shadows. 
 
 # Salmon Engine 0.34
-14/9/2024
+14/9/2024 - September
 
 Shadow mapping has been added to the engine, although it's integrated quite terribly.
 I'll make a better and more elegant integration later that actually handles multiple lights.
 Also capsule colliders have been added in the previous commits.
 
 # Salmon Engine 0.3
-9/9/2024
+9/9/2024 - September
 
 Jolt physics has been integrated with a RigidBody3D component, along with some functions related
 to intializing and stepping jolt physics.
