@@ -25,16 +25,26 @@ float ShadowCalculation(vec3 fragToLight, vec3 normal, int lightIndex)
 {
     // Sample depth from cube map
     float closestDepth = texture(depthMaps[lightIndex], fragToLight).r * lights[lightIndex].radius;
-    
+
     // Get current linear depth
     float currentDepth = length(fragToLight);
 
     // Use a small bias for shadow acne prevention
     float lightDirDotNormal = dot(normalize(fragToLight), normalize(normal));
     float angleBias = clamp(0.05 * (1.0 - lightDirDotNormal), 0.0, 0.05);
+
+    // Shadow factor calculation
+    float shadow = (currentDepth - (0.5 + angleBias)) > closestDepth ? 1.0 : 0.0;
+
+    // Smooth shadow fading
+    float shadowEdgeDistance = currentDepth - closestDepth;
+    float fadeDistance = 3.0; // Adjust this value for a smoother transition (tweak as necessary)
     
-    // Calculate shadow
-    return (currentDepth - (0.5 + angleBias)) > closestDepth ? 1.0 : 0.0;
+    // Apply a smoothstep to fade out the shadow
+    float fadeFactor = smoothstep(0.0, fadeDistance, shadowEdgeDistance);
+
+    // Blend the shadow with the fade factor
+    return mix(0.0, shadow, fadeFactor);
 }
 
 void main()

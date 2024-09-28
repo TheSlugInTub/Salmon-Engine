@@ -16,7 +16,7 @@ float lastFrame = 0.0f;
 int main()
 {
     Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false);
-    //glfwSetInputMode(window.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSwapInterval(1);
 
     StartPhysics();
@@ -29,15 +29,16 @@ int main()
     Animation anim("res/models/dancing_vampire.dae", &capsuleModel);
 
     Scene scene;
-    EntityID ent = scene.AddEntity();
-    scene.AssignParam<Transform>(ent, glm::vec3(0.0f, 20.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-    scene.AssignParam<MeshRenderer>(ent, capsuleModel, glm::vec4(1.0f), tex);
-    scene.AssignParam<RigidBody3D>(ent, ColliderType::Capsule, BodyState::Dynamic, 1.0f, 2.0f);
+    EntityID player = scene.AddEntity();
+    scene.AssignParam<Transform>(player, glm::vec3(0.0f, 20.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    scene.AssignParam<MeshRenderer>(player, capsuleModel, glm::vec4(1.0f), tex);
+    scene.AssignParam<RigidBody3D>(player, ColliderType::Capsule, BodyState::Dynamic, 1.0f, 2.0f);
+    scene.AssignParam<PlayerMovement>(player, 0.2f, 0.6f);
 
     EntityID ground = scene.AddEntity();
-    scene.AssignParam<Transform>(ground, glm::vec3(0.0f, -3.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(10.0f, 1.0f, 10.0f));
+    scene.AssignParam<Transform>(ground, glm::vec3(0.0f, -3.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 1.0f, 50.0f));
     scene.AssignParam<MeshRenderer>(ground, ourModel, glm::vec4(1.0f), groundTex);
-    scene.AssignParam<RigidBody3D>(ground, ColliderType::Box, BodyState::Static, glm::vec3(10.0f, 1.0f, 10.0f));
+    scene.AssignParam<RigidBody3D>(ground, ColliderType::Box, BodyState::Static, glm::vec3(50.0f, 1.0f, 50.0f));
 
     EntityID light2 = scene.AddEntity();
     scene.AssignParam<Light>(light2, glm::vec3(0.0f, 5.0f, 0.0f), 25.0f, 0.1f, 1.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -59,32 +60,17 @@ int main()
     {
         // per-frame time logic
         // --------------------
-        float currentFrame = static_cast<float>(glfwGetTime());
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-
-	BodyInterface& bodyInterface = physicsSystem.GetBodyInterface();
-        auto box_id = scene.Get<RigidBody3D>(ent)->body->GetID();
-        auto body = scene.Get<RigidBody3D>(ent)->body;
+        float currplayerFrame = static_cast<float>(glfwGetTime());
+        deltaTime = currplayerFrame - lastFrame;
+        lastFrame = currplayerFrame;
 
         ImGuiLayer::NewFrame();
 
-        ImGui::Begin("Slug's Window!");
-        ImGui::End();
-
-        if (Input::GetKey(Key::E))
-        {
-            Vec3 force(10000.0f, 50000.0f, 0.0f); 
-            bodyInterface.AddForce(box_id, force * 2);
-        }
-
-        if (Input::GetKey(Key::R))
-        {
-            Vec3 force(0.0f, 50000.0f, 10000.0f); 
-            bodyInterface.AddForce(box_id, force * 2);
-        }
-
         UpdateSystems();
+
+        glm::vec3 cameraPos = scene.Get<Transform>(player)->position;
+        cameraPos.y += 1.7f;
+        camera.Position = cameraPos;
 
         MyDebugRenderer debugRenderer;
  

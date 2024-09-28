@@ -196,6 +196,8 @@ struct LineSeg
     glm::vec3 inTo;
 };
 
+inline BodyInterface& bodyInterface = physicsSystem.GetBodyInterface();
+
 class MyDebugRenderer final : public JPH::DebugRenderer {
 public:
 	JPH_OVERRIDE_NEW_DELETE
