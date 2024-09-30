@@ -25,6 +25,8 @@ struct Transform
     glm::vec3 position = glm::vec3(0.0f);
     glm::vec3 rotation = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
+    glm::mat4 modelMat = glm::mat4(1.0f);
+    bool useMatrix = false;
 };
 
 // Component that describes how a mesh should be renderered at the transform of the entity

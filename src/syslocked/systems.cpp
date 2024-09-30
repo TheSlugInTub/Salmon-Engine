@@ -94,6 +94,40 @@ void PlayerMovementSys()
     }
 }
 
+void GunSys()
+{
+    for (EntityID ent : SceneView<Gun>(engineState.scene))
+    {
+        Transform* objectTransform = engineState.scene.Get<Transform>(ent);
+        auto gun = engineState.scene.Get<Gun>(ent);
+
+        objectTransform->useMatrix = true;
+        objectTransform->modelMat = glm::mat4(1.0f);
+
+        Camera* camera = engineState.camera;
+        float forwardOffset = gun->forwardOffset;
+        float upOffset = gun->upOffset;
+        float rightOffset = gun->rightOffset;
+        
+        objectTransform->position = camera->Position + camera->Front * forwardOffset;
+        objectTransform->position += camera->Right * rightOffset;
+        objectTransform->position += camera->Up * upOffset; 
+
+        objectTransform->modelMat = glm::translate(objectTransform->modelMat, objectTransform->position);
+        objectTransform->modelMat = glm::scale(objectTransform->modelMat, objectTransform->scale);
+
+        glm::mat4 inverseView = glm::inverse(camera->GetViewMatrix());
+
+        glm::mat4 rotationOnlyInverseView = glm::mat4(1.0f); // Identity matrix
+        rotationOnlyInverseView[0] = glm::vec4(inverseView[0]); // Copy the rotation part (X axis)
+        rotationOnlyInverseView[1] = glm::vec4(inverseView[1]); // Copy the rotation part (Y axis)
+        rotationOnlyInverseView[2] = glm::vec4(inverseView[2]); // Copy the rotation part (Z axis)
+
+        objectTransform->modelMat *= rotationOnlyInverseView;
+    }
+}
+
+REGISTER_SYSTEM(GunSys);
 REGISTER_SYSTEM(PlayerMovementSys);
 REGISTER_SYSTEM(CameraMoveSys);
 REGISTER_SYSTEM(CameraLookSys);

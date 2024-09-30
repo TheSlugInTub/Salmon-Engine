@@ -86,4 +86,3 @@ void main()
 
     FragColor = vec4(lighting * texColor.rgb, texColor.a);
 }
-

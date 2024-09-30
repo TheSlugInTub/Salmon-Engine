@@ -25,8 +25,6 @@ where it was for a few seconds, and you have to hit the enemy within that time-w
 
 ### Movement
 
-
-
 ### Enemies
 
 Tiny spiders that slowly hurt you.
@@ -38,5 +36,3 @@ You get transported through levels via trains, that the coalescence has built as
 You get healed via oil which you can find throughout various parts of the levels.
 
 ## Levels
-
-

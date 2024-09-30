@@ -37,7 +37,15 @@ void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& vie
     auto trans = engineState.scene.Get<Transform>(ent);
     auto model = engineState.scene.Get<MeshRenderer>(ent);
 
-    glm::mat4 transform = MakeModelTransform(trans);
+    glm::mat4 transform;
+
+    if (trans->useMatrix == false)
+    {
+        transform = MakeModelTransform(trans);
+    }else
+    {
+        transform = trans->modelMat;
+    }
 
     // Activate the shader program
     defaultShader.use();
@@ -92,7 +100,7 @@ glm::mat4 MakeModelTransform(Transform* trans)
 {
     glm::mat4 transform = glm::mat4(1.0f);
 
-    // Matrix multiplication to calculate the transform.
+    // Matrix multiplication to calculate the transform
     transform = glm::translate(transform, trans->position);
     transform = glm::rotate(transform, trans->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotation around X-axis
     transform = glm::rotate(transform, trans->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)); // Rotation around Y-axis

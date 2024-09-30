@@ -1,0 +1,22 @@
+# Blender 4.0.2 MTL File: 'shotgun.blend'
+# www.blender.org
+
+newmtl DarkMetal
+Ns 166.673691
+Ka 0.770642 0.770642 0.770642
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd textures/DARKMETAL.png
+
+newmtl Material.001
+Ns 0.000000
+Ka 0.284404 0.284404 0.284404
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd textures/LIGHTMETAL.png

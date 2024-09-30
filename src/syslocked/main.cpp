@@ -23,10 +23,9 @@ int main()
 
     Model ourModel("res/models/Box.obj");
     Model capsuleModel("res/models/Capsule.obj");
+    Model gunModel("res/models/Shotgun.obj");
     unsigned int tex = Utils::LoadTexture("res/textures/Slugarius.png");
     unsigned int groundTex = Utils::LoadTexture("res/textures/background.png");
-
-    Animation anim("res/models/dancing_vampire.dae", &capsuleModel);
 
     Scene scene;
     EntityID player = scene.AddEntity();
@@ -40,8 +39,13 @@ int main()
     scene.AssignParam<MeshRenderer>(ground, ourModel, glm::vec4(1.0f), groundTex);
     scene.AssignParam<RigidBody3D>(ground, ColliderType::Box, BodyState::Static, glm::vec3(50.0f, 1.0f, 50.0f));
 
+    EntityID shotgun = scene.AddEntity();
+    scene.AssignParam<Transform>(shotgun, glm::vec3(-6.0f, -1.0f, 0.0f), glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    scene.AssignParam<MeshRenderer>(shotgun, gunModel, glm::vec4(1.0f), groundTex);
+    scene.AssignParam<Gun>(shotgun, 5.0f, 2.0f, -1.5f);
+
     EntityID light2 = scene.AddEntity();
-    scene.AssignParam<Light>(light2, glm::vec3(0.0f, 5.0f, 0.0f), 25.0f, 0.1f, 1.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    scene.AssignParam<Light>(light2, glm::vec3(0.0f, 7.0f, 0.0f), 45.0f, 0.1f, 2.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
@@ -81,7 +85,7 @@ int main()
         settings.mDrawBoundingBox = true;
         settings.mDrawShapeWireframe = true;
 
-        physicsSystem.DrawBodies(settings, &debugRenderer, filter);
+        //physicsSystem.DrawBodies(settings, &debugRenderer, filter);
  
         ImGuiLayer::EndFrame();
         window.Update();
