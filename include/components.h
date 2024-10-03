@@ -10,7 +10,7 @@
 // Enum to specify what shape the collider is
 enum ColliderType
 {
-    Box = 0, Sphere, Cylinder, Capsule
+    Box = 0, Sphere, Capsule, Mesh 
 };
 
 // Do it move?
@@ -61,7 +61,11 @@ struct RigidBody3D
     {}
 
     RigidBody3D(ColliderType type, BodyState state, float sphereRadius)
-        : colliderType(type),  sphereRadius(sphereRadius)
+        : colliderType(type), sphereRadius(sphereRadius), state(state)
+    {}
+
+    RigidBody3D(ColliderType type, BodyState state)
+        : colliderType(type), state(state)
     {}
 };
 
@@ -73,6 +77,7 @@ struct Animator
     Animation* currentAnimation;
     float currentTime;
     float deltaTime;
+    bool looping = true;
 
     Animator(Animation* animation)
         : currentAnimation(animation)

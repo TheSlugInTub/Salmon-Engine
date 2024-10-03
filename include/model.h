@@ -39,6 +39,8 @@ public:
 	vector<Texture> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
 	vector<Mesh>    meshes;
 	string directory;
+        vector<float> colliderVertices;
+        vector<uint32_t> colliderIndices;
 	bool gammaCorrection;
 
 	// constructor, expects a filepath to a 3D model.
@@ -61,6 +63,20 @@ public:
 	auto& GetBoneInfoMap() { return m_BoneInfoMap; }
 	int& GetBoneCount() { return m_BoneCounter; }
 	
+        void extractCollisionMesh() {
+            for (const Mesh& mesh : meshes) {
+                // Add the vertex positions to the colliderVertices
+                for (const Vertex& vertex : mesh.vertices) {
+                    colliderVertices.push_back(vertex.Position.x);
+                    colliderVertices.push_back(vertex.Position.y);
+                    colliderVertices.push_back(vertex.Position.z);
+                }
+
+                // Add the indices to the colliderIndices
+                colliderIndices.insert(colliderIndices.end(), mesh.indices.begin(), mesh.indices.end());
+            }
+        }
+
 private:
 	std::map<string, BoneInfo> m_BoneInfoMap; 
 	int m_BoneCounter = 0;

@@ -74,7 +74,7 @@ glm::mat4 Camera::GetViewMatrix()
 
 glm::mat4 Camera::GetProjMatrix(float aspectRatio) 
 {
-    return glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
+    return glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 500.0f);
 }
 
 float Camera::GetZoom() 

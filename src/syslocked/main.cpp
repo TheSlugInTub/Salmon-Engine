@@ -29,7 +29,7 @@ int main()
 
     Scene scene;
     EntityID player = scene.AddEntity();
-    scene.AssignParam<Transform>(player, glm::vec3(0.0f, 20.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    scene.AssignParam<Transform>(player, glm::vec3(0.0f, 30.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
     scene.AssignParam<MeshRenderer>(player, capsuleModel, glm::vec4(1.0f), tex);
     scene.AssignParam<RigidBody3D>(player, ColliderType::Capsule, BodyState::Dynamic, 1.0f, 2.0f);
     scene.AssignParam<PlayerMovement>(player, 0.2f, 0.6f);
@@ -42,10 +42,10 @@ int main()
     EntityID shotgun = scene.AddEntity();
     scene.AssignParam<Transform>(shotgun, glm::vec3(-6.0f, -1.0f, 0.0f), glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
     scene.AssignParam<MeshRenderer>(shotgun, gunModel, glm::vec4(1.0f), groundTex);
-    scene.AssignParam<Gun>(shotgun, 5.0f, 2.0f, -1.5f);
+    scene.AssignParam<Gun>(shotgun, 5.0f, 0.8f, -1.5f);
 
     EntityID light2 = scene.AddEntity();
-    scene.AssignParam<Light>(light2, glm::vec3(0.0f, 7.0f, 0.0f), 45.0f, 0.1f, 2.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    scene.AssignParam<Light>(light2, glm::vec3(0.0f, 9.0f, 0.0f), 80.0f, 0.1f, 1.5f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
@@ -86,7 +86,7 @@ int main()
         settings.mDrawShapeWireframe = true;
 
         //physicsSystem.DrawBodies(settings, &debugRenderer, filter);
- 
+        
         ImGuiLayer::EndFrame();
         window.Update();
 

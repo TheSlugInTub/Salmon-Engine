@@ -1,5 +1,8 @@
 #pragma once
 
+#include <glm/glm.hpp>
+#include <vector>
+
 struct PlayerMovement
 {
     float speed;

@@ -14,3 +14,9 @@
 - [ ] Audio
 - [ ] Text rendering with freetype
 - [ ] UI
+
+# Syslocked TODO
+
+- Shooting the shotgun with animations
+- Enemy
+- Levels
