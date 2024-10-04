@@ -42,11 +42,13 @@ public:
         vector<float> colliderVertices;
         vector<uint32_t> colliderIndices;
 	bool gammaCorrection;
+        bool extractTexture = true;
 
 	// constructor, expects a filepath to a 3D model.
-	Model(string const &path, bool gamma = false) : gammaCorrection(gamma)
+	Model(string const &path, bool gamma = false, bool extractTexture = true) : gammaCorrection(gamma), extractTexture(extractTexture)
 	{
 		loadModel(path);
+                extractCollisionMesh();
 	}
 
 	Model()
@@ -160,15 +162,19 @@ private:
 			for (unsigned int j = 0; j < face.mNumIndices; j++)
 				indices.push_back(face.mIndices[j]);
 		}
-		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-		vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-		std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-		std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+
+                if (extractTexture)
+                {
+		    aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+		    vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+		    textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+		    vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+		    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+		    std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+		    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+		    std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+		    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+                }
 
 		ExtractBoneWeightForVertices(vertices,mesh,scene);
 

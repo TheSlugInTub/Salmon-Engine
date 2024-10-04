@@ -17,6 +17,7 @@ struct Light
     float intensity;
     float radius;
     bool on;
+    bool castShadows;
 };
 
 uniform Light lights[MAX_LIGHTS];
@@ -35,16 +36,8 @@ float ShadowCalculation(vec3 fragToLight, vec3 normal, int lightIndex)
 
     // Shadow factor calculation
     float shadow = (currentDepth - (0.5 + angleBias)) > closestDepth ? 1.0 : 0.0;
-
-    // Smooth shadow fading
-    float shadowEdgeDistance = currentDepth - closestDepth;
-    float fadeDistance = 3.0; // Adjust this value for a smoother transition (tweak as necessary)
     
-    // Apply a smoothstep to fade out the shadow
-    float fadeFactor = smoothstep(0.0, fadeDistance, shadowEdgeDistance);
-
-    // Blend the shadow with the fade factor
-    return mix(0.0, shadow, fadeFactor);
+    return shadow;
 }
 
 void main()
@@ -66,7 +59,7 @@ void main()
 
             // Avoid calculating shadow if light is too parallel
             float normDotLightDir = dot(norm, lightDir);
-            if (normDotLightDir > 0.1) {
+            if (normDotLightDir > 0.1 && lights[i].castShadows) {
                 vec3 fragToLight = FragPos - lights[i].pos;
                 float shadow = ShadowCalculation(fragToLight, norm, i);
                 shadowFactor *= (1.0 - shadow * 0.5); // Factor for shadow darkness

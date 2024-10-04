@@ -63,13 +63,17 @@ void PlayerMovementSys()
     
         Vec3 playerPosition = bodyInterface.GetPosition(playerID);
 
+        // Zero out the Y component of the camera's front direction before normalization
+        glm::vec3 frontNoY = glm::vec3(camera->Front.x, 0.0f, camera->Front.z);
+        glm::vec3 normalizedFront = glm::normalize(frontNoY);  // Now normalize the horizontal direction
+
         if (Input::GetKey(Key::W))
         {
-            playerPosition += Vec3(camera->Front.x, 0.0f, camera->Front.z) * speed;
+            playerPosition += Vec3(normalizedFront.x, 0.0f, normalizedFront.z) * speed;
         }
         if (Input::GetKey(Key::S))
         {
-            playerPosition -= Vec3(camera->Front.x, 0.0f, camera->Front.z) * speed;
+            playerPosition -= Vec3(normalizedFront.x, 0.0f, normalizedFront.z) * speed;
         }
         if (Input::GetKey(Key::A))
         {

@@ -14,6 +14,8 @@ void MeshRendererSys()
 
     for (auto& light : Renderer::lights)
     {
+        if (!light.castShadows) { break; }        
+
         glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
         glBindFramebuffer(GL_FRAMEBUFFER, light.depthMapFBO);
         Renderer::depthShader.use();
@@ -92,8 +94,8 @@ void RigidBody3DStartSys()
         }
         else if (rigid->colliderType == ColliderType::Capsule)
         {
-            float radius = rigid->capsuleRadius; // Define capsule radius in RigidBody3D
-            float height = rigid->capsuleHeight; // Define capsule height in RigidBody3D
+            float radius = rigid->capsuleRadius;
+            float height = rigid->capsuleHeight;
 
             // Capsule is defined by its half height (distance between the centers of the hemispheres)
             CapsuleShapeSettings capsule_shape_settings(height * 0.5f, radius);
@@ -147,83 +149,7 @@ void RigidBody3DStartSys()
                 bodyInterface.AddBody(rigid->body->GetID(), EActivation::Activate);
             }
         }
-        else if (rigid->colliderType == ColliderType::Mesh)
-        {
-            Model& model = engineState.scene.Get<MeshRenderer>(ent)->model;
-
-            model.extractCollisionMesh();
-
-            JPH::Array<JPH::Float3> vertices;
-            vertices.reserve(model.colliderVertices.size() / 3); // 3 floats per vertex
-
-            for (size_t i = 0; i < model.colliderVertices.size(); i += 3) {
-                vertices.push_back(JPH::Float3(
-                    model.colliderVertices[i],
-                    model.colliderVertices[i + 1],
-                    model.colliderVertices[i + 2]
-                ));
-            }
-
-            JPH::Array<JPH::Triangle> triangles;
-            triangles.reserve(model.colliderIndices.size() / 3); // 3 indices per triangle
-
-            //for (size_t i = 0; i < model.colliderIndices.size(); i += 3) {
-            //    triangles.push_back(JPH::Triangle(
-            //        model.colliderIndices[i],
-            //        model.colliderIndices[i + 1],
-            //        model.colliderIndices[i + 2]
-            //    ));
-            //}
-
-            for (size_t i = 0; i < model.colliderIndices.size(); i += 3)
-            {
-                // Get the indices for this triangle
-                uint32_t idx1 = model.colliderIndices[i];
-                uint32_t idx2 = model.colliderIndices[i + 1];
-                uint32_t idx3 = model.colliderIndices[i + 2];
-
-                // Get the corresponding vertices
-                glm::vec3 v1(model.colliderVertices[idx1 * 3 + 0], model.colliderVertices[idx1 * 3 + 1], model.colliderVertices[idx1 * 3 + 2]);
-                glm::vec3 v2(model.colliderVertices[idx2 * 3 + 0], model.colliderVertices[idx2 * 3 + 1], model.colliderVertices[idx2 * 3 + 2]);
-                glm::vec3 v3(model.colliderVertices[idx3 * 3 + 0], model.colliderVertices[idx3 * 3 + 1], model.colliderVertices[idx3 * 3 + 2]);
-
-                // Convert glm::vec3 to Jolt's Vec3 format
-                Vec3 joltV1(v1.x, v1.y, v1.z);
-                Vec3 joltV2(v2.x, v2.y, v2.z);
-                Vec3 joltV3(v3.x, v3.y, v3.z);
-    
-                // Create a triangle and add it to the list
-                triangles.push_back(Triangle(joltV1, joltV2, joltV3));
-            }
-
-            // Step 3: Create a material list (with a default material)
-            JPH::PhysicsMaterialList material_list;
-            material_list.push_back(new JPH::PhysicsMaterial());
-
-            // Step 4: Create the MeshShapeSettings
-            JPH::MeshShapeSettings mesh_shape_settings(triangles, material_list);
-            mesh_shape_settings.SetEmbedded();  // This embeds the shape into the body
-
-            // Step 5: Convert the object's rotation to Jolt quaternion
-            glm::quat glmQuat = glm::quat(trans->rotation); // Step 1: Convert Euler angles to GLM quaternion
-            Quat joltQuat(glmQuat.x, glmQuat.y, glmQuat.z, glmQuat.w);  // Jolt uses (x, y, z, w) order
-
-            // Step 6: Create the shape
-            JPH::ShapeSettings::ShapeResult mesh_shape_result = mesh_shape_settings.Create();
-            JPH::ShapeRefC mesh_shape = mesh_shape_result.Get();
-
-            // Step 7: Create body settings
-            JPH::BodyCreationSettings mesh_settings(mesh_shape, RtransPosition, joltQuat,
-                rigid->state == BodyState::Dynamic ? JPH::EMotionType::Dynamic : JPH::EMotionType::Static,
-                rigid->state == BodyState::Dynamic ? Layers::MOVING : Layers::NON_MOVING);
-
-            // Step 8: Create the actual rigid body and add it to the world
-            rigid->body = bodyInterface.CreateBody(mesh_settings);
-            if (rigid->body != nullptr) {
-                bodyInterface.AddBody(rigid->body->GetID(), JPH::EActivation::Activate);
-            }
-        }
-	else
+        else
 	{
 	    std::cerr << "ERROR: Collider type not implemented or is null" << std::endl;
 	}
@@ -238,6 +164,8 @@ void RigidBody3DSys()
     for (EntityID ent : SceneView<Transform, RigidBody3D>(engineState.scene))
     {
 	auto rigid = engineState.scene.Get<RigidBody3D>(ent);
+
+        if (rigid->state == BodyState::Static) { return; };
 
 	RVec3 positionOfSphere = bodyInterface.GetCenterOfMassPosition(rigid->body->GetID());
 

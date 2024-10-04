@@ -58,6 +58,7 @@ void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& vie
     
     for (int i = 0; i < lights.size(); ++i)
     {
+        if (!lights[i].castShadows) { break; }
         // Bind each light's shadow map to a different texture unit
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_CUBE_MAP, lights[i].depthCubemap);
@@ -74,6 +75,7 @@ void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& vie
         defaultShader.setVec4(baseName + ".color", lights[i].color);
         defaultShader.setFloat(baseName + ".intensity", lights[i].intensity);
         defaultShader.setBool(baseName + ".on", true);
+        defaultShader.setBool(baseName + ".castShadows", lights[i].castShadows);
     }
 
     auto anim = engineState.scene.Get<Animator>(ent);
