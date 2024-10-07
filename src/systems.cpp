@@ -260,9 +260,18 @@ void AnimatorSys()
 
         if (anim->playing)
         {
-            UpdateAnimation(0.016f, anim);
+            UpdateAnimation(engineState.deltaTime * anim->speed, anim);
         }
     }
+}
+
+float lastFrame = 0.0f;
+
+void DeltaTimeSystem()
+{
+    float currplayerFrame = static_cast<float>(glfwGetTime());
+    engineState.deltaTime = currplayerFrame - lastFrame;
+    lastFrame = currplayerFrame;
 }
 
 // Start systems
@@ -271,6 +280,7 @@ REGISTER_START_SYSTEM(LightStartSys);
 REGISTER_START_SYSTEM(AnimatorStartSys);
 
 // Regular systems
+REGISTER_SYSTEM(DeltaTimeSystem);
 REGISTER_SYSTEM(AnimatorSys);
 REGISTER_SYSTEM(RigidBody3DSys);
 REGISTER_SYSTEM(MeshRendererSys);

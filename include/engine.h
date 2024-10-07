@@ -12,6 +12,7 @@ struct EngineState
     Scene scene;
     Camera* camera;
     Window* window;
+    float deltaTime;
 
     void SetScene(const Scene& newScene)
     {

@@ -7,15 +7,14 @@
 
 void CameraMoveSys()
 {
-    float deltaTime = 0.016f;
     if (glfwGetKey(engineState.window->window, GLFW_KEY_W) == GLFW_PRESS)
-	engineState.camera->ProcessKeyboard(CameraMovement::FORWARD, deltaTime);
+	engineState.camera->ProcessKeyboard(CameraMovement::FORWARD, engineState.deltaTime);
     if (glfwGetKey(engineState.window->window, GLFW_KEY_S) == GLFW_PRESS)
-	    engineState.camera->ProcessKeyboard(CameraMovement::BACKWARD, deltaTime);
+	    engineState.camera->ProcessKeyboard(CameraMovement::BACKWARD, engineState.deltaTime);
     if (glfwGetKey(engineState.window->window, GLFW_KEY_A) == GLFW_PRESS)
-	    engineState.camera->ProcessKeyboard(CameraMovement::LEFT, deltaTime);
+	    engineState.camera->ProcessKeyboard(CameraMovement::LEFT, engineState.deltaTime);
     if (glfwGetKey(engineState.window->window, GLFW_KEY_D) == GLFW_PRESS)
-	    engineState.camera->ProcessKeyboard(CameraMovement::RIGHT, deltaTime);
+	    engineState.camera->ProcessKeyboard(CameraMovement::RIGHT, engineState.deltaTime);
 }
 
 void CameraLookSys()
@@ -47,6 +46,19 @@ void CameraLookSys()
     engineState.camera->ProcessMouseMovement(xoffset, yoffset);
 }
 
+inline bool canJump = false;
+inline bool jumpRegistered = false;
+
+void TurnOffJump()
+{
+    canJump = false;
+}
+
+void TurnOnJump()
+{
+    canJump = true;
+}
+
 void PlayerMovementSys()
 {
     for (EntityID ent : SceneView<PlayerMovement>(engineState.scene))
@@ -58,6 +70,14 @@ void PlayerMovementSys()
         auto playerBody = engineState.scene.Get<RigidBody3D>(ent)->body;
 
         float speed = player->speed;
+
+        if (!jumpRegistered)
+        {
+            auto rigidbody = engineState.scene.Get<RigidBody3D>(ent);
+            AddCollisionEnterEvent(rigidbody->body->GetID(), TurnOnJump, true);
+            AddCollisionEnterEvent(rigidbody->body->GetID(), TurnOffJump, false);
+            jumpRegistered = true;
+        }
 
         bodyInterface.SetRotation(playerID, Quat::sIdentity(), EActivation::Activate);
     
@@ -89,7 +109,7 @@ void PlayerMovementSys()
     
         bodyInterface.ActivateBody(playerID);
 
-        if (Input::GetKeyDown(Key::Space))
+        if (Input::GetKeyDown(Key::Space) && canJump)
         {
             // Adjust the force value based on your object's mass
             Vec3 jumpForce(0.0f, 10000000.0f, 0.0f); 
@@ -104,6 +124,8 @@ void GunSys()
     {
         Transform* objectTransform = engineState.scene.Get<Transform>(ent);
         auto gun = engineState.scene.Get<Gun>(ent);
+
+        gun->gunTimer -= engineState.deltaTime;
 
         objectTransform->useMatrix = true;
         objectTransform->modelMat = glm::mat4(1.0f);
@@ -128,9 +150,19 @@ void GunSys()
         rotationOnlyInverseView[2] = glm::vec4(inverseView[2]); // Copy the rotation part (Z axis)
 
         objectTransform->modelMat *= rotationOnlyInverseView;
+
+        auto animator = engineState.scene.Get<Animator>(ent);
+
+        if (Input::GetMouseButtonDown(MouseKey::LeftClick) && gun->gunTimer <= 0)
+        {
+            animator->currentTime = 0.0f;
+            animator->playing = true;
+            gun->gunTimer = 0.78f;
+        } 
     }
 }
 
+// Regular systems
 REGISTER_SYSTEM(GunSys);
 REGISTER_SYSTEM(PlayerMovementSys);
 REGISTER_SYSTEM(CameraMoveSys);

@@ -9,10 +9,6 @@ const unsigned int SCR_HEIGHT = 1080;
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
-// timing
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
-
 int main()
 {
     Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false);
@@ -23,7 +19,7 @@ int main()
 
     Model ourModel("res/models/Box.obj");
     Model capsuleModel("res/models/Capsule.obj");
-    Model gunModel("res/models/Shotgun.obj");
+    Model gunModel("res/models/Shotgun.dae");
     Model tileModel("res/models/tile.obj", false, false);
     unsigned int bottomTex = Utils::LoadTexture("res/models/textures/GROUND.png");
     unsigned int tex = Utils::LoadTexture("res/textures/Slugarius.png");
@@ -34,17 +30,20 @@ int main()
     scene.AssignParam<Transform>(player, glm::vec3(0.0f, 30.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
     scene.AssignParam<MeshRenderer>(player, capsuleModel, glm::vec4(1.0f), tex);
     scene.AssignParam<RigidBody3D>(player, ColliderType::Capsule, BodyState::Dynamic, 1.0f, 2.0f);
-    scene.AssignParam<PlayerMovement>(player, 0.2f, 0.6f);
+    scene.AssignParam<PlayerMovement>(player, 0.34f, 0.6f);
 
     EntityID ground = scene.AddEntity();
     scene.AssignParam<Transform>(ground, glm::vec3(0.0f, -3.0f, 0.0f), glm::vec3(0.0f, 0.0001f, 0.0f), glm::vec3(3.0f, 1.0f, 3.0f));
     scene.AssignParam<MeshRenderer>(ground, tileModel, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), bottomTex);
     scene.AssignParam<RigidBody3D>(ground, ColliderType::Box, BodyState::Static, glm::vec3(60.0f, 1.0f, 60.0f));
 
+    Animation gunShootAnim("res/models/ShotgunShoot.dae", &gunModel);
+
     EntityID shotgun = scene.AddEntity();
     scene.AssignParam<Transform>(shotgun, glm::vec3(-6.0f, -1.0f, 0.0f), glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.4f, 0.4f, 0.4f));
     scene.AssignParam<MeshRenderer>(shotgun, gunModel, glm::vec4(1.0f), groundTex);
-    scene.AssignParam<Gun>(shotgun, 1.1f, 0.47f, -0.67f);
+    scene.AssignParam<Gun>(shotgun, 1.8f, 0.5f, -0.87f, &gunShootAnim);
+    scene.AssignParam<Animator>(shotgun, &gunShootAnim, true, false, 1.4f);
 
     EntityID light2 = scene.AddEntity();
     scene.AssignParam<Light>(light2, glm::vec3(0.0f, 15.0f, 0.0f), 140.0f, 0.1f, 2.8f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -61,18 +60,15 @@ int main()
 
     physicsSystem.OptimizeBroadPhase();
 
+    MyContactListener* myListener = new MyContactListener();
+    physicsSystem.SetContactListener(myListener);
+
     ImGuiLayer::Init();
 
     // render loop
     // -----------
     while (!window.ShouldClose())
     {
-        // per-frame time logic
-        // --------------------
-        float currplayerFrame = static_cast<float>(glfwGetTime());
-        deltaTime = currplayerFrame - lastFrame;
-        lastFrame = currplayerFrame;
-
         ImGuiLayer::NewFrame();
 
         UpdateSystems();
@@ -96,7 +92,7 @@ int main()
         ImGuiLayer::EndFrame();
         window.Update();
 
-        StepPhysics(deltaTime);
+        StepPhysics(engineState.deltaTime);
     }
 
     DestroyPhysics();

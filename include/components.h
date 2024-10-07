@@ -78,9 +78,10 @@ struct Animator
     float currentTime;
     float deltaTime;
     bool looping = true;
+    float speed = 1.0f;
 
-    Animator(Animation* animation)
-        : currentAnimation(animation)
+    Animator(Animation* animation, bool playing = true, bool looping = true, float speed = 1.0f)
+        : currentAnimation(animation), playing(playing), looping(looping), speed(speed)
     {}
 };
 
@@ -116,8 +117,24 @@ inline void UpdateAnimation(float dt, Animator* anim)
     anim->deltaTime = dt;
     if (anim->currentAnimation)
     {
-	anim->currentTime += anim->currentAnimation->GetTicksPerSecond() * dt;
-	anim->currentTime = fmod(anim->currentTime, anim->currentAnimation->GetDuration());
-	CalculateBoneTransform(&anim->currentAnimation->GetRootNode(), glm::mat4(1.0f), anim);
+        // Calculate the time increment
+        anim->currentTime += anim->currentAnimation->GetTicksPerSecond() * dt;
+
+        if (anim->looping) {
+            // If looping, wrap the currentTime using modulo
+            anim->currentTime = fmod(anim->currentTime, anim->currentAnimation->GetDuration());
+        } else {
+            // If not looping, check if we've reached the end of the animation
+            if (anim->currentTime >= anim->currentAnimation->GetDuration()) {
+                anim->currentTime = anim->currentAnimation->GetDuration(); // Clamp to end
+                anim->playing = false;  // Animation has finished playing
+                return;  // Exit the function, no need to update bone transforms 
+            }
+        }
+
+        // Continue updating the bone transformations if still playing
+        if (anim->playing) {
+            CalculateBoneTransform(&anim->currentAnimation->GetRootNode(), glm::mat4(1.0f), anim);
+        }
     }
 }

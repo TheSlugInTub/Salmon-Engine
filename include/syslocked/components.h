@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <vector>
+#include <animation.h>
 
 struct PlayerMovement
 {
@@ -14,4 +15,6 @@ struct Gun
     float forwardOffset;
     float rightOffset;
     float upOffset;
+    Animation* gunShootAnim;
+    float gunTimer = 1.0f;
 };

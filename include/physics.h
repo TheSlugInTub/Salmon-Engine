@@ -20,8 +20,10 @@
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 #include <Jolt/Physics/Collision/Shape/TriangleShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
+#include <Jolt/Physics/Collision/ContactListener.h>
 #include <renderer.h>
 #include <engine.h>
+#include <functional>
 
 #ifdef JPH_DEBUG_RENDERER
 	#include <Jolt/Renderer/DebugRenderer.h>
@@ -207,10 +209,11 @@ public:
     MyDebugRenderer()
     {}
 
-    virtual void DrawLine(RVec3Arg inFrom, RVec3Arg inTo, ColorArg inColor) override {
+    virtual void DrawLine(RVec3Arg inFrom, RVec3Arg inTo, ColorArg inColor) override 
+    {
         LineSeg line(glm::vec3(inFrom.GetX(), inFrom.GetY(), inFrom.GetZ()), glm::vec3(inTo.GetX(), inTo.GetY(), inTo.GetZ()));
 
-		float aspectRatio = engineState.window->GetAspectRatio();
+	float aspectRatio = engineState.window->GetAspectRatio();
     	Renderer::RenderLine(line.inFrom, line.inTo, engineState.camera->GetProjMatrix(aspectRatio), engineState.camera->GetViewMatrix());
     }
 
@@ -225,19 +228,67 @@ public:
         return Batch{};
     }
 
-	inline virtual Batch CreateTriangleBatch(const Vertex *inVertices, int inVertexCount, const uint32 *inIndices, int inIndexCount)
-   	{
+    inline virtual Batch CreateTriangleBatch(const Vertex *inVertices, int inVertexCount, const uint32 *inIndices, int inIndexCount)
+    {
        	return Batch{};
-   	}
+    }
 
-	inline virtual void DrawGeometry(RMat44Arg inModelMatrix, const AABox &inWorldSpaceBounds, float inLODScaleSq, ColorArg inModelColor, const GeometryRef &inGeometry, ECullMode inCullMode = ECullMode::CullBackFace, ECastShadow inCastShadow = ECastShadow::On, EDrawMode inDrawMode = EDrawMode::Solid)
-   	{
+    inline virtual void DrawGeometry(RMat44Arg inModelMatrix, const AABox &inWorldSpaceBounds, float inLODScaleSq, ColorArg inModelColor, const GeometryRef &inGeometry, ECullMode inCullMode = ECullMode::CullBackFace, ECastShadow inCastShadow = ECastShadow::On, EDrawMode inDrawMode = EDrawMode::Solid)
+    {
         std::cout << "Geometry has been drawn!";
-   	}
+    }
 
-	inline virtual void DrawText3D(RVec3Arg inPosition, const string_view &inString, ColorArg inColor = Color::sWhite, float inHeight = 0.5f)
-   	{
-   	    //fuck off
-   	}
+    inline virtual void DrawText3D(RVec3Arg inPosition, const string_view &inString, ColorArg inColor = Color::sWhite, float inHeight = 0.5f)
+    {
+   	//fuck off
+    }
 };
 
+struct CollisionEnterData
+{
+    BodyID id;
+    std::function<void()> call;
+};
+
+inline std::vector<CollisionEnterData> registeredCollisions;
+inline std::vector<CollisionEnterData> registeredDecollisions;
+
+inline void AddCollisionEnterEvent(BodyID id, std::function<void()> call, bool collide = true)
+{
+    CollisionEnterData data(id, call);
+    if (collide) 
+    {
+        registeredCollisions.push_back(data);
+    }else
+    {
+        registeredDecollisions.push_back(data);
+    }
+}
+
+class MyContactListener : public JPH::ContactListener {
+public:
+    // Called when two bodies start colliding
+    virtual JPH::ValidateResult OnContactValidate(const JPH::Body& body1, const JPH::Body& body2, RVec3Arg baseOffset, const JPH::CollideShapeResult& collisionResult) override 
+    {
+        // Decide whether the collision should be processed
+        return JPH::ValidateResult::AcceptAllContactsForThisBodyPair;
+    }
+
+    // Called when two bodies are colliding, called for each contact point
+    virtual void OnContactAdded(const JPH::Body& body1, const JPH::Body& body2, const JPH::ContactManifold& manifold, JPH::ContactSettings& settings) override 
+    {
+        for (auto data : registeredCollisions)
+        {
+            data.call();
+        }
+    }
+
+    // Called when two bodies stop colliding
+    virtual void OnContactRemoved(const JPH::SubShapeIDPair& subShapePair) override 
+    {
+        for (auto data : registeredDecollisions)
+        {
+            data.call();
+        }
+    }
+};
