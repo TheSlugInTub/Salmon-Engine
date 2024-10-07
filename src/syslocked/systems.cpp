@@ -54,7 +54,7 @@ void TurnOffJump()
     canJump = false;
 }
 
-void TurnOnJump()
+void TurnOnJump(JPH::BodyID id1, JPH::BodyID id2)
 {
     canJump = true;
 }
@@ -74,8 +74,8 @@ void PlayerMovementSys()
         if (!jumpRegistered)
         {
             auto rigidbody = engineState.scene.Get<RigidBody3D>(ent);
-            AddCollisionEnterEvent(rigidbody->body->GetID(), TurnOnJump, true);
-            AddCollisionEnterEvent(rigidbody->body->GetID(), TurnOffJump, false);
+            AddCollisionEnterEvent(rigidbody->body->GetID(), TurnOnJump);
+            AddCollisionExitEvent(rigidbody->body->GetID(), TurnOffJump);
             jumpRegistered = true;
         }
 

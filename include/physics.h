@@ -244,25 +244,31 @@ public:
     }
 };
 
-struct CollisionEnterData
+struct CollisionExitData
 {
     BodyID id;
     std::function<void()> call;
 };
 
-inline std::vector<CollisionEnterData> registeredCollisions;
-inline std::vector<CollisionEnterData> registeredDecollisions;
+struct CollisionEnterData
+{
+    BodyID id;
+    std::function<void(BodyID id1, BodyID id2)> call;
+};
 
-inline void AddCollisionEnterEvent(BodyID id, std::function<void()> call, bool collide = true)
+inline std::vector<CollisionEnterData> registeredCollisions;
+inline std::vector<CollisionExitData> registeredDecollisions;
+
+inline void AddCollisionEnterEvent(BodyID id, std::function<void(BodyID id1, BodyID id2)> call)
 {
     CollisionEnterData data(id, call);
-    if (collide) 
-    {
-        registeredCollisions.push_back(data);
-    }else
-    {
-        registeredDecollisions.push_back(data);
-    }
+    registeredCollisions.push_back(data);
+}
+
+inline void AddCollisionExitEvent(BodyID id, std::function<void()> call)
+{
+    CollisionExitData data(id, call);
+    registeredDecollisions.push_back(data);
 }
 
 class MyContactListener : public JPH::ContactListener {
@@ -279,7 +285,7 @@ public:
     {
         for (auto data : registeredCollisions)
         {
-            data.call();
+            data.call(body1.GetID(), body2.GetID());
         }
     }
 

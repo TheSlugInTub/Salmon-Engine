@@ -1,4 +1,11 @@
 # Salmon Engine 0.4
+7/10/2024 - October 
+
+Collision detection has benn added to the engine in previous commits, you can register 
+a function call when a body is collided with 'AddCollisionEnterEvent' and an exit event
+with 'AddCollisionExitEvent'
+
+# Salmon Engine 0.4
 26/9/2024 - September
 
 Skeletal animation has been integrated into the engine. There is an animation class,
