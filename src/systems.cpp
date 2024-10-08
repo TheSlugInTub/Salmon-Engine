@@ -58,6 +58,8 @@ void RigidBody3DStartSys()
 	auto rigid = engineState.scene.Get<RigidBody3D>(ent);
 	auto trans = engineState.scene.Get<Transform>(ent);
 
+        if (rigid->body != nullptr) { continue; }
+
 	Vec3 transPosition(trans->position.x, trans->position.y, trans->position.z);
 	RVec3 RtransPosition = transPosition;
 
@@ -158,13 +160,10 @@ void RigidBody3DStartSys()
 
 void RigidBody3DSys()
 {
-    BodyInterface &bodyInterface = physicsSystem.GetBodyInterface();
-    float cDeltaTime = 1.0f / 120.0f;
-
-    for (EntityID ent : SceneView<Transform, RigidBody3D>(engineState.scene))
+    for (EntityID ent : SceneView<RigidBody3D>(engineState.scene))
     {
 	auto rigid = engineState.scene.Get<RigidBody3D>(ent);
-
+        
         if (rigid->state == BodyState::Static) { return; };
 
 	RVec3 positionOfSphere = bodyInterface.GetCenterOfMassPosition(rigid->body->GetID());
@@ -181,8 +180,8 @@ void RigidBody3DSys()
 	glm::quat quatRotation(-z, y, x, w);
 	glm::vec3 eulerRotation = glm::eulerAngles(quatRotation); // Converts quaternion to Euler angles
 
-	engineState.scene.Get<Transform>(ent)->rotation = eulerRotation; 
-    }
+	engineState.scene.Get<Transform>(ent)->rotation = eulerRotation;
+    } 
 }
 
 void LightStartSys()

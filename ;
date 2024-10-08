@@ -19,10 +19,9 @@ struct Gun
     float gunTimer = 1.0f;
     Model bulletModel;
     unsigned int bulletTexture;
-    float bulletSpeed = 1.0f;
 };
 
 struct Bullet 
 {
-    int randomValueThatWillGetReplaced;
+
 };

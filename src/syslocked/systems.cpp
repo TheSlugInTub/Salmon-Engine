@@ -158,11 +158,48 @@ void GunSys()
             animator->currentTime = 0.0f;
             animator->playing = true;
             gun->gunTimer = 0.78f;
+
+            // Shoot gun
+            EntityID bulletEnt = engineState.scene.AddEntity();
+            engineState.scene.AssignParam<Transform>(bulletEnt, objectTransform->position, glm::vec3(0.0f), glm::vec3(0.2f));
+            engineState.scene.AssignParam<MeshRenderer>(bulletEnt, gun->bulletModel, glm::vec4(1.0f), gun->bulletTexture);
+            engineState.scene.AssignParam<RigidBody3D>(bulletEnt, ColliderType::Capsule, BodyState::Dynamic, 0.2f, 0.1f);
+            engineState.scene.Assign<Bullet>(bulletEnt);
+ 
+            RigidBody3DStartSys();
+
+            JPH::Vec3 bulletDirection(camera->Front.x, camera->Front.y, camera->Front.z);
+            bodyInterface.AddForce(engineState.scene.Get<RigidBody3D>(bulletEnt)->body->GetID(), bulletDirection * gun->bulletSpeed);
         } 
     }
 }
 
+void BulletSys()
+{
+    for (EntityID ent : SceneView<Bullet>(engineState.scene))
+    {
+	auto rigid = engineState.scene.Get<RigidBody3D>(ent);       
+	RVec3 positionOfSphere = bodyInterface.GetCenterOfMassPosition(rigid->body->GetID());
+
+	Quat rotationOfSphere = bodyInterface.GetRotation(rigid->body->GetID());
+
+	float x = rotationOfSphere.GetX();
+	float y = rotationOfSphere.GetY();
+	float z = rotationOfSphere.GetZ();
+	float w = rotationOfSphere.GetW();
+	// Sync box position and rotation with Jolt Physics
+	engineState.scene.Get<Transform>(ent)->position = glm::vec3(positionOfSphere.GetX(), positionOfSphere.GetY(), positionOfSphere.GetZ());
+
+	glm::quat quatRotation(-z, y, x, w);
+	glm::vec3 eulerRotation = glm::eulerAngles(quatRotation); // Converts quaternion to Euler angles
+
+	engineState.scene.Get<Transform>(ent)->rotation = eulerRotation;
+    }
+}
+
+
 // Regular systems
+REGISTER_SYSTEM(BulletSys);
 REGISTER_SYSTEM(GunSys);
 REGISTER_SYSTEM(PlayerMovementSys);
 REGISTER_SYSTEM(CameraMoveSys);

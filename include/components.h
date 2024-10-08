@@ -85,6 +85,9 @@ struct Animator
     {}
 };
 
+void RigidBody3DStartSys();
+void RigidBody3DSys();
+
 inline void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform, Animator* anim)
 {
     std::string nodeName = node->name;

@@ -12,8 +12,8 @@
 inline int componentCounter = 0;
 
 // Max constants
-const int MAX_COMPONENTS = 32;
-const int MAX_ENTITIES = 500;
+const int MAX_COMPONENTS = 64;
+const int MAX_ENTITIES = 1000;
 
 // Typedefs to aid in reading
 typedef std::bitset<MAX_COMPONENTS> ComponentMask;

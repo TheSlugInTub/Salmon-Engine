@@ -21,28 +21,29 @@ int main()
     Model capsuleModel("res/models/Capsule.obj");
     Model gunModel("res/models/Shotgun.dae");
     Model tileModel("res/models/tile.obj", false, false);
+    Model bulletModel("res/models/Bullet.obj", false, false);
     unsigned int bottomTex = Utils::LoadTexture("res/models/textures/GROUND.png");
-    unsigned int tex = Utils::LoadTexture("res/textures/Slugarius.png");
     unsigned int groundTex = Utils::LoadTexture("res/textures/background.png");
+    unsigned int bulletTex = Utils::LoadTexture("res/models/textures/Bullet.png");
 
     Scene scene;
     EntityID player = scene.AddEntity();
     scene.AssignParam<Transform>(player, glm::vec3(0.0f, 30.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-    scene.AssignParam<MeshRenderer>(player, capsuleModel, glm::vec4(1.0f), tex);
+    scene.AssignParam<MeshRenderer>(player, capsuleModel, glm::vec4(1.0f), 0);
     scene.AssignParam<RigidBody3D>(player, ColliderType::Capsule, BodyState::Dynamic, 1.0f, 2.0f);
     scene.AssignParam<PlayerMovement>(player, 0.34f, 0.6f);
 
     EntityID ground = scene.AddEntity();
     scene.AssignParam<Transform>(ground, glm::vec3(0.0f, -3.0f, 0.0f), glm::vec3(0.0f, 0.0001f, 0.0f), glm::vec3(3.0f, 1.0f, 3.0f));
     scene.AssignParam<MeshRenderer>(ground, tileModel, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), bottomTex);
-    scene.AssignParam<RigidBody3D>(ground, ColliderType::Box, BodyState::Static, glm::vec3(60.0f, 1.0f, 60.0f));
+    scene.AssignParam<RigidBody3D>(ground, ColliderType::Box, BodyState::Static, glm::vec3(74.0f, 0.45f, 74.0f));
 
     Animation gunShootAnim("res/models/ShotgunShoot.dae", &gunModel);
 
     EntityID shotgun = scene.AddEntity();
     scene.AssignParam<Transform>(shotgun, glm::vec3(-6.0f, -1.0f, 0.0f), glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.4f, 0.4f, 0.4f));
     scene.AssignParam<MeshRenderer>(shotgun, gunModel, glm::vec4(1.0f), groundTex);
-    scene.AssignParam<Gun>(shotgun, 1.8f, 0.5f, -0.87f, &gunShootAnim);
+    scene.AssignParam<Gun>(shotgun, 1.8f, 0.5f, -0.87f, &gunShootAnim, 1.0f, bulletModel, bulletTex, 99000.0f);
     scene.AssignParam<Animator>(shotgun, &gunShootAnim, true, false, 1.4f);
 
     EntityID light2 = scene.AddEntity();

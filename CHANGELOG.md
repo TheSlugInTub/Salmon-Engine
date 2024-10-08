@@ -1,4 +1,4 @@
-# Salmon Engine 0.4
+# Salmon Engine 0.5
 7/10/2024 - October 
 
 Collision detection has benn added to the engine in previous commits, you can register 
