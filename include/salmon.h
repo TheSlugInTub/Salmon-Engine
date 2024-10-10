@@ -9,15 +9,15 @@
 // Macro for initializing Jolt physics, this isn't a function because it doesn't register the default allocator if it is a function for some reason
 #define StartPhysics() \
     RegisterDefaultAllocator(); \
-	Trace = TraceImpl; \
-	JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;) \
+    Trace = TraceImpl; \
+    JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;) \
     Factory::sInstance = new Factory(); \
-	RegisterTypes(); \
-	tempAllocator = new TempAllocatorImpl(200 * 1024 * 1024); \
-	jobSystem = new JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, thread::hardware_concurrency() - 1); \
-	BPLayerInterfaceImpl broadPhaseLayerInterface; \
-	ObjectVsBroadPhaseLayerFilterImpl objectVsBroadphaseLayerFilter; \
-	ObjectLayerPairFilterImpl objectVsObjectLayerFilter; \
+    RegisterTypes(); \
+    tempAllocator = new TempAllocatorImpl(200 * 1024 * 1024); \
+    jobSystem = new JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, thread::hardware_concurrency() - 1); \
+    BPLayerInterfaceImpl broadPhaseLayerInterface; \
+    ObjectVsBroadPhaseLayerFilterImpl objectVsBroadphaseLayerFilter; \
+    ObjectLayerPairFilterImpl objectVsObjectLayerFilter; \
     physicsSystem.Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, broadPhaseLayerInterface, objectVsBroadphaseLayerFilter, objectVsObjectLayerFilter);
 
 #include <glm/gtc/quaternion.hpp>
@@ -38,3 +38,6 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
+#include <sound_buffer.h>
+#include <sound_device.h>
+#include <sound_source.h>

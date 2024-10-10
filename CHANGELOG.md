@@ -1,3 +1,8 @@
+# Salmon Engine 0.55
+10/10/2024 October
+
+Audio has been added to the engine with openal-soft.
+
 # Salmon Engine 0.5
 7/10/2024 - October 
 

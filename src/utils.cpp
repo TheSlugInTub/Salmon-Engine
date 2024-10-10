@@ -2,6 +2,7 @@
 #include <stb_image.h>
 #include <glad/glad.h>
 #include <iostream>
+#include <random>
 
 namespace Utils
 {
@@ -54,6 +55,15 @@ int IndexInVec(std::vector<T>& v, T& K)
         return std::distance(v.begin(), it);
     }
     return -1; 
+}
+
+float GenerateRandomNumber(float min, float max)
+{
+    std::random_device rd;
+    std::mt19937 gen(rd()); // Mersenne Twister engine
+    std::uniform_real_distribution<float> dist(min, max); // Distribution in range [min, max]
+    
+    return dist(gen);
 }
 
 }

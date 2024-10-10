@@ -11,7 +11,7 @@
 - [X] Skeletal animation importing
 - [X] Animation system
 - [ ] Particle effects
-- [ ] Audio
+- [X] Audio
 - [ ] Text rendering with freetype
 - [ ] UI
 

@@ -4,6 +4,7 @@
 #include <input.h>
 #include <physics.h>
 #include <components.h>
+#include <utils.h>
 
 void CameraMoveSys()
 {
@@ -118,6 +119,18 @@ void PlayerMovementSys()
     }
 }
 
+void GunStartSys()
+{
+    for (EntityID ent : SceneView<Gun>(engineState.scene))
+    {
+        auto gun = engineState.scene.Get<Gun>(ent);
+        gun->soundDevice = SoundDevice::Get();
+        gun->shootSound = SoundBuffer::Get()->AddSoundEffect("res/sounds/shoot.wav");
+
+        gun->soundSource = std::make_shared<SoundSource>();
+    }
+}
+
 void GunSys()
 {
     for (EntityID ent : SceneView<Gun>(engineState.scene))
@@ -159,17 +172,25 @@ void GunSys()
             animator->playing = true;
             gun->gunTimer = 0.78f;
 
-            // Shoot gun
-            EntityID bulletEnt = engineState.scene.AddEntity();
-            engineState.scene.AssignParam<Transform>(bulletEnt, objectTransform->position, glm::vec3(0.0f), glm::vec3(0.2f));
-            engineState.scene.AssignParam<MeshRenderer>(bulletEnt, gun->bulletModel, glm::vec4(1.0f), gun->bulletTexture);
-            engineState.scene.AssignParam<RigidBody3D>(bulletEnt, ColliderType::Capsule, BodyState::Dynamic, 0.2f, 0.1f);
-            engineState.scene.Assign<Bullet>(bulletEnt);
- 
-            RigidBody3DStartSys();
+            // Play shoot sound
+            gun->soundSource->Play(gun->shootSound);
 
-            JPH::Vec3 bulletDirection(camera->Front.x, camera->Front.y, camera->Front.z);
-            bodyInterface.AddForce(engineState.scene.Get<RigidBody3D>(bulletEnt)->body->GetID(), bulletDirection * gun->bulletSpeed);
+            // Shoot gun
+            for (int i = 0; i < 6; ++i)
+            {
+                EntityID bulletEnt = engineState.scene.AddEntity();
+                engineState.scene.AssignParam<Transform>(bulletEnt, objectTransform->position, glm::vec3(0.0f), glm::vec3(0.07f));
+                engineState.scene.AssignParam<MeshRenderer>(bulletEnt, gun->bulletModel, glm::vec4(1.0f), gun->bulletTexture);
+                engineState.scene.AssignParam<RigidBody3D>(bulletEnt, ColliderType::Capsule, BodyState::Dynamic, 0.2f, 0.1f);
+                engineState.scene.Assign<Bullet>(bulletEnt);
+ 
+                RigidBody3DStartSys();
+
+                glm::vec3 randomizedBulletDir = camera->Front;
+                randomizedBulletDir *= Utils::GenerateRandomNumber(1.0f, 4.0f);
+                JPH::Vec3 bulletDirection(randomizedBulletDir.x, randomizedBulletDir.y, randomizedBulletDir.z);
+                bodyInterface.AddForce(engineState.scene.Get<RigidBody3D>(bulletEnt)->body->GetID(), bulletDirection * gun->bulletSpeed);
+            }
         } 
     }
 }
@@ -197,6 +218,8 @@ void BulletSys()
     }
 }
 
+// Start systems
+REGISTER_SYSTEM(GunStartSys);
 
 // Regular systems
 REGISTER_SYSTEM(BulletSys);

@@ -19,7 +19,7 @@ include_directories(
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.c)
 file(GLOB_RECURSE INCLUDESOURCES include/*.cpp include/*.c)
 
-# Comment to reload CMake, Counter: 21
+# Comment to reload CMake, Counter: 23
 
 # Add the executable
 add_executable(${PROJECT_NAME} 
@@ -35,4 +35,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ../lib/glfw3
     ../lib/Jolt
     ../lib/assimp-vc143-mt
+    ../lib/OpenAL32
 )
