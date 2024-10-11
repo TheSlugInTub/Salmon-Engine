@@ -17,7 +17,7 @@ int main()
 
     StartPhysics();
 
-    Model ourModel("res/models/Box.obj");
+    Model boxModel("res/models/Box.obj");
     Model capsuleModel("res/models/Capsule.obj");
     Model gunModel("res/models/Shotgun.dae");
     Model tileModel("res/models/tile.obj", false, false);
@@ -51,6 +51,11 @@ int main()
  
     EntityID playerLight = scene.AddEntity();
     scene.AssignParam<Light>(playerLight, glm::vec3(30.0f, 2.0f, 0.0f), 35.0f, 0.1f, 1.8f, glm::vec4(1.0f, 0.647f, 0.0f, 1.0f), false);  
+
+    EntityID enemy = scene.AddEntity();
+    scene.AssignParam<Transform>(enemy, glm::vec3(2.0f, 4.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    scene.AssignParam<MeshRenderer>(enemy, boxModel, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), bottomTex);
+    scene.AssignParam<RigidBody3D>(enemy, ColliderType::Box, BodyState::Dynamic, glm::vec3(1.0f, 1.0f, 1.0f));
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
@@ -88,7 +93,7 @@ int main()
         settings.mDrawBoundingBox = true;
         settings.mDrawShapeWireframe = true;
 
-        //physicsSystem.DrawBodies(settings, &debugRenderer, filter);
+        physicsSystem.DrawBodies(settings, &debugRenderer, filter);
         
         ImGuiLayer::EndFrame();
         window.Update();

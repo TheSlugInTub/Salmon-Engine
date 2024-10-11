@@ -17,6 +17,7 @@
 
 # Syslocked TODO
 
-- Shooting the shotgun with animations
-- Enemy
-- Levels
+- [X] Shooting the shotgun with animations
+- [ ] Movement with force and counter-force
+- [ ] Enemy
+- [ ] Levels

@@ -31,9 +31,20 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE JPH_DEBUG_RENDERER)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    ../lib/glfw3
-    ../lib/Jolt
-    ../lib/assimp-vc143-mt
-    ../lib/OpenAL32
-)
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/lib/glfw3.lib
+        ${CMAKE_SOURCE_DIR}/lib/Jolt.lib
+        ${CMAKE_SOURCE_DIR}/lib/assimp-vc143-mt.lib
+        ${CMAKE_SOURCE_DIR}/lib/OpenAL32.lib
+    )
+endif()
+
+if(UNIX AND NOT APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/lib/libglfw3.a
+        ${CMAKE_SOURCE_DIR}/lib/libJolt.a
+        ${CMAKE_SOURCE_DIR}/lib/libassimp.so
+        ${CMAKE_SOURCE_DIR}/lib/libopenal.so
+    )
+endif()

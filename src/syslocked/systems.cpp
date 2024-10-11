@@ -195,34 +195,10 @@ void GunSys()
     }
 }
 
-void BulletSys()
-{
-    for (EntityID ent : SceneView<Bullet>(engineState.scene))
-    {
-	auto rigid = engineState.scene.Get<RigidBody3D>(ent);       
-	RVec3 positionOfSphere = bodyInterface.GetCenterOfMassPosition(rigid->body->GetID());
-
-	Quat rotationOfSphere = bodyInterface.GetRotation(rigid->body->GetID());
-
-	float x = rotationOfSphere.GetX();
-	float y = rotationOfSphere.GetY();
-	float z = rotationOfSphere.GetZ();
-	float w = rotationOfSphere.GetW();
-	// Sync box position and rotation with Jolt Physics
-	engineState.scene.Get<Transform>(ent)->position = glm::vec3(positionOfSphere.GetX(), positionOfSphere.GetY(), positionOfSphere.GetZ());
-
-	glm::quat quatRotation(-z, y, x, w);
-	glm::vec3 eulerRotation = glm::eulerAngles(quatRotation); // Converts quaternion to Euler angles
-
-	engineState.scene.Get<Transform>(ent)->rotation = eulerRotation;
-    }
-}
-
 // Start systems
 REGISTER_SYSTEM(GunStartSys);
 
 // Regular systems
-REGISTER_SYSTEM(BulletSys);
 REGISTER_SYSTEM(GunSys);
 REGISTER_SYSTEM(PlayerMovementSys);
 REGISTER_SYSTEM(CameraMoveSys);

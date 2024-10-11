@@ -163,8 +163,9 @@ void RigidBody3DSys()
     for (EntityID ent : SceneView<RigidBody3D>(engineState.scene))
     {
 	auto rigid = engineState.scene.Get<RigidBody3D>(ent);
-        
-        if (rigid->state == BodyState::Static) { return; };
+     
+        if (rigid->state == BodyState::Static) { std::cout << "Body is static\n"; continue; }
+        else { std::cout << "Body is dynamic\n"; }
 
 	RVec3 positionOfSphere = bodyInterface.GetCenterOfMassPosition(rigid->body->GetID());
 
@@ -181,7 +182,7 @@ void RigidBody3DSys()
 	glm::vec3 eulerRotation = glm::eulerAngles(quatRotation); // Converts quaternion to Euler angles
 
 	engineState.scene.Get<Transform>(ent)->rotation = eulerRotation;
-    } 
+    }
 }
 
 void LightStartSys()
@@ -281,5 +282,5 @@ REGISTER_START_SYSTEM(AnimatorStartSys);
 // Regular systems
 REGISTER_SYSTEM(DeltaTimeSystem);
 REGISTER_SYSTEM(AnimatorSys);
-REGISTER_SYSTEM(RigidBody3DSys);
 REGISTER_SYSTEM(MeshRendererSys);
+REGISTER_SYSTEM(RigidBody3DSys);
