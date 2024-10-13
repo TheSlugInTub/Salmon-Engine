@@ -63,6 +63,14 @@ void PlayerMovementSys()
         bodyInterface.SetRotation(playerID, Quat::sIdentity(), EActivation::Activate);
     
         Vec3 playerPosition = bodyInterface.GetPosition(playerID);
+        Vec3 playerVelocity = bodyInterface.GetLinearVelocity(playerID);
+
+        // Damping factor to slow the player down when no input is applied (simulates friction)
+        float damping = 0.9f;  // You can tweak this value for more or less friction
+        float maxSpeed = 10000.0f; // Maximum speed
+        float forceStrength = 1100000.0f; // Adjust this for how quickly the player accelerates
+
+        Vec3 force(0.0f, 0.0f, 0.0f); // Initialize a force vector
 
         // Zero out the Y component of the camera's front direction before normalization
         glm::vec3 frontNoY = glm::vec3(camera->Front.x, 0.0f, camera->Front.z);
@@ -70,19 +78,32 @@ void PlayerMovementSys()
 
         if (Input::GetKey(Key::W))
         {
-            playerPosition += Vec3(normalizedFront.x, 0.0f, normalizedFront.z) * speed;
+            force += Vec3(normalizedFront.x, 0.0f, normalizedFront.z) * forceStrength;
         }
         if (Input::GetKey(Key::S))
         {
-            playerPosition -= Vec3(normalizedFront.x, 0.0f, normalizedFront.z) * speed;
+            force -= Vec3(normalizedFront.x, 0.0f, normalizedFront.z) * forceStrength;
         }
         if (Input::GetKey(Key::A))
         {
-            playerPosition -= Vec3(camera->Right.x, 0.0f, camera->Right.z) * speed;
+            force -= Vec3(camera->Right.x, 0.0f, camera->Right.z) * forceStrength;
         }
         if (Input::GetKey(Key::D))
         {
-            playerPosition += Vec3(camera->Right.x, 0.0f, camera->Right.z) * speed;
+            force += Vec3(camera->Right.x, 0.0f, camera->Right.z) * forceStrength;
+        }
+
+        // Dampen the velocity to avoid sliding when no force is applied
+        Vec3 currentVelocity = bodyInterface.GetLinearVelocity(playerID);
+        Vec3 horizontalVelocity = Vec3(currentVelocity.GetX(), 0.0f, currentVelocity.GetZ()) * damping; // Dampen X and Z
+        Vec3 newVelocity = Vec3(horizontalVelocity.GetX(), currentVelocity.GetY(), horizontalVelocity.GetZ()); // Keep Y unchanged
+
+        // Clamp velocity to avoid exceeding maximum speed
+        if (glm::length(glm::vec2(newVelocity.GetX(), newVelocity.GetZ())) > maxSpeed)
+        {
+            glm::vec2 clampedVelocity = glm::normalize(glm::vec2(newVelocity.GetX(), newVelocity.GetZ())) * maxSpeed;
+            newVelocity.SetX(clampedVelocity.x);
+            newVelocity.SetZ(clampedVelocity.y);
         }
 
         float rayOffset = -2.3f;
@@ -99,9 +120,12 @@ void PlayerMovementSys()
 
         bool hit = query.CastRay(ray, rayCastResult);
 
-        // Set the new position for the player
+        // Set the new position and velocity for the player
         bodyInterface.SetPosition(playerID, playerPosition, EActivation::Activate());
-    
+        
+        bodyInterface.SetLinearVelocity(playerID, newVelocity);
+        bodyInterface.AddForce(playerID, force);
+
         bodyInterface.ActivateBody(playerID); 
 
         if (Input::GetKeyDown(Key::Space) && hit)

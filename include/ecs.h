@@ -90,50 +90,51 @@ struct ComponentPool
 // Scene struct, holds all the entities, basically a registry of entities
 struct Scene
 {
-	// Struct to store all the information needed for an entity
-  	struct EntityDesc
-  	{
+    // Struct to store all the information needed for an entity
+    struct EntityDesc
+    {
     	EntityID id;
     	ComponentMask mask;
-  	};
+    };
 
-  	// Creates an entity in the scene
-	EntityID AddEntity()
-	{
-	  	if (!freeEntities.empty())
-	  	{
-	    	EntityIndex newIndex = freeEntities.back();
-	    	freeEntities.pop_back();
-	    	EntityID newID = CreateEntityId(newIndex, GetEntityVersion(entities[newIndex].id));
-	    	entities[newIndex].id = newID;
-	    	return entities[newIndex].id;
-	  	}
-	  	entities.push_back({ CreateEntityId(EntityIndex(entities.size()), 0), ComponentMask() });
-	  	return entities.back().id;
+    // Creates an entity in the scene
+    EntityID AddEntity()
+    {
+  	if (!freeEntities.empty())
+  	{
+            EntityIndex newIndex = freeEntities.back();
+	    freeEntities.pop_back();
+	    EntityID newID = CreateEntityId(newIndex, GetEntityVersion(entities[newIndex].id));
+	    entities[newIndex].id = newID;
+	    return entities[newIndex].id;
 	}
 
-	// Assigns a component to an entity ID
-	template<typename T>
-	T* Assign(EntityID id)
-	{
-	    int componentId = GetId<T>();
+	entities.push_back({ CreateEntityId(EntityIndex(entities.size()), 0), ComponentMask() });
+	return entities.back().id;
+    }
+
+    // Assigns a component to an entity ID
+    template<typename T>
+    T* Assign(EntityID id)
+    {
+        int componentId = GetId<T>();
   
-	    if (componentPools.size() <= componentId) // Not enough component pool
-	    {
-	      	componentPools.resize(componentId + 1, nullptr);
-	    }
-	    if (componentPools[componentId] == nullptr) // New component, make a new pool
-	    {
-	      	componentPools[componentId] = new ComponentPool(sizeof(T));
-	    }
-  
-	    // Looks up the component in the pool, and initializes it with placement new
-	    T* pComponent = new (componentPools[componentId]->get(GetEntityIndex(id))) T();
-  
-	    // Set the bit for this component to true and return the created component
-	    entities[GetEntityIndex(id)].mask.set(componentId);
-	    return pComponent;
+        if (componentPools.size() <= componentId) // Not enough component pool
+        {
+            componentPools.resize(componentId + 1, nullptr);
+        }
+	if (componentPools[componentId] == nullptr) // New component, make a new pool
+        {
+	    componentPools[componentId] = new ComponentPool(sizeof(T));
 	}
+  
+	// Looks up the component in the pool, and initializes it with placement new
+        T* pComponent = new (componentPools[componentId]->get(GetEntityIndex(id))) T();
+  
+	// Set the bit for this component to true and return the created component
+	entities[GetEntityIndex(id)].mask.set(componentId);
+	return pComponent;
+    }
 
     // Assigns a component to an entity ID with a list of parameters (a constructor). use: <ent, 1.0f, 2.0f...>
     template<typename T, typename... Args>
@@ -158,42 +159,42 @@ struct Scene
         return pComponent;
     }
 
-	// Retrieves a pointer to a given component from an entity id, use: Get<Type>(ent)
-	template<typename T>
-	T* Get(EntityID id)
-	{
-	  	int componentId = GetId<T>();
-	  	if (!entities[GetEntityIndex(id)].mask.test(componentId))
-	    	return nullptr;
+    // Retrieves a pointer to a given component from an entity id, use: Get<Type>(ent)
+    template<typename T>
+    T* Get(EntityID id)
+    {
+	int componentId = GetId<T>();
+	if (!entities[GetEntityIndex(id)].mask.test(componentId))
+	    return nullptr;
 
-	  	T* pComponent = static_cast<T*>(componentPools[componentId]->get(GetEntityIndex(id)));
-	  	return pComponent;
-	}
+	T* pComponent = static_cast<T*>(componentPools[componentId]->get(GetEntityIndex(id)));
+	return pComponent;
+    }
 
     // Removes a component from an entity ID
-	template<typename T>
-	void Remove(EntityID id)
-	{
-	  	// ensures you're not accessing an entity that has been deleted
-	  	if (entities[GetEntityIndex(id)].id != id) 
-	    	return;
+    template<typename T>
+    void Remove(EntityID id)
+    {
+	// ensures you're not accessing an entity that has been deleted
+	if (entities[GetEntityIndex(id)].id != id) 
+	    return;
 
-	  	int componentId = GetId<T>();
-	  	entities[GetEntityIndex(id)].mask.reset(componentId);
-	}
+	int componentId = GetId<T>();
+	entities[GetEntityIndex(id)].mask.reset(componentId);
+    }
 
     // Destroys an entity, resets its mask, adds the given entity's index to the list of free entities
-	void DestroyEntity(EntityID id)
-	{
-	  	EntityID newID = CreateEntityId(EntityIndex(-1), GetEntityVersion(id) + 1);
-	  	entities[GetEntityIndex(id)].id = newID;
-	  	entities[GetEntityIndex(id)].mask.reset(); 
-	  	freeEntities.push_back(GetEntityIndex(id));
-	}
+    void DestroyEntity(EntityID id)
+    {
+	EntityID newID = CreateEntityId(EntityIndex(-1), GetEntityVersion(id) + 1);
+	entities[GetEntityIndex(id)].id = newID;
+	entities[GetEntityIndex(id)].mask.reset(); 
+        freeEntities.push_back(GetEntityIndex(id));
+    }
 
-  	std::vector<EntityDesc> entities;
-  	std::vector<EntityIndex> freeEntities;
-  	std::vector<ComponentPool*> componentPools;
+    std::vector<EntityDesc> entities;
+    std::vector<EntityIndex> freeEntities;
+    std::vector<ComponentPool*> componentPools;
 };
 
 // Adds a system to the list of systems
