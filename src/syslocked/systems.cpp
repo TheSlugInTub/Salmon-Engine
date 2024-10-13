@@ -47,19 +47,6 @@ void CameraLookSys()
     engineState.camera->ProcessMouseMovement(xoffset, yoffset);
 }
 
-inline bool canJump = false;
-inline bool jumpRegistered = false;
-
-void PlayerCollide(JPH::BodyID id1, JPH::BodyID id2)
-{
-    canJump = true;
-}
-
-void PlayerDecollide(JPH::BodyID id1, JPH::BodyID id2)
-{
-    canJump = false;
-}
-
 void PlayerMovementSys()
 {
     for (EntityID ent : SceneView<PlayerMovement>(engineState.scene))
@@ -72,14 +59,6 @@ void PlayerMovementSys()
         auto playerRigid = engineState.scene.Get<RigidBody3D>(ent);
 
         float speed = player->speed;
-
-        if (!jumpRegistered)
-        {
-            auto rigidbody = engineState.scene.Get<RigidBody3D>(ent);
-            AddCollisionEnterEvent(rigidbody->body->GetID(), PlayerCollide);
-            AddCollisionExitEvent(rigidbody->body->GetID(), PlayerDecollide);
-            jumpRegistered = true;
-        }
 
         bodyInterface.SetRotation(playerID, Quat::sIdentity(), EActivation::Activate);
     
