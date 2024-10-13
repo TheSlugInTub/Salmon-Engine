@@ -164,8 +164,7 @@ void RigidBody3DSys()
     {
 	auto rigid = engineState.scene.Get<RigidBody3D>(ent);
      
-        if (rigid->state == BodyState::Static) { std::cout << "Body is static\n"; continue; }
-        else { std::cout << "Body is dynamic\n"; }
+        if (rigid->state == BodyState::Static) { continue; }
 
 	RVec3 positionOfSphere = bodyInterface.GetCenterOfMassPosition(rigid->body->GetID());
 

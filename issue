@@ -1,0 +1,24 @@
+float capsuleRadius = 1.0f;
+float capsuleHeight = 2.0f;
+float rayOffset = capsuleRadius * 0.1f;
+float rayLength = 5.0f;
+
+JPH::Vec3 rayStart = playerPosition + JPH::Vec3(0, -capsuleHeight / 2 + rayOffset, 0);
+JPH::Vec3 rayEnd = rayStart + JPH::Vec3(0, -rayLength, 0);
+JPH::RRayCast ray(rayStart, rayEnd - rayStart);
+
+// Create a result object to store the raycast hit data
+JPH::RayCastResult rayCastResult;
+
+const JPH::NarrowPhaseQuery& query = physicsSystem.GetNarrowPhaseQuery();
+
+JPH::BroadPhaseLayerFilter layerFilter;
+JPH::ObjectLayerFilter objectLayerFilter;
+
+bool hit = query.CastRay(ray, rayCastResult, layerFilter, objectLayerFilter);
+
+// Check if we have hit the ground and if so, jump if we press space
+if (Input::GetKeyDown(Key::Space) && hit)
+{
+    // bleh bleh
+}

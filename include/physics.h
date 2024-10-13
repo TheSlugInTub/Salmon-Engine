@@ -21,6 +21,8 @@
 #include <Jolt/Physics/Collision/Shape/TriangleShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/Collision/ContactListener.h>
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/CastResult.h>
 #include <renderer.h>
 #include <engine.h>
 #include <functional>
@@ -244,30 +246,25 @@ public:
     }
 };
 
-struct CollisionExitData
-{
-    BodyID id;
-    std::function<void()> call;
-};
-
-struct CollisionEnterData
+struct CollisionEventData
 {
     BodyID id;
     std::function<void(BodyID id1, BodyID id2)> call;
+    bool collide;
 };
 
-inline std::vector<CollisionEnterData> registeredCollisions;
-inline std::vector<CollisionExitData> registeredDecollisions;
+inline std::vector<CollisionEventData> registeredCollisions;
+inline std::vector<CollisionEventData> registeredDecollisions;
 
 inline void AddCollisionEnterEvent(BodyID id, std::function<void(BodyID id1, BodyID id2)> call)
 {
-    CollisionEnterData data(id, call);
+    CollisionEventData data(id, call, true);
     registeredCollisions.push_back(data);
 }
 
-inline void AddCollisionExitEvent(BodyID id, std::function<void()> call)
+inline void AddCollisionExitEvent(BodyID id, std::function<void(BodyID id1, BodyID id2)> call)
 {
-    CollisionExitData data(id, call);
+    CollisionEventData data(id, call, false);
     registeredDecollisions.push_back(data);
 }
 
@@ -294,7 +291,7 @@ public:
     {
         for (auto data : registeredDecollisions)
         {
-            data.call();
+            data.call(subShapePair.GetBody1ID(), subShapePair.GetBody2ID());
         }
     }
 };

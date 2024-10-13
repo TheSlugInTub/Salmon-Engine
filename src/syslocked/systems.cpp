@@ -50,14 +50,14 @@ void CameraLookSys()
 inline bool canJump = false;
 inline bool jumpRegistered = false;
 
-void TurnOffJump()
-{
-    canJump = false;
-}
-
-void TurnOnJump(JPH::BodyID id1, JPH::BodyID id2)
+void PlayerCollide(JPH::BodyID id1, JPH::BodyID id2)
 {
     canJump = true;
+}
+
+void PlayerDecollide(JPH::BodyID id1, JPH::BodyID id2)
+{
+    canJump = false;
 }
 
 void PlayerMovementSys()
@@ -69,14 +69,15 @@ void PlayerMovementSys()
         Camera* camera = engineState.camera;
         auto playerID = engineState.scene.Get<RigidBody3D>(ent)->body->GetID();
         auto playerBody = engineState.scene.Get<RigidBody3D>(ent)->body;
+        auto playerRigid = engineState.scene.Get<RigidBody3D>(ent);
 
         float speed = player->speed;
 
         if (!jumpRegistered)
         {
             auto rigidbody = engineState.scene.Get<RigidBody3D>(ent);
-            AddCollisionEnterEvent(rigidbody->body->GetID(), TurnOnJump);
-            AddCollisionExitEvent(rigidbody->body->GetID(), TurnOffJump);
+            AddCollisionEnterEvent(rigidbody->body->GetID(), PlayerCollide);
+            AddCollisionExitEvent(rigidbody->body->GetID(), PlayerDecollide);
             jumpRegistered = true;
         }
 
@@ -105,15 +106,29 @@ void PlayerMovementSys()
             playerPosition += Vec3(camera->Right.x, 0.0f, camera->Right.z) * speed;
         }
 
+        float rayOffset = -2.3f;
+        float rayLength = 0.1f;
+
+        JPH::Vec3 rayStart = playerPosition + JPH::Vec3(0, -playerRigid->capsuleHeight / 2 + rayOffset, 0);
+        JPH::Vec3 rayEnd = rayStart + JPH::Vec3(0, -rayLength, 0);
+        JPH::RRayCast ray(rayStart, rayEnd - rayStart);
+
+        // Create a result object to store the raycast hit data
+        JPH::RayCastResult rayCastResult;
+
+        const JPH::NarrowPhaseQuery& query = physicsSystem.GetNarrowPhaseQuery();
+
+        bool hit = query.CastRay(ray, rayCastResult);
+
         // Set the new position for the player
         bodyInterface.SetPosition(playerID, playerPosition, EActivation::Activate());
     
-        bodyInterface.ActivateBody(playerID);
+        bodyInterface.ActivateBody(playerID); 
 
-        if (Input::GetKeyDown(Key::Space) && canJump)
+        if (Input::GetKeyDown(Key::Space) && hit)
         {
             // Adjust the force value based on your object's mass
-            Vec3 jumpForce(0.0f, 10000000.0f, 0.0f); 
+            JPH::Vec3 jumpForce(0.0f, 10000000.0f, 0.0f); 
             bodyInterface.AddForce(playerID, jumpForce * player->jumpSpeed);
         }
     }
@@ -179,7 +194,7 @@ void GunSys()
             for (int i = 0; i < 6; ++i)
             {
                 EntityID bulletEnt = engineState.scene.AddEntity();
-                engineState.scene.AssignParam<Transform>(bulletEnt, objectTransform->position, glm::vec3(0.0f), glm::vec3(0.07f));
+                engineState.scene.AssignParam<Transform>(bulletEnt, objectTransform->position, glm::vec3(0.0f), glm::vec3(0.065f));
                 engineState.scene.AssignParam<MeshRenderer>(bulletEnt, gun->bulletModel, glm::vec4(1.0f), gun->bulletTexture);
                 engineState.scene.AssignParam<RigidBody3D>(bulletEnt, ColliderType::Capsule, BodyState::Dynamic, 0.2f, 0.1f);
                 engineState.scene.Assign<Bullet>(bulletEnt);
