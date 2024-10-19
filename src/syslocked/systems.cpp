@@ -47,6 +47,12 @@ void CameraLookSys()
     engineState.camera->ProcessMouseMovement(xoffset, yoffset);
 }
 
+
+// Damping factor to slow the player down when no input is applied (simulates friction)
+float damping = 0.9f;  // You can tweak this value for more or less friction
+float maxSpeed = 10000.0f; // Maximum speed
+float forceStrength = 1100000.0f; // Adjust this for how quickly the player accelerates
+
 void PlayerMovementSys()
 {
     for (EntityID ent : SceneView<PlayerMovement>(engineState.scene))
@@ -64,11 +70,6 @@ void PlayerMovementSys()
     
         Vec3 playerPosition = bodyInterface.GetPosition(playerID);
         Vec3 playerVelocity = bodyInterface.GetLinearVelocity(playerID);
-
-        // Damping factor to slow the player down when no input is applied (simulates friction)
-        float damping = 0.9f;  // You can tweak this value for more or less friction
-        float maxSpeed = 10000.0f; // Maximum speed
-        float forceStrength = 1100000.0f; // Adjust this for how quickly the player accelerates
 
         Vec3 force(0.0f, 0.0f, 0.0f); // Initialize a force vector
 
@@ -199,7 +200,7 @@ void GunSys()
                 EntityID bulletEnt = engineState.scene.AddEntity();
                 engineState.scene.AssignParam<Transform>(bulletEnt, objectTransform->position, glm::vec3(0.0f), glm::vec3(0.065f));
                 engineState.scene.AssignParam<MeshRenderer>(bulletEnt, gun->bulletModel, glm::vec4(1.0f), gun->bulletTexture);
-                engineState.scene.AssignParam<RigidBody3D>(bulletEnt, ColliderType::Capsule, BodyState::Dynamic, 0.2f, 0.1f);
+                engineState.scene.AssignParam<RigidBody3D>(bulletEnt, ColliderType::Capsule, BodyState::Dynamic, 0.2f, 0.1f, RigidbodyID_Bullet);
                 engineState.scene.Assign<Bullet>(bulletEnt);
  
                 RigidBody3DStartSys();
@@ -213,8 +214,41 @@ void GunSys()
     }
 }
 
+void EnemySys()
+{
+    for (EntityID ent : SceneView<Enemy>(engineState.scene))
+    {
+        auto enemy = engineState.scene.Get<Enemy>(ent);
+        auto rigid = engineState.scene.Get<RigidBody3D>(ent);
+        
+        RigidBody3DStartSys();
+
+        AddCollisionEnterEvent(rigid->body, [ent, enemy, rigid](const Body* id1, const Body* id2)      
+        {
+            // Bullet hit callback!
+            int group1 = id1->GetCollisionGroup().GetGroupID();
+            int group2 = id2->GetCollisionGroup().GetGroupID();
+
+            if (group1 == RigidbodyID_Bullet || group2 == RigidbodyID_Bullet)
+            {
+                enemy->health--;
+            }
+
+            if (enemy->health <= 0)
+            {
+                engineState.scene.DestroyEntity(ent);
+                BodyID id = rigid->body->GetID();
+
+                bodyInterface.RemoveBody(id);
+                bodyInterface.DestroyBody(id);
+            }
+        });
+    }
+}
+
 // Start systems
-REGISTER_SYSTEM(GunStartSys);
+REGISTER_START_SYSTEM(EnemySys);
+REGISTER_START_SYSTEM(GunStartSys);
 
 // Regular systems
 REGISTER_SYSTEM(GunSys);

@@ -51,8 +51,6 @@ void MeshRendererSys()
 
 void RigidBody3DStartSys()
 {
-    BodyInterface& bodyInterface = physicsSystem.GetBodyInterface();
-
     for (EntityID ent : SceneView<Transform, RigidBody3D>(engineState.scene)) // Loops over all entities with transform and rigidbody components
     {
 	auto rigid = engineState.scene.Get<RigidBody3D>(ent);
@@ -85,6 +83,7 @@ void RigidBody3DStartSys()
                                                 rigid->state == BodyState::Dynamic ? EMotionType::Dynamic : EMotionType::Static,
                                                 rigid->state == BodyState::Dynamic ? Layers::MOVING : Layers::NON_MOVING);
 
+            floor_settings.mCollisionGroup.SetGroupID(rigid->groupID);
 	    // Create the actual rigid body
 	    rigid->body = bodyInterface.CreateBody(floor_settings); // Note that if we run out of bodies this can return nullptr
 
@@ -117,6 +116,7 @@ void RigidBody3DStartSys()
                                                   rigid->state == BodyState::Dynamic ? EMotionType::Dynamic : EMotionType::Static,
                                                   rigid->state == BodyState::Dynamic ? Layers::MOVING : Layers::NON_MOVING);
 
+            capsule_settings.mCollisionGroup.SetGroupID(rigid->groupID);
             // Create the actual rigid body
             rigid->body = bodyInterface.CreateBody(capsule_settings);
 
@@ -142,6 +142,7 @@ void RigidBody3DStartSys()
                                           rigid->state == BodyState::Dynamic ? EMotionType::Dynamic : EMotionType::Static,
                                           rigid->state == BodyState::Dynamic ? Layers::MOVING : Layers::NON_MOVING);
 
+            sphere_settings.mCollisionGroup.SetGroupID(rigid->groupID);
             // Create the actual rigid body
             rigid->body = bodyInterface.CreateBody(sphere_settings);
 

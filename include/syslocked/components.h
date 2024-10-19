@@ -8,6 +8,14 @@
 #include <sound_device.h>
 #include <sound_buffer.h>
 
+enum RigidbodyID
+{
+    RigidbodyID_None = 0,
+    RigidbodyID_Bullet,
+    RigidbodyID_Enemy,
+    RigidbodyID_Player
+};
+
 struct PlayerMovement
 {
     float speed;
@@ -28,6 +36,11 @@ struct Gun
     SoundDevice* soundDevice;
     Sound shootSound;
     std::shared_ptr<SoundSource> soundSource;
+};
+
+struct Enemy
+{
+    int health;
 };
 
 struct Bullet 

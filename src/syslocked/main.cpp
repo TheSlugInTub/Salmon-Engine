@@ -13,7 +13,6 @@ int main()
 {
     Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false);
     glfwSetInputMode(window.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSwapInterval(1);
 
     StartPhysics();
 
@@ -29,7 +28,7 @@ int main()
     Scene scene;
     EntityID player = scene.AddEntity();
     scene.AssignParam<Transform>(player, glm::vec3(0.0f, 30.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-    scene.AssignParam<RigidBody3D>(player, ColliderType::Capsule, BodyState::Dynamic, 1.0f, 2.0f);
+    scene.AssignParam<RigidBody3D>(player, ColliderType::Capsule, BodyState::Dynamic, 1.0f, 2.0f, RigidbodyID_Player);
     scene.AssignParam<PlayerMovement>(player, 0.34f, 0.6f);
 
     EntityID ground = scene.AddEntity();
@@ -55,6 +54,7 @@ int main()
     scene.AssignParam<Transform>(enemy, glm::vec3(2.0f, 4.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
     scene.AssignParam<MeshRenderer>(enemy, boxModel, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), bottomTex);
     scene.AssignParam<RigidBody3D>(enemy, ColliderType::Box, BodyState::Dynamic, glm::vec3(1.0f, 1.0f, 1.0f));
+    scene.AssignParam<Enemy>(enemy, 6);
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
@@ -92,7 +92,7 @@ int main()
         camera.Position = cameraPos;
         Renderer::lights[1].position = scene.Get<Transform>(player)->position;
 
-        // physicsSystem.DrawBodies(settings, &debugRenderer, filter);
+        physicsSystem.DrawBodies(settings, &debugRenderer, filter);
         
         ImGuiLayer::EndFrame();
         window.Update();

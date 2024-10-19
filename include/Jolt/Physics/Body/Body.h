@@ -360,8 +360,8 @@ private:
 	// 8 byte aligned
 	RefConst<Shape>			mShape;															///< Shape representing the volume of this body
 	MotionProperties *		mMotionProperties = nullptr;									///< If this is a keyframed or dynamic object, this object holds all information about the movement
-	uint64					mUserData = 0;													///< User data, can be used for anything by the application
-	CollisionGroup			mCollisionGroup;												///< The collision group this body belongs to (determines if two objects can collide)
+	uint64				mUserData = 0;													///< User data, can be used for anything by the application
+        CollisionGroup			mCollisionGroup;												///< The collision group this body belongs to (determines if two objects can collide)
 
 	// 4 byte aligned
 	float					mFriction;														///< Friction of the body (dimensionless number, usually between 0 and 1, 0 = no friction, 1 = friction force equals force that presses the two bodies together). Note that bodies can have negative friction but the combined friction (see PhysicsSystem::SetCombineFriction) should never go below zero.

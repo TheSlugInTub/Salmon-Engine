@@ -51,21 +51,22 @@ struct RigidBody3D
     float capsuleHeight = 2.0f;
 
     Body* body = nullptr;
-    
-    RigidBody3D(ColliderType type, BodyState state, glm::vec3 size)
-        : colliderType(type), boxSize(size), state(state)
+    int groupID = 0;
+
+    RigidBody3D(ColliderType type, BodyState state, glm::vec3 size, int groupID = 0)
+        : colliderType(type), boxSize(size), state(state), groupID(groupID)
     {}
 
-    RigidBody3D(ColliderType type, BodyState state, float capRad, float capHeight)
-        : colliderType(type), capsuleHeight(capHeight), capsuleRadius(capRad), state(state)
+    RigidBody3D(ColliderType type, BodyState state, float capRad, float capHeight, int groupID = 0)
+        : colliderType(type), capsuleHeight(capHeight), capsuleRadius(capRad), state(state), groupID(groupID)
     {}
 
-    RigidBody3D(ColliderType type, BodyState state, float sphereRadius)
-        : colliderType(type), sphereRadius(sphereRadius), state(state)
+    RigidBody3D(ColliderType type, BodyState state, float sphereRadius, int groupID = 0)
+        : colliderType(type), sphereRadius(sphereRadius), state(state), groupID(groupID)
     {}
 
-    RigidBody3D(ColliderType type, BodyState state)
-        : colliderType(type), state(state)
+    RigidBody3D(ColliderType type, BodyState state, int groupID = 0)
+        : colliderType(type), state(state), groupID(groupID)
     {}
 };
 

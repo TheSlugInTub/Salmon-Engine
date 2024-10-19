@@ -189,11 +189,11 @@ inline void DestroyPhysics()
     delete tempAllocator;
     delete jobSystem;
 
-	UnregisterTypes();
+    UnregisterTypes();
 
-	// Destroy the factory
-	delete Factory::sInstance;
-	Factory::sInstance = nullptr;
+    // Destroy the factory
+    delete Factory::sInstance;
+    Factory::sInstance = nullptr;
 }
 
 struct LineSeg
@@ -248,24 +248,17 @@ public:
 
 struct CollisionEventData
 {
-    BodyID id;
-    std::function<void(BodyID id1, BodyID id2)> call;
+    const Body* id;
+    std::function<void(const Body* id1, const Body* id2)> call;
     bool collide;
 };
 
 inline std::vector<CollisionEventData> registeredCollisions;
-inline std::vector<CollisionEventData> registeredDecollisions;
 
-inline void AddCollisionEnterEvent(BodyID id, std::function<void(BodyID id1, BodyID id2)> call)
+inline void AddCollisionEnterEvent(Body* id, std::function<void(const Body* id1, const Body* id2)> call)
 {
     CollisionEventData data(id, call, true);
     registeredCollisions.push_back(data);
-}
-
-inline void AddCollisionExitEvent(BodyID id, std::function<void(BodyID id1, BodyID id2)> call)
-{
-    CollisionEventData data(id, call, false);
-    registeredDecollisions.push_back(data);
 }
 
 class MyContactListener : public JPH::ContactListener {
@@ -280,18 +273,21 @@ public:
     // Called when two bodies are colliding, called for each contact point
     virtual void OnContactAdded(const JPH::Body& body1, const JPH::Body& body2, const JPH::ContactManifold& manifold, JPH::ContactSettings& settings) override 
     {
-        for (auto data : registeredCollisions)
+        for (const auto& data : registeredCollisions)
         {
-            data.call(body1.GetID(), body2.GetID());
+            if (body1.GetID() == data.id->GetID() || body2.GetID() == data.id->GetID())
+            {
+                data.call(&body1, &body2);
+            }
         }
     }
 
     // Called when two bodies stop colliding
     virtual void OnContactRemoved(const JPH::SubShapeIDPair& subShapePair) override 
     {
-        for (auto data : registeredDecollisions)
-        {
-            data.call(subShapePair.GetBody1ID(), subShapePair.GetBody2ID());
-        }
+        //for (auto data : registeredDecollisions)
+        //{
+        //    data.call(subShapePair.GetBody1ID(), subShapePair.GetBody2ID());
+        //}
     }
 };
