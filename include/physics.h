@@ -277,11 +277,14 @@ public:
     // Called when two bodies are colliding, called for each contact point
     virtual void OnContactAdded(const JPH::Body& body1, const JPH::Body& body2, const JPH::ContactManifold& manifold, JPH::ContactSettings& settings) override 
     {
+        std::cout << "Contact added\n";
+
         for (const auto& data : registeredCollisions)
         {
             if (body1.GetID() == data.id->GetID() || body2.GetID() == data.id->GetID())
             {
                 data.call(&body1, &body2);
+                std::cout << "Callback called\n";
             }
         }
     }

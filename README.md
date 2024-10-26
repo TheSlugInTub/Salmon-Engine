@@ -3,11 +3,33 @@
 Salmon engine is a simple, light-weight game engine with an ECS (Entity Component System) design.
 
 The engine includes a 3D OpenGL renderer and 3D physics with Jolt.
+This repository already has a working game in it, which uses the engine,
+that's because I'm making a game alongside this engine.
+Don't worry though, the game is completely decoupled.
 
 # Getting started
 
-Clone the repository using `git clone https://github.com/TheSlugInTub/Salmon-Engine.git`\
-Make a build folder, cd into the build folder, type `cmake ..` to generate build files.\
-Change directory to the main directory, and type `cmake --build bld` to make an executable.\
-Copy the 'shaders' and 'res' folders into the directory where the executable is stored
-to get it to run properly. Also copy the assimp dll to the executable directory.
+To compile the project:
+
+```bash
+git clone https://github.com/TheSlugInTub/Salmon-Engine.git
+cd Salmon-Engine
+mkdir build
+cmake -S . -B build
+cmake --build build --config Release 
+```
+
+Copy the 'res', 'shaders' folders and assimp DLL if you're on windows to the executable's directory.
+
+# Libraries Used
+
+I have used these libraries in the engine:
+
+[Glad](https://glad.dav1d.de/) - For OpenGL and rendering.
+[GLFW](https://github.com/glfw/glfw) - For window, input and context creation.
+[stb_image](https://github.com/nothings/stb) - For image loading.
+[Jolt Physics](https://github.com/jrouwe/JoltPhysics/) - For physics.
+[openal-soft](https://github.com/kcat/openal-soft) - For audio.
+[GLM](https://github.com/g-truc/glm) - For math.
+[assimp](https://github.com/assimp/assimp) - For model loading.
+[imgui](https://github.com/ocornut/imgui) - Not neccessary in the engine but can be used for GUI.
