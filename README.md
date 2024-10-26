@@ -25,11 +25,11 @@ Copy the 'res', 'shaders' folders and assimp DLL if you're on windows to the exe
 
 I have used these libraries in the engine:
 
-[Glad](https://glad.dav1d.de/) - For OpenGL and rendering.
-[GLFW](https://github.com/glfw/glfw) - For window, input and context creation.
-[stb_image](https://github.com/nothings/stb) - For image loading.
-[Jolt Physics](https://github.com/jrouwe/JoltPhysics/) - For physics.
-[openal-soft](https://github.com/kcat/openal-soft) - For audio.
-[GLM](https://github.com/g-truc/glm) - For math.
-[assimp](https://github.com/assimp/assimp) - For model loading.
-[imgui](https://github.com/ocornut/imgui) - Not neccessary in the engine but can be used for GUI.
+[Glad](https://glad.dav1d.de/) - For OpenGL and rendering. \
+[GLFW](https://github.com/glfw/glfw) - For window, input and context creation. \
+[stb_image](https://github.com/nothings/stb) - For image loading. \
+[Jolt Physics](https://github.com/jrouwe/JoltPhysics/) - For physics. \
+[openal-soft](https://github.com/kcat/openal-soft) - For audio. \
+[GLM](https://github.com/g-truc/glm) - For math. \
+[assimp](https://github.com/assimp/assimp) - For model loading. \
+[imgui](https://github.com/ocornut/imgui) - Not neccessary in the engine but can be used for GUI. 
