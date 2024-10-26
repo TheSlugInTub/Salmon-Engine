@@ -39,6 +39,10 @@
 	#undef JPH_DEBUG_RENDERER_EXPORT
 #endif
 
+#ifndef JPH_ENABLE_ASSERTS
+#define JPH_ENABLE_ASSERTS
+#endif
+
 #include <Jolt/Core/Mutex.h>
 #include <Jolt/Core/UnorderedMap.h>
 
@@ -215,7 +219,7 @@ public:
     {
         LineSeg line(glm::vec3(inFrom.GetX(), inFrom.GetY(), inFrom.GetZ()), glm::vec3(inTo.GetX(), inTo.GetY(), inTo.GetZ()));
 
-	float aspectRatio = engineState.window->GetAspectRatio();
+		float aspectRatio = engineState.window->GetAspectRatio();
     	Renderer::RenderLine(line.inFrom, line.inTo, engineState.camera->GetProjMatrix(aspectRatio), engineState.camera->GetViewMatrix());
     }
 
@@ -242,7 +246,7 @@ public:
 
     inline virtual void DrawText3D(RVec3Arg inPosition, const string_view &inString, ColorArg inColor = Color::sWhite, float inHeight = 0.5f)
     {
-   	//fuck off
+   		//fuck off
     }
 };
 

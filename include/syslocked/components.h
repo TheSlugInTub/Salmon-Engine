@@ -41,6 +41,12 @@ struct Gun
 struct Enemy
 {
     int health;
+    int registeredCollisionIndex = 0;
+    bool isDead = false;
+
+    SoundDevice* soundDevice;
+    Sound hurtSound;
+    std::shared_ptr<SoundSource> soundSource;
 };
 
 struct Bullet 

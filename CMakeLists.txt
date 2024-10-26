@@ -19,7 +19,7 @@ include_directories(
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.c)
 file(GLOB_RECURSE INCLUDESOURCES include/*.cpp include/*.c)
 
-# Comment to reload CMake, Counter: 23
+# Comment to reload CMake, Counter: 24
 
 # Add the executable
 add_executable(${PROJECT_NAME} 

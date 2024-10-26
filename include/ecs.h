@@ -31,23 +31,23 @@ inline std::vector<std::function<void()>> startSystems;
 
 inline EntityID CreateEntityId(EntityIndex index, EntityVersion version)
 {
-  	// Shift the index up 32, and put the version in the bottom
-  	return ((EntityID)index << 32) | ((EntityID)version);
+    // Shift the index up 32, and put the version in the bottom
+    return ((EntityID)index << 32) | ((EntityID)version);
 }
 inline EntityIndex GetEntityIndex(EntityID id)
 {
-  	// Shift down 32 so we lose the version and get our index
-  	return id >> 32;
+    // Shift down 32 so we lose the version and get our index
+    return id >> 32;
 }
 inline EntityVersion GetEntityVersion(EntityID id)
 {
-  	// Cast to a 32 bit int to get our version number (loosing the top 32 bits)
-  	return (EntityVersion)id;
+    // Cast to a 32 bit int to get our version number (loosing the top 32 bits)
+    return (EntityVersion)id;
 }
 inline bool IsEntityValid(EntityID id)
 {
-  	// Check if the index is our invalid index
-  	return (id >> 32) != EntityIndex(-1);
+    // Check if the index is our invalid index
+    return (id >> 32) != EntityIndex(-1);
 }
 
 #define INVALID_ENTITY CreateEntityId(EntityIndex(-1), 0)
@@ -163,32 +163,32 @@ struct Scene
     template<typename T>
     T* Get(EntityID id)
     {
-	int componentId = GetId<T>();
-	if (!entities[GetEntityIndex(id)].mask.test(componentId))
-	    return nullptr;
+	    int componentId = GetId<T>();
+	    if (!entities[GetEntityIndex(id)].mask.test(componentId))
+	        return nullptr;
 
-	T* pComponent = static_cast<T*>(componentPools[componentId]->get(GetEntityIndex(id)));
-	return pComponent;
+	    T* pComponent = static_cast<T*>(componentPools[componentId]->get(GetEntityIndex(id)));
+	    return pComponent;
     }
 
     // Removes a component from an entity ID
     template<typename T>
     void Remove(EntityID id)
     {
-	// ensures you're not accessing an entity that has been deleted
-	if (entities[GetEntityIndex(id)].id != id) 
-	    return;
+	    // ensures you're not accessing an entity that has been deleted
+	    if (entities[GetEntityIndex(id)].id != id) 
+	        return;
 
-	int componentId = GetId<T>();
-	entities[GetEntityIndex(id)].mask.reset(componentId);
+	    int componentId = GetId<T>();
+	    entities[GetEntityIndex(id)].mask.reset(componentId);
     }
 
     // Destroys an entity, resets its mask, adds the given entity's index to the list of free entities
     void DestroyEntity(EntityID id)
     {
-	EntityID newID = CreateEntityId(EntityIndex(-1), GetEntityVersion(id) + 1);
-	entities[GetEntityIndex(id)].id = newID;
-	entities[GetEntityIndex(id)].mask.reset(); 
+	    EntityID newID = CreateEntityId(EntityIndex(-1), GetEntityVersion(id) + 1);
+	    entities[GetEntityIndex(id)].id = newID;
+	    entities[GetEntityIndex(id)].mask.reset(); 
         freeEntities.push_back(GetEntityIndex(id));
     }
 

@@ -1,11 +1,15 @@
 #pragma once
 
+// 3D renderer for the engine
+
 #include <glm/glm.hpp>
 #include <ecs.h>
 #include <shader.h>
 #include <vector>
 
-inline unsigned int SHADOW_WIDTH = 2024, SHADOW_HEIGHT = 2024;
+// Resolution of the shadowDepthMap (cubemap which stores shadows)
+// Increase if you want them to be higher quality
+inline unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 
 struct Transform;
 

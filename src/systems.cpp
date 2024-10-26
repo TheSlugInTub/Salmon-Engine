@@ -10,8 +10,6 @@ void MeshRendererSys()
 {
     float aspectRatio = engineState.window->GetAspectRatio();
 
-    //glClear(GL_DEPTH_BUFFER_BIT);
-
     for (auto& light : Renderer::lights)
     {
         if (!light.castShadows) { break; }        

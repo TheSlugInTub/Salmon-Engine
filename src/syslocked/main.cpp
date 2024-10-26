@@ -9,10 +9,13 @@ const unsigned int SCR_HEIGHT = 1080;
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
+float physTimer = 3.0f;
+
 int main()
 {
     Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false);
     glfwSetInputMode(window.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSwapInterval(1);
 
     StartPhysics();
 
@@ -27,7 +30,7 @@ int main()
 
     Scene scene;
     EntityID player = scene.AddEntity();
-    scene.AssignParam<Transform>(player, glm::vec3(0.0f, 30.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    scene.AssignParam<Transform>(player, glm::vec3(0.0f, 10.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
     scene.AssignParam<RigidBody3D>(player, ColliderType::Capsule, BodyState::Dynamic, 1.0f, 2.0f, RigidbodyID_Player);
     scene.AssignParam<PlayerMovement>(player, 0.34f, 0.6f);
 
@@ -51,10 +54,10 @@ int main()
     scene.AssignParam<Light>(playerLight, glm::vec3(30.0f, 2.0f, 0.0f), 35.0f, 0.1f, 1.8f, glm::vec4(1.0f, 0.647f, 0.0f, 1.0f), false);  
 
     EntityID enemy = scene.AddEntity();
-    scene.AssignParam<Transform>(enemy, glm::vec3(2.0f, 9.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    scene.AssignParam<Transform>(enemy, glm::vec3(2.0f, 4.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
     scene.AssignParam<MeshRenderer>(enemy, boxModel, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), bottomTex);
     scene.AssignParam<RigidBody3D>(enemy, ColliderType::Box, BodyState::Dynamic, glm::vec3(1.0f, 1.0f, 1.0f));
-    scene.AssignParam<Enemy>(enemy, 6);
+    scene.AssignParam<Enemy>(enemy, 15);
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
@@ -87,6 +90,7 @@ int main()
 
         UpdateSystems();
 
+        physTimer -= engineState.deltaTime;
         glm::vec3 cameraPos = scene.Get<Transform>(player)->position;
         cameraPos.y += 1.7f;
         camera.Position = cameraPos;
@@ -97,7 +101,7 @@ int main()
         ImGuiLayer::EndFrame();
         window.Update();
 
-        StepPhysics(engineState.deltaTime);
+        if (physTimer <= 0) { StepPhysics(engineState.deltaTime); }
     }
 
     DestroyPhysics();

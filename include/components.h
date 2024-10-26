@@ -7,6 +7,8 @@
 #include <animation.h>
 #include <utils.h>
 
+// This file creates a bunch of core components that are neccessary for the engine to run
+
 // Enum to specify what shape the collider is
 enum ColliderType
 {
@@ -86,6 +88,8 @@ struct Animator
     {}
 };
 
+// Forward declarations of systems just to make it so you can run them anytime which can be useful
+void MeshRendererSys();
 void RigidBody3DStartSys();
 void RigidBody3DSys();
 

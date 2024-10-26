@@ -144,7 +144,7 @@ void GunStartSys()
     {
         auto gun = engineState.scene.Get<Gun>(ent);
         gun->soundDevice = SoundDevice::Get();
-        gun->shootSound = SoundBuffer::Get()->AddSoundEffect("res/sounds/shoot.wav");
+        gun->shootSound = SoundBuffer::Get()->AddSoundEffect("res/sounds/Shoot.wav");
 
         gun->soundSource = std::make_shared<SoundSource>();
     }
@@ -214,6 +214,50 @@ void GunSys()
     }
 }
 
+void DestroyBody(BodyID id)
+{
+    bodyInterface.RemoveBody(id);
+    bodyInterface.DestroyBody(id);
+}
+
+void EnemyStartSys()
+{
+    for (EntityID ent : SceneView<Enemy>(engineState.scene))
+    {
+        auto enemy = engineState.scene.Get<Enemy>(ent);
+        auto rigid = engineState.scene.Get<RigidBody3D>(ent);
+ 
+        enemy->soundDevice = SoundDevice::Get();
+        enemy->hurtSound = SoundBuffer::Get()->AddSoundEffect("res/sounds/EnemyHurt.wav");
+
+        enemy->soundSource = std::make_shared<SoundSource>();
+
+        RigidBody3DStartSys();
+
+        AddCollisionEnterEvent(rigid->body, [ent, enemy, rigid](const Body* id1, const Body* id2)      
+        {
+            // Bullet hit callback!
+            
+            int group1 = id1->GetCollisionGroup().GetGroupID();
+            int group2 = id2->GetCollisionGroup().GetGroupID();
+
+            if (group1 == RigidbodyID_Bullet || group2 == RigidbodyID_Bullet)
+            {
+                enemy->health--;
+                enemy->soundSource->Play(enemy->hurtSound);
+            }
+
+            if (enemy->health <= 0)
+            {
+                if (enemy->isDead) { return; }
+                enemy->isDead = true;
+            }
+        });
+
+        enemy->registeredCollisionIndex = registeredCollisions.size() - 1;
+    }
+}
+
 void EnemySys()
 {
     for (EntityID ent : SceneView<Enemy>(engineState.scene))
@@ -221,37 +265,26 @@ void EnemySys()
         auto enemy = engineState.scene.Get<Enemy>(ent);
         auto rigid = engineState.scene.Get<RigidBody3D>(ent);
         
-        RigidBody3DStartSys();
-
-        AddCollisionEnterEvent(rigid->body, [ent, enemy, rigid](const Body* id1, const Body* id2)      
+        if (enemy->isDead)
         {
-            // Bullet hit callback!
-            int group1 = id1->GetCollisionGroup().GetGroupID();
-            int group2 = id2->GetCollisionGroup().GetGroupID();
+            engineState.scene.Remove<Enemy>(ent);
+            engineState.scene.DestroyEntity(ent);
 
-            if (group1 == RigidbodyID_Bullet || group2 == RigidbodyID_Bullet)
-            {
-                enemy->health--;
-            }
+            DestroyBody(rigid->body->GetID());
 
-            if (enemy->health <= 0)
-            {
-                engineState.scene.DestroyEntity(ent);
-                BodyID id = rigid->body->GetID();
+            registeredCollisions.erase(registeredCollisions.begin() + enemy->registeredCollisionIndex);
 
-                bodyInterface.RemoveBody(id);
-                bodyInterface.DestroyBody(id);
-            }
-        });
+        }
     }
 }
 
 // Start systems
-REGISTER_START_SYSTEM(EnemySys);
+REGISTER_START_SYSTEM(EnemyStartSys);
 REGISTER_START_SYSTEM(GunStartSys);
 
 // Regular systems
 REGISTER_SYSTEM(GunSys);
+REGISTER_SYSTEM(EnemySys);
 REGISTER_SYSTEM(PlayerMovementSys);
 REGISTER_SYSTEM(CameraMoveSys);
 REGISTER_SYSTEM(CameraLookSys);
