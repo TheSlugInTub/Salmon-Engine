@@ -75,9 +75,9 @@ int main()
 
     MyDebugRenderer debugRenderer;
  
-    const BodyDrawFilter *filter = nullptr; 
+    const JPH::BodyDrawFilter *filter = nullptr; 
 
-    BodyManager::DrawSettings settings;
+    JPH::BodyManager::DrawSettings settings;
     settings.mDrawShape = false;
     settings.mDrawBoundingBox = true;
     settings.mDrawShapeWireframe = true;

@@ -51,45 +51,45 @@ void RigidBody3DStartSys()
 {
     for (EntityID ent : SceneView<Transform, RigidBody3D>(engineState.scene)) // Loops over all entities with transform and rigidbody components
     {
-	auto rigid = engineState.scene.Get<RigidBody3D>(ent);
-	auto trans = engineState.scene.Get<Transform>(ent);
+	   auto rigid = engineState.scene.Get<RigidBody3D>(ent);
+	   auto trans = engineState.scene.Get<Transform>(ent);
 
         if (rigid->body != nullptr) { continue; }
 
-	Vec3 transPosition(trans->position.x, trans->position.y, trans->position.z);
-	RVec3 RtransPosition = transPosition;
+	    JPH::Vec3 transPosition(trans->position.x, trans->position.y, trans->position.z);
+	    JPH::RVec3 RtransPosition = transPosition;
 
-	if (rigid->colliderType == ColliderType::Box)
-	{
-	    Vec3 bodyScale(rigid->boxSize.x, rigid->boxSize.y, rigid->boxSize.z);
+    	if (rigid->colliderType == ColliderType::Box)
+    	{
+    	    JPH::Vec3 bodyScale(rigid->boxSize.x, rigid->boxSize.y, rigid->boxSize.z);
 
-	    BoxShapeSettings floor_shape_settings(bodyScale);
-	    floor_shape_settings.SetEmbedded(); 
+    	    JPH::BoxShapeSettings floor_shape_settings(bodyScale);
+    	    floor_shape_settings.SetEmbedded(); 
 
-	    // Create the shape
-	    ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
-	    ShapeRefC floor_shape = floor_shape_result.Get(); // We don't expect an error here, but you can check floor_shape_result for HasError() / GetError()
+    	    // Create the shape
+    	    JPH::ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
+    	    JPH::ShapeRefC floor_shape = floor_shape_result.Get(); // We don't expect an error here, but you can check floor_shape_result for HasError() / GetError()
 
             // Step 1: Convert Euler angles to GLM quaternion
             glm::quat glmQuat = glm::quat(trans->rotation);
 
             // Step 2: Convert GLM quaternion to Jolt quaternion
-            Quat joltQuat(glmQuat.x, glmQuat.y, glmQuat.z, glmQuat.w);  // Jolt uses (x, y, z, w) order
+            JPH::Quat joltQuat(glmQuat.x, glmQuat.y, glmQuat.z, glmQuat.w);  // Jolt uses (x, y, z, w) order
 
-	    // Create the settings for the body itself. Note that here you can also set other properties like the restitution / friction.
-	    BodyCreationSettings floor_settings(floor_shape, RtransPosition, joltQuat,
-                                                rigid->state == BodyState::Dynamic ? EMotionType::Dynamic : EMotionType::Static,
-                                                rigid->state == BodyState::Dynamic ? Layers::MOVING : Layers::NON_MOVING);
+    	    // Create the settings for the body itself. Note that here you can also set other properties like the restitution / friction.
+    	    JPH::BodyCreationSettings floor_settings(floor_shape, RtransPosition, joltQuat,
+                                                    rigid->state == BodyState::Dynamic ? JPH::EMotionType::Dynamic : JPH::EMotionType::Static,
+                                                    rigid->state == BodyState::Dynamic ? Layers::MOVING : Layers::NON_MOVING);
 
             floor_settings.mCollisionGroup.SetGroupID(rigid->groupID);
-	    // Create the actual rigid body
-	    rigid->body = bodyInterface.CreateBody(floor_settings); // Note that if we run out of bodies this can return nullptr
+    	    // Create the actual rigid body
+    	    rigid->body = bodyInterface.CreateBody(floor_settings); // Note that if we run out of bodies this can return nullptr
 
-		// Add it to the world
-	    if (rigid->body != nullptr)
-	    {
-		bodyInterface.AddBody(rigid->body->GetID(), EActivation::Activate);
-	    }
+    		// Add it to the world
+    	    if (rigid->body != nullptr)
+    	    {
+    		    bodyInterface.AddBody(rigid->body->GetID(), JPH::EActivation::Activate);
+    	    }
         }
         else if (rigid->colliderType == ColliderType::Capsule)
         {
@@ -97,21 +97,21 @@ void RigidBody3DStartSys()
             float height = rigid->capsuleHeight;
 
             // Capsule is defined by its half height (distance between the centers of the hemispheres)
-            CapsuleShapeSettings capsule_shape_settings(height * 0.5f, radius);
+            JPH::CapsuleShapeSettings capsule_shape_settings(height * 0.5f, radius);
             capsule_shape_settings.SetEmbedded();
 
             // Step 1: Convert Euler angles to GLM quaternion
             glm::quat glmQuat = glm::quat(trans->rotation);
 
             // Step 2: Convert GLM quaternion to Jolt quaternion
-            Quat joltQuat(glmQuat.x, glmQuat.y, glmQuat.z, glmQuat.w);  // Jolt uses (x, y, z, w) order
+            JPH::Quat joltQuat(glmQuat.x, glmQuat.y, glmQuat.z, glmQuat.w);  // Jolt uses (x, y, z, w) order
 
             // Create the shape
-            ShapeSettings::ShapeResult capsule_shape_result = capsule_shape_settings.Create();
-            ShapeRefC capsule_shape = capsule_shape_result.Get();
+            JPH::ShapeSettings::ShapeResult capsule_shape_result = capsule_shape_settings.Create();
+            JPH::ShapeRefC capsule_shape = capsule_shape_result.Get();
 
-            BodyCreationSettings capsule_settings(capsule_shape, RtransPosition, joltQuat,
-                                                  rigid->state == BodyState::Dynamic ? EMotionType::Dynamic : EMotionType::Static,
+            JPH::BodyCreationSettings capsule_settings(capsule_shape, RtransPosition, joltQuat,
+                                                  rigid->state == BodyState::Dynamic ? JPH::EMotionType::Dynamic : JPH::EMotionType::Static,
                                                   rigid->state == BodyState::Dynamic ? Layers::MOVING : Layers::NON_MOVING);
 
             capsule_settings.mCollisionGroup.SetGroupID(rigid->groupID);
@@ -121,7 +121,7 @@ void RigidBody3DStartSys()
             // Add it to the world
             if (rigid->body != nullptr)
             {
-                bodyInterface.AddBody(rigid->body->GetID(), EActivation::Activate);
+                bodyInterface.AddBody(rigid->body->GetID(), JPH::EActivation::Activate);
             }
         }
         else if (rigid->colliderType == ColliderType::Sphere)
@@ -129,15 +129,15 @@ void RigidBody3DStartSys()
             float radius = rigid->sphereRadius; // Define sphere radius in RigidBody3D
 
             // Sphere is defined by its radius
-            SphereShapeSettings sphere_shape_settings(radius);
+            JPH::SphereShapeSettings sphere_shape_settings(radius);
             sphere_shape_settings.SetEmbedded();
 
             // Create the shape
-            ShapeSettings::ShapeResult sphere_shape_result = sphere_shape_settings.Create();
-            ShapeRefC sphere_shape = sphere_shape_result.Get();
+            JPH::ShapeSettings::ShapeResult sphere_shape_result = sphere_shape_settings.Create();
+            JPH::ShapeRefC sphere_shape = sphere_shape_result.Get();
 
-            BodyCreationSettings sphere_settings(sphere_shape, RtransPosition, Quat::sIdentity(),
-                                          rigid->state == BodyState::Dynamic ? EMotionType::Dynamic : EMotionType::Static,
+            JPH::BodyCreationSettings sphere_settings(sphere_shape, RtransPosition, JPH::Quat::sIdentity(),
+                                          rigid->state == BodyState::Dynamic ? JPH::EMotionType::Dynamic : JPH::EMotionType::Static,
                                           rigid->state == BodyState::Dynamic ? Layers::MOVING : Layers::NON_MOVING);
 
             sphere_settings.mCollisionGroup.SetGroupID(rigid->groupID);
@@ -147,13 +147,13 @@ void RigidBody3DStartSys()
             // Add it to the world
             if (rigid->body != nullptr)
             {
-                bodyInterface.AddBody(rigid->body->GetID(), EActivation::Activate);
+                bodyInterface.AddBody(rigid->body->GetID(), JPH::EActivation::Activate);
             }
         }
         else
-	{
-	    std::cerr << "ERROR: Collider type not implemented or is null" << std::endl;
-	}
+    	{
+    	    std::cerr << "ERROR: Collider type not implemented or is null" << std::endl;
+    	}
     }
 }
 
@@ -161,25 +161,25 @@ void RigidBody3DSys()
 {
     for (EntityID ent : SceneView<RigidBody3D>(engineState.scene))
     {
-	auto rigid = engineState.scene.Get<RigidBody3D>(ent);
-     
+    	auto rigid = engineState.scene.Get<RigidBody3D>(ent);
+         
         if (rigid->state == BodyState::Static) { continue; }
 
-	RVec3 positionOfSphere = bodyInterface.GetCenterOfMassPosition(rigid->body->GetID());
+    	JPH::RVec3 positionOfSphere = bodyInterface.GetCenterOfMassPosition(rigid->body->GetID());
 
-	Quat rotationOfSphere = bodyInterface.GetRotation(rigid->body->GetID());
+    	JPH::Quat rotationOfSphere = bodyInterface.GetRotation(rigid->body->GetID());
 
-	float x = rotationOfSphere.GetX();
-	float y = rotationOfSphere.GetY();
-	float z = rotationOfSphere.GetZ();
-	float w = rotationOfSphere.GetW();
-	// Sync box position and rotation with Jolt Physics
-	engineState.scene.Get<Transform>(ent)->position = glm::vec3(positionOfSphere.GetX(), positionOfSphere.GetY(), positionOfSphere.GetZ());
+    	float x = rotationOfSphere.GetX();
+    	float y = rotationOfSphere.GetY();
+    	float z = rotationOfSphere.GetZ();
+    	float w = rotationOfSphere.GetW();
+    	// Sync box position and rotation with Jolt Physics
+    	engineState.scene.Get<Transform>(ent)->position = glm::vec3(positionOfSphere.GetX(), positionOfSphere.GetY(), positionOfSphere.GetZ());
 
-	glm::quat quatRotation(-z, y, x, w);
-	glm::vec3 eulerRotation = glm::eulerAngles(quatRotation); // Converts quaternion to Euler angles
+    	glm::quat quatRotation(-z, y, x, w);
+    	glm::vec3 eulerRotation = glm::eulerAngles(quatRotation); // Converts quaternion to Euler angles
 
-	engineState.scene.Get<Transform>(ent)->rotation = eulerRotation;
+    	engineState.scene.Get<Transform>(ent)->rotation = eulerRotation;
     }
 }
 

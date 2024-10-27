@@ -54,24 +54,21 @@
 // Disable common warnings triggered by Jolt, you can use JPH_SUPPRESS_WARNING_PUSH / JPH_SUPPRESS_WARNING_POP to store and restore the warning state
 JPH_SUPPRESS_WARNINGS
 
-// All Jolt symbols are in the JPH namespace
-using namespace JPH;
-
 // If you want your code to compile using single or double precision write 0.0_r to get a Real value that compiles to double or float depending if JPH_DOUBLE_PRECISION is set or not.
 using namespace JPH::literals;
 
 namespace Layers
 {
-	static constexpr ObjectLayer NON_MOVING = 0;
-	static constexpr ObjectLayer MOVING = 1;
-	static constexpr ObjectLayer NUM_LAYERS = 2;
+	static constexpr JPH::ObjectLayer NON_MOVING = 0;
+	static constexpr JPH::ObjectLayer MOVING = 1;
+	static constexpr JPH::ObjectLayer NUM_LAYERS = 2;
 };
 
 /// Class that determines if two object layers can collide
-class ObjectLayerPairFilterImpl : public ObjectLayerPairFilter
+class ObjectLayerPairFilterImpl : public JPH::ObjectLayerPairFilter
 {
 public:
-	virtual bool					ShouldCollide(ObjectLayer inObject1, ObjectLayer inObject2) const override
+	virtual bool ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const override
 	{
 		switch (inObject1)
 		{
@@ -93,43 +90,43 @@ public:
 // your broadphase layers define JPH_TRACK_BROADPHASE_STATS and look at the stats reported on the TTY.
 namespace BroadPhaseLayers
 {
-	static constexpr BroadPhaseLayer NON_MOVING(0);
-	static constexpr BroadPhaseLayer MOVING(1);
-	static constexpr uint NUM_LAYERS(2);
+	static constexpr JPH::BroadPhaseLayer NON_MOVING(0);
+	static constexpr JPH::BroadPhaseLayer MOVING(1);
+	static constexpr JPH::uint NUM_LAYERS(2);
 };
 
 // BroadPhaseLayerInterface implementation
 // This defines a mapping between object and broadphase layers.
-class BPLayerInterfaceImpl final : public BroadPhaseLayerInterface
+class BPLayerInterfaceImpl final : public JPH::BroadPhaseLayerInterface
 {
 public:
-									BPLayerInterfaceImpl()
+	BPLayerInterfaceImpl()
 	{
 		// Create a mapping table from object to broad phase layer
 		mObjectToBroadPhase[Layers::NON_MOVING] = BroadPhaseLayers::NON_MOVING;
 		mObjectToBroadPhase[Layers::MOVING] = BroadPhaseLayers::MOVING;
 	}
 
-	virtual uint					GetNumBroadPhaseLayers() const override
+	virtual JPH::uint GetNumBroadPhaseLayers() const override
 	{
 		return BroadPhaseLayers::NUM_LAYERS;
 	}
 
-	virtual BroadPhaseLayer			GetBroadPhaseLayer(ObjectLayer inLayer) const override
+	virtual JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override
 	{
 		JPH_ASSERT(inLayer < Layers::NUM_LAYERS);
 		return mObjectToBroadPhase[inLayer];
 	}
 
 private:
-	BroadPhaseLayer					mObjectToBroadPhase[Layers::NUM_LAYERS];
+	JPH::BroadPhaseLayer mObjectToBroadPhase[Layers::NUM_LAYERS];
 };
 
 /// Class that determines if an object layer can collide with a broadphase layer
-class ObjectVsBroadPhaseLayerFilterImpl : public ObjectVsBroadPhaseLayerFilter
+class ObjectVsBroadPhaseLayerFilterImpl : public JPH::ObjectVsBroadPhaseLayerFilter
 {
 public:
-	virtual bool				ShouldCollide(ObjectLayer inLayer1, BroadPhaseLayer inLayer2) const override
+	virtual bool				ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override
 	{
 		switch (inLayer1)
 		{
@@ -161,7 +158,7 @@ static void TraceImpl(const char *inFMT, ...)
 #ifdef JPH_ENABLE_ASSERTS
 
 // Callback for asserts, connect this to your own assert handler if you have one
-static bool AssertFailedImpl(const char *inExpression, const char *inMessage, const char *inFile, uint inLine)
+static bool AssertFailedImpl(const char *inExpression, const char *inMessage, const char *inFile, JPH::uint inLine)
 {
 	// Print to the TTY
     std::cout << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr? inMessage : "") << std::endl;
@@ -177,11 +174,9 @@ inline unsigned int cNumBodyMutexes = 0; // Autodetect
 inline unsigned int cMaxBodyPairs = 65536;
 inline unsigned int cMaxContactConstraints = 20480;
 
-using namespace JPH;
-
-inline PhysicsSystem physicsSystem;
-inline TempAllocatorImpl* tempAllocator;
-inline JobSystemThreadPool* jobSystem;
+inline JPH::PhysicsSystem physicsSystem;
+inline JPH::TempAllocatorImpl* tempAllocator;
+inline JPH::JobSystemThreadPool* jobSystem;
 
 inline void StepPhysics(float deltaTime)
 {
@@ -193,11 +188,11 @@ inline void DestroyPhysics()
     delete tempAllocator;
     delete jobSystem;
 
-    UnregisterTypes();
+    JPH::UnregisterTypes();
 
     // Destroy the factory
-    delete Factory::sInstance;
-    Factory::sInstance = nullptr;
+    delete JPH::Factory::sInstance;
+    JPH::Factory::sInstance = nullptr;
 }
 
 struct LineSeg
@@ -206,7 +201,7 @@ struct LineSeg
     glm::vec3 inTo;
 };
 
-inline BodyInterface& bodyInterface = physicsSystem.GetBodyInterface();
+inline JPH::BodyInterface& bodyInterface = physicsSystem.GetBodyInterface();
 
 class MyDebugRenderer final : public JPH::DebugRenderer {
 public:
@@ -215,7 +210,7 @@ public:
     MyDebugRenderer()
     {}
 
-    virtual void DrawLine(RVec3Arg inFrom, RVec3Arg inTo, ColorArg inColor) override 
+    virtual void DrawLine(JPH::RVec3Arg inFrom, JPH::RVec3Arg inTo, JPH::ColorArg inColor) override 
     {
         LineSeg line(glm::vec3(inFrom.GetX(), inFrom.GetY(), inFrom.GetZ()), glm::vec3(inTo.GetX(), inTo.GetY(), inTo.GetZ()));
 
@@ -223,7 +218,7 @@ public:
     	Renderer::RenderLine(line.inFrom, line.inTo, engineState.camera->GetProjMatrix(aspectRatio), engineState.camera->GetViewMatrix());
     }
 
-	inline void DrawTriangle(RVec3Arg inV1, RVec3Arg inV2, RVec3Arg inV3, ColorArg inColor, ECastShadow inCastShadow = ECastShadow::Off) override
+	inline void DrawTriangle(JPH::RVec3Arg inV1, JPH::RVec3Arg inV2, JPH::RVec3Arg inV3, JPH::ColorArg inColor, ECastShadow inCastShadow = ECastShadow::Off) override
     {
         std::cout << "Triangle has been drawn!";
     }
@@ -234,17 +229,17 @@ public:
         return Batch{};
     }
 
-    inline virtual Batch CreateTriangleBatch(const Vertex *inVertices, int inVertexCount, const uint32 *inIndices, int inIndexCount)
+    inline virtual Batch CreateTriangleBatch(const Vertex *inVertices, int inVertexCount, const JPH::uint32 *inIndices, int inIndexCount)
     {
        	return Batch{};
     }
 
-    inline virtual void DrawGeometry(RMat44Arg inModelMatrix, const AABox &inWorldSpaceBounds, float inLODScaleSq, ColorArg inModelColor, const GeometryRef &inGeometry, ECullMode inCullMode = ECullMode::CullBackFace, ECastShadow inCastShadow = ECastShadow::On, EDrawMode inDrawMode = EDrawMode::Solid)
+    inline virtual void DrawGeometry(JPH::RMat44Arg inModelMatrix, const JPH::AABox &inWorldSpaceBounds, float inLODScaleSq, JPH::ColorArg inModelColor, const GeometryRef &inGeometry, ECullMode inCullMode = ECullMode::CullBackFace, ECastShadow inCastShadow = ECastShadow::On, EDrawMode inDrawMode = EDrawMode::Solid)
     {
         std::cout << "Geometry has been drawn!";
     }
 
-    inline virtual void DrawText3D(RVec3Arg inPosition, const string_view &inString, ColorArg inColor = Color::sWhite, float inHeight = 0.5f)
+    inline virtual void DrawText3D(JPH::RVec3Arg inPosition, const JPH::string_view &inString, JPH::ColorArg inColor = JPH::Color::sWhite, float inHeight = 0.5f)
     {
    		//fuck off
     }
@@ -252,14 +247,14 @@ public:
 
 struct CollisionEventData
 {
-    const Body* id;
-    std::function<void(const Body* id1, const Body* id2)> call;
+    const JPH::Body* id;
+    std::function<void(const JPH::Body* id1, const JPH::Body* id2)> call;
     bool collide;
 };
 
 inline std::vector<CollisionEventData> registeredCollisions;
 
-inline void AddCollisionEnterEvent(Body* id, std::function<void(const Body* id1, const Body* id2)> call)
+inline void AddCollisionEnterEvent(JPH::Body* id, std::function<void(const JPH::Body* id1, const JPH::Body* id2)> call)
 {
     CollisionEventData data(id, call, true);
     registeredCollisions.push_back(data);
@@ -268,7 +263,7 @@ inline void AddCollisionEnterEvent(Body* id, std::function<void(const Body* id1,
 class MyContactListener : public JPH::ContactListener {
 public:
     // Called when two bodies start colliding
-    virtual JPH::ValidateResult OnContactValidate(const JPH::Body& body1, const JPH::Body& body2, RVec3Arg baseOffset, const JPH::CollideShapeResult& collisionResult) override 
+    virtual JPH::ValidateResult OnContactValidate(const JPH::Body& body1, const JPH::Body& body2, JPH::RVec3Arg baseOffset, const JPH::CollideShapeResult& collisionResult) override 
     {
         // Decide whether the collision should be processed
         return JPH::ValidateResult::AcceptAllContactsForThisBodyPair;

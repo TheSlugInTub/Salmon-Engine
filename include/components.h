@@ -52,7 +52,7 @@ struct RigidBody3D
     float capsuleRadius = 1.0f;
     float capsuleHeight = 2.0f;
 
-    Body* body = nullptr;
+    JPH::Body* body = nullptr;
     int groupID = 0;
 
     RigidBody3D(ColliderType type, BodyState state, glm::vec3 size, int groupID = 0)

@@ -66,12 +66,12 @@ void PlayerMovementSys()
 
         float speed = player->speed;
 
-        bodyInterface.SetRotation(playerID, Quat::sIdentity(), EActivation::Activate);
+        bodyInterface.SetRotation(playerID, JPH::Quat::sIdentity(), JPH::EActivation::Activate);
     
-        Vec3 playerPosition = bodyInterface.GetPosition(playerID);
-        Vec3 playerVelocity = bodyInterface.GetLinearVelocity(playerID);
+        JPH::Vec3 playerPosition = bodyInterface.GetPosition(playerID);
+        JPH::Vec3 playerVelocity = bodyInterface.GetLinearVelocity(playerID);
 
-        Vec3 force(0.0f, 0.0f, 0.0f); // Initialize a force vector
+        JPH::Vec3 force(0.0f, 0.0f, 0.0f); // Initialize a force vector
 
         // Zero out the Y component of the camera's front direction before normalization
         glm::vec3 frontNoY = glm::vec3(camera->Front.x, 0.0f, camera->Front.z);
@@ -79,25 +79,25 @@ void PlayerMovementSys()
 
         if (Input::GetKey(Key::W))
         {
-            force += Vec3(normalizedFront.x, 0.0f, normalizedFront.z) * forceStrength;
+            force += JPH::Vec3(normalizedFront.x, 0.0f, normalizedFront.z) * forceStrength;
         }
         if (Input::GetKey(Key::S))
         {
-            force -= Vec3(normalizedFront.x, 0.0f, normalizedFront.z) * forceStrength;
+            force -= JPH::Vec3(normalizedFront.x, 0.0f, normalizedFront.z) * forceStrength;
         }
         if (Input::GetKey(Key::A))
         {
-            force -= Vec3(camera->Right.x, 0.0f, camera->Right.z) * forceStrength;
+            force -= JPH::Vec3(camera->Right.x, 0.0f, camera->Right.z) * forceStrength;
         }
         if (Input::GetKey(Key::D))
         {
-            force += Vec3(camera->Right.x, 0.0f, camera->Right.z) * forceStrength;
+            force += JPH::Vec3(camera->Right.x, 0.0f, camera->Right.z) * forceStrength;
         }
 
         // Dampen the velocity to avoid sliding when no force is applied
-        Vec3 currentVelocity = bodyInterface.GetLinearVelocity(playerID);
-        Vec3 horizontalVelocity = Vec3(currentVelocity.GetX(), 0.0f, currentVelocity.GetZ()) * damping; // Dampen X and Z
-        Vec3 newVelocity = Vec3(horizontalVelocity.GetX(), currentVelocity.GetY(), horizontalVelocity.GetZ()); // Keep Y unchanged
+        JPH::Vec3 currentVelocity = bodyInterface.GetLinearVelocity(playerID);
+        JPH::Vec3 horizontalVelocity = JPH::Vec3(currentVelocity.GetX(), 0.0f, currentVelocity.GetZ()) * damping; // Dampen X and Z
+        JPH::Vec3 newVelocity = JPH::Vec3(horizontalVelocity.GetX(), currentVelocity.GetY(), horizontalVelocity.GetZ()); // Keep Y unchanged
 
         // Clamp velocity to avoid exceeding maximum speed
         if (glm::length(glm::vec2(newVelocity.GetX(), newVelocity.GetZ())) > maxSpeed)
@@ -122,7 +122,7 @@ void PlayerMovementSys()
         bool hit = query.CastRay(ray, rayCastResult);
 
         // Set the new position and velocity for the player
-        bodyInterface.SetPosition(playerID, playerPosition, EActivation::Activate());
+        bodyInterface.SetPosition(playerID, playerPosition, JPH::EActivation::Activate());
         
         bodyInterface.SetLinearVelocity(playerID, newVelocity);
         bodyInterface.AddForce(playerID, force);
@@ -214,7 +214,7 @@ void GunSys()
     }
 }
 
-void DestroyBody(BodyID id)
+void DestroyBody(JPH::BodyID id)
 {
     bodyInterface.RemoveBody(id);
     bodyInterface.DestroyBody(id);
@@ -234,7 +234,7 @@ void EnemyStartSys()
 
         RigidBody3DStartSys();
 
-        AddCollisionEnterEvent(rigid->body, [ent, enemy, rigid](const Body* id1, const Body* id2)      
+        AddCollisionEnterEvent(rigid->body, [ent, enemy, rigid](const JPH::Body* id1, const JPH::Body* id2)      
         {
             // Bullet hit callback!
             
