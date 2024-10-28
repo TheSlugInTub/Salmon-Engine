@@ -22,6 +22,7 @@ int main()
     Model boxModel("res/models/Box.obj");
     Model capsuleModel("res/models/Capsule.obj");
     Model gunModel("res/models/Shotgun.dae");
+    Model strayModel("res/models/stray/Stray.dae");
     Model tileModel("res/models/tile.obj", false, false);
     Model bulletModel("res/models/Bullet.obj", false, false);
     unsigned int bottomTex = Utils::LoadTexture("res/models/textures/GROUND.png");
@@ -54,10 +55,11 @@ int main()
     scene.AssignParam<Light>(playerLight, glm::vec3(30.0f, 2.0f, 0.0f), 35.0f, 0.1f, 1.8f, glm::vec4(1.0f, 0.647f, 0.0f, 1.0f), false);  
 
     EntityID enemy = scene.AddEntity();
-    scene.AssignParam<Transform>(enemy, glm::vec3(2.0f, 4.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-    scene.AssignParam<MeshRenderer>(enemy, boxModel, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), bottomTex);
-    scene.AssignParam<RigidBody3D>(enemy, ColliderType::Box, BodyState::Dynamic, glm::vec3(1.0f, 1.0f, 1.0f));
+    scene.AssignParam<Transform>(enemy, glm::vec3(2.0f, 4.0f, 0.0f), glm::vec3(2.5f, 0.0f, 0.0f), glm::vec3(0.03f, 0.03f, 0.03f));
+    scene.AssignParam<MeshRenderer>(enemy, strayModel, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), bottomTex);
+    scene.AssignParam<RigidBody3D>(enemy, ColliderType::Capsule, BodyState::Dynamic, 1.0f, 4.0f, RigidbodyID_Enemy);
     scene.AssignParam<Enemy>(enemy, 15);
+    scene.AssignParam<Stray>(enemy, 2.0f);
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);

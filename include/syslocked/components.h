@@ -49,6 +49,11 @@ struct Enemy
     std::shared_ptr<SoundSource> soundSource;
 };
 
+struct Stray
+{
+    float moveSpeed;
+};
+
 struct Bullet 
 {
     int randomValueThatWillGetReplaced;

@@ -11,11 +11,11 @@ void CameraMoveSys()
     if (glfwGetKey(engineState.window->window, GLFW_KEY_W) == GLFW_PRESS)
 	engineState.camera->ProcessKeyboard(CameraMovement::FORWARD, engineState.deltaTime);
     if (glfwGetKey(engineState.window->window, GLFW_KEY_S) == GLFW_PRESS)
-	    engineState.camera->ProcessKeyboard(CameraMovement::BACKWARD, engineState.deltaTime);
+	engineState.camera->ProcessKeyboard(CameraMovement::BACKWARD, engineState.deltaTime);
     if (glfwGetKey(engineState.window->window, GLFW_KEY_A) == GLFW_PRESS)
-	    engineState.camera->ProcessKeyboard(CameraMovement::LEFT, engineState.deltaTime);
+        engineState.camera->ProcessKeyboard(CameraMovement::LEFT, engineState.deltaTime);
     if (glfwGetKey(engineState.window->window, GLFW_KEY_D) == GLFW_PRESS)
-	    engineState.camera->ProcessKeyboard(CameraMovement::RIGHT, engineState.deltaTime);
+        engineState.camera->ProcessKeyboard(CameraMovement::RIGHT, engineState.deltaTime);
 }
 
 void CameraLookSys()
