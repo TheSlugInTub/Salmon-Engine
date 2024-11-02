@@ -124,7 +124,7 @@ void PlayerMovementSys()
         bool hit = query.CastRay(ray, rayCastResult);
 
         // Set the new position and velocity for the player
-        bodyInterface.SetPosition(playerID, playerPosition, JPH::EActivation::Activate());
+        bodyInterface.SetPosition(playerID, playerPosition, JPH::EActivation::Activate);
 
         bodyInterface.SetLinearVelocity(playerID, newVelocity);
         bodyInterface.AddForce(playerID, force);
@@ -264,7 +264,7 @@ void EnemyStartSys()
                                    }
                                });
 
-        enemy->registeredCollisionIndex = registeredCollisions.size() - 1;
+        enemy->registeredCollisionIndex = (int)(registeredCollisions.size() - 1);
     }
 }
 

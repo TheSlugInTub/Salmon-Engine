@@ -1,5 +1,13 @@
+# Salmon Engine 0.6
+2/11/2024 - November
+
+Models couldn't import binary textures but now they can.
+Also added a new offset parameter in the rigidbody which offsets the rendering of the object 
+with its rigidbody.
+Added a clang-format file to keep everything consistent and formatted neatly.
+
 # Salmon Engine 0.55
-10/10/2024 October
+10/10/2024 - October
 
 Audio has been added to the engine with openal-soft.
 

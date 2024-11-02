@@ -275,7 +275,7 @@ class Model
                 if (str.C_Str()[0] == '*')
                 {
                     // Extract the embedded texture index
-                    int embeddedIndex = std::atoi(str.C_Str() + 1);
+                    unsigned int embeddedIndex = std::atoi(str.C_Str() + 1);
                     if (embeddedIndex < scene->mNumTextures)
                     {
                         embeddedTexture = scene->mTextures[embeddedIndex];

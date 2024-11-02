@@ -89,6 +89,7 @@ class Bone
             if (animationTime < m_Positions[index + 1].timeStamp)
                 return index;
         }
+        return -1;
         assert(0);
     }
 
@@ -99,6 +100,7 @@ class Bone
             if (animationTime < m_Rotations[index + 1].timeStamp)
                 return index;
         }
+        return -1;
         assert(0);
     }
 
@@ -109,6 +111,7 @@ class Bone
             if (animationTime < m_Scales[index + 1].timeStamp)
                 return index;
         }
+        return -1;
         assert(0);
     }
 
