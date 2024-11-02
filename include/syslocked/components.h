@@ -52,9 +52,11 @@ struct Enemy
 struct Stray
 {
     float moveSpeed;
+    float speedCap;
+    Transform* playerTransform;
 };
 
-struct Bullet 
+struct Bullet
 {
     int randomValueThatWillGetReplaced;
 };

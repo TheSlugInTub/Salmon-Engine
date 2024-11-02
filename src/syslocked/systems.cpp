@@ -9,9 +9,9 @@
 void CameraMoveSys()
 {
     if (glfwGetKey(engineState.window->window, GLFW_KEY_W) == GLFW_PRESS)
-	engineState.camera->ProcessKeyboard(CameraMovement::FORWARD, engineState.deltaTime);
+        engineState.camera->ProcessKeyboard(CameraMovement::FORWARD, engineState.deltaTime);
     if (glfwGetKey(engineState.window->window, GLFW_KEY_S) == GLFW_PRESS)
-	engineState.camera->ProcessKeyboard(CameraMovement::BACKWARD, engineState.deltaTime);
+        engineState.camera->ProcessKeyboard(CameraMovement::BACKWARD, engineState.deltaTime);
     if (glfwGetKey(engineState.window->window, GLFW_KEY_A) == GLFW_PRESS)
         engineState.camera->ProcessKeyboard(CameraMovement::LEFT, engineState.deltaTime);
     if (glfwGetKey(engineState.window->window, GLFW_KEY_D) == GLFW_PRESS)
@@ -30,9 +30,9 @@ void CameraLookSys()
 
     if (firstMouse)
     {
-	lastX = static_cast<float>(xpos);
+        lastX = static_cast<float>(xpos);
         lastY = static_cast<float>(ypos);
-	firstMouse = false;
+        firstMouse = false;
     }
 
     // Calculate the offset from the last position
@@ -47,10 +47,9 @@ void CameraLookSys()
     engineState.camera->ProcessMouseMovement(xoffset, yoffset);
 }
 
-
 // Damping factor to slow the player down when no input is applied (simulates friction)
-float damping = 0.9f;  // You can tweak this value for more or less friction
-float maxSpeed = 10000.0f; // Maximum speed
+float damping = 0.9f; // You can tweak this value for more or less friction
+float maxPlayerSpeed = 10000.0f; // Maximum speed
 float forceStrength = 1100000.0f; // Adjust this for how quickly the player accelerates
 
 void PlayerMovementSys()
@@ -67,7 +66,7 @@ void PlayerMovementSys()
         float speed = player->speed;
 
         bodyInterface.SetRotation(playerID, JPH::Quat::sIdentity(), JPH::EActivation::Activate);
-    
+
         JPH::Vec3 playerPosition = bodyInterface.GetPosition(playerID);
         JPH::Vec3 playerVelocity = bodyInterface.GetLinearVelocity(playerID);
 
@@ -75,7 +74,7 @@ void PlayerMovementSys()
 
         // Zero out the Y component of the camera's front direction before normalization
         glm::vec3 frontNoY = glm::vec3(camera->Front.x, 0.0f, camera->Front.z);
-        glm::vec3 normalizedFront = glm::normalize(frontNoY);  // Now normalize the horizontal direction
+        glm::vec3 normalizedFront = glm::normalize(frontNoY); // Now normalize the horizontal direction
 
         if (Input::GetKey(Key::W))
         {
@@ -96,13 +95,16 @@ void PlayerMovementSys()
 
         // Dampen the velocity to avoid sliding when no force is applied
         JPH::Vec3 currentVelocity = bodyInterface.GetLinearVelocity(playerID);
-        JPH::Vec3 horizontalVelocity = JPH::Vec3(currentVelocity.GetX(), 0.0f, currentVelocity.GetZ()) * damping; // Dampen X and Z
-        JPH::Vec3 newVelocity = JPH::Vec3(horizontalVelocity.GetX(), currentVelocity.GetY(), horizontalVelocity.GetZ()); // Keep Y unchanged
+        JPH::Vec3 horizontalVelocity =
+            JPH::Vec3(currentVelocity.GetX(), 0.0f, currentVelocity.GetZ()) * damping; // Dampen X and Z
+        JPH::Vec3 newVelocity =
+            JPH::Vec3(horizontalVelocity.GetX(), currentVelocity.GetY(), horizontalVelocity.GetZ()); // Keep Y unchanged
 
         // Clamp velocity to avoid exceeding maximum speed
-        if (glm::length(glm::vec2(newVelocity.GetX(), newVelocity.GetZ())) > maxSpeed)
+        if (glm::length(glm::vec2(newVelocity.GetX(), newVelocity.GetZ())) > maxPlayerSpeed)
         {
-            glm::vec2 clampedVelocity = glm::normalize(glm::vec2(newVelocity.GetX(), newVelocity.GetZ())) * maxSpeed;
+            glm::vec2 clampedVelocity =
+                glm::normalize(glm::vec2(newVelocity.GetX(), newVelocity.GetZ())) * maxPlayerSpeed;
             newVelocity.SetX(clampedVelocity.x);
             newVelocity.SetZ(clampedVelocity.y);
         }
@@ -123,16 +125,16 @@ void PlayerMovementSys()
 
         // Set the new position and velocity for the player
         bodyInterface.SetPosition(playerID, playerPosition, JPH::EActivation::Activate());
-        
+
         bodyInterface.SetLinearVelocity(playerID, newVelocity);
         bodyInterface.AddForce(playerID, force);
 
-        bodyInterface.ActivateBody(playerID); 
+        bodyInterface.ActivateBody(playerID);
 
         if (Input::GetKeyDown(Key::Space) && hit)
         {
             // Adjust the force value based on your object's mass
-            JPH::Vec3 jumpForce(0.0f, 10000000.0f, 0.0f); 
+            JPH::Vec3 jumpForce(0.0f, 10000000.0f, 0.0f);
             bodyInterface.AddForce(playerID, jumpForce * player->jumpSpeed);
         }
     }
@@ -166,10 +168,10 @@ void GunSys()
         float forwardOffset = gun->forwardOffset;
         float upOffset = gun->upOffset;
         float rightOffset = gun->rightOffset;
-        
+
         objectTransform->position = camera->Position + camera->Front * forwardOffset;
         objectTransform->position += camera->Right * rightOffset;
-        objectTransform->position += camera->Up * upOffset; 
+        objectTransform->position += camera->Up * upOffset;
 
         objectTransform->modelMat = glm::translate(objectTransform->modelMat, objectTransform->position);
         objectTransform->modelMat = glm::scale(objectTransform->modelMat, objectTransform->scale);
@@ -198,19 +200,23 @@ void GunSys()
             for (int i = 0; i < 6; ++i)
             {
                 EntityID bulletEnt = engineState.scene.AddEntity();
-                engineState.scene.AssignParam<Transform>(bulletEnt, objectTransform->position, glm::vec3(0.0f), glm::vec3(0.065f));
-                engineState.scene.AssignParam<MeshRenderer>(bulletEnt, gun->bulletModel, glm::vec4(1.0f), gun->bulletTexture);
-                engineState.scene.AssignParam<RigidBody3D>(bulletEnt, ColliderType::Capsule, BodyState::Dynamic, 0.2f, 0.1f, RigidbodyID_Bullet);
+                engineState.scene.AssignParam<Transform>(bulletEnt, objectTransform->position, glm::vec3(0.0f),
+                                                         glm::vec3(0.065f));
+                engineState.scene.AssignParam<MeshRenderer>(bulletEnt, gun->bulletModel, glm::vec4(1.0f),
+                                                            gun->bulletTexture);
+                engineState.scene.AssignParam<RigidBody3D>(bulletEnt, ColliderType::Capsule, BodyState::Dynamic, 0.2f,
+                                                           0.1f, RigidbodyID_Bullet);
                 engineState.scene.Assign<Bullet>(bulletEnt);
- 
+
                 RigidBody3DStartSys();
 
                 glm::vec3 randomizedBulletDir = camera->Front;
                 randomizedBulletDir *= Utils::GenerateRandomNumber(1.0f, 4.0f);
                 JPH::Vec3 bulletDirection(randomizedBulletDir.x, randomizedBulletDir.y, randomizedBulletDir.z);
-                bodyInterface.AddForce(engineState.scene.Get<RigidBody3D>(bulletEnt)->body->GetID(), bulletDirection * gun->bulletSpeed);
+                bodyInterface.AddForce(engineState.scene.Get<RigidBody3D>(bulletEnt)->body->GetID(),
+                                       bulletDirection * gun->bulletSpeed);
             }
-        } 
+        }
     }
 }
 
@@ -226,7 +232,7 @@ void EnemyStartSys()
     {
         auto enemy = engineState.scene.Get<Enemy>(ent);
         auto rigid = engineState.scene.Get<RigidBody3D>(ent);
- 
+
         enemy->soundDevice = SoundDevice::Get();
         enemy->hurtSound = SoundBuffer::Get()->AddSoundEffect("res/sounds/EnemyHurt.wav");
 
@@ -234,25 +240,29 @@ void EnemyStartSys()
 
         RigidBody3DStartSys();
 
-        AddCollisionEnterEvent(rigid->body, [ent, enemy, rigid](const JPH::Body* id1, const JPH::Body* id2)      
-        {
-            // Bullet hit callback!
-            
-            int group1 = id1->GetCollisionGroup().GetGroupID();
-            int group2 = id2->GetCollisionGroup().GetGroupID();
+        AddCollisionEnterEvent(rigid->body,
+                               [ent, enemy, rigid](const JPH::Body* id1, const JPH::Body* id2)
+                               {
+                                   // Bullet hit callback!
 
-            if (group1 == RigidbodyID_Bullet || group2 == RigidbodyID_Bullet)
-            {
-                enemy->health--;
-                enemy->soundSource->Play(enemy->hurtSound);
-            }
+                                   int group1 = id1->GetCollisionGroup().GetGroupID();
+                                   int group2 = id2->GetCollisionGroup().GetGroupID();
 
-            if (enemy->health <= 0)
-            {
-                if (enemy->isDead) { return; }
-                enemy->isDead = true;
-            }
-        });
+                                   if (group1 == RigidbodyID_Bullet || group2 == RigidbodyID_Bullet)
+                                   {
+                                       enemy->health--;
+                                       enemy->soundSource->Play(enemy->hurtSound);
+                                   }
+
+                                   if (enemy->health <= 0)
+                                   {
+                                       if (enemy->isDead)
+                                       {
+                                           return;
+                                       }
+                                       enemy->isDead = true;
+                                   }
+                               });
 
         enemy->registeredCollisionIndex = registeredCollisions.size() - 1;
     }
@@ -264,7 +274,7 @@ void EnemySys()
     {
         auto enemy = engineState.scene.Get<Enemy>(ent);
         auto rigid = engineState.scene.Get<RigidBody3D>(ent);
-        
+
         if (enemy->isDead)
         {
             engineState.scene.Remove<Enemy>(ent);
@@ -273,7 +283,6 @@ void EnemySys()
             DestroyBody(rigid->body->GetID());
 
             registeredCollisions.erase(registeredCollisions.begin() + enemy->registeredCollisionIndex);
-
         }
     }
 }

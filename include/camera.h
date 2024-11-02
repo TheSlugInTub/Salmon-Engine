@@ -6,7 +6,8 @@
 // Courtesy of https://learnopengl.com
 
 // Enum for camera movement
-enum class CameraMovement {
+enum class CameraMovement
+{
     FORWARD,
     BACKWARD,
     LEFT,
@@ -16,12 +17,11 @@ enum class CameraMovement {
 };
 
 // Camera class for the engine
-class Camera {
-public:
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 1.0f),
-        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
-        float yaw = -90.0f,
-        float pitch = 0.0f);
+class Camera
+{
+  public:
+    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
+           float yaw = -90.0f, float pitch = 0.0f);
 
     // Moves the camera based on the direction enum
     void ProcessKeyboard(CameraMovement direction, float deltaTime);
@@ -52,7 +52,8 @@ public:
     float MovementSpeed;
     float MouseSensitivity;
     float Zoom;
-private:
+
+  private:
     void updateCameraVectors();
 
     // Up direction (acts as a constant)

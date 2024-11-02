@@ -72,7 +72,7 @@ Sound SoundBuffer::AddSoundEffect(const char* filename)
             alDeleteBuffers(1, &buffer);
     }
 
-    p_SoundEffectBuffers.push_back(buffer);  // add to the list of known buffers
+    p_SoundEffectBuffers.push_back(buffer); // add to the list of known buffers
 
     Sound newSound(filename, buffer);
 
@@ -90,11 +90,12 @@ bool SoundBuffer::RemoveSoundEffect(const ALuint& buffer)
             it = p_SoundEffectBuffers.erase(it);
             return true;
         }
-        else {
+        else
+        {
             ++it;
         }
     }
-    return false;  // couldn't find to remove
+    return false; // couldn't find to remove
 }
 
 SoundBuffer::SoundBuffer()

@@ -42,27 +42,31 @@ void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& vie
     if (trans->useMatrix == false)
     {
         transform = MakeModelTransform(trans);
-    }else
+    }
+    else
     {
         transform = trans->modelMat;
     }
 
     // Activate the shader program
     defaultShader.use();
-	
+
     // Setting all the uniforms.
     defaultShader.setMat4("model", transform);
     defaultShader.setMat4("view", view);
     defaultShader.setMat4("projection", projection);
     defaultShader.setTexture2D("texture_diffuse", model->texture, 0);
-    
+
     for (int i = 0; i < lights.size(); ++i)
     {
-        if (!lights[i].castShadows) { break; }
+        if (!lights[i].castShadows)
+        {
+            break;
+        }
         // Bind each light's shadow map to a different texture unit
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_CUBE_MAP, lights[i].depthCubemap);
-    
+
         // Set the corresponding sampler in the shader
         Renderer::defaultShader.setInt("depthMaps[" + std::to_string(i) + "]", i);
     }
@@ -150,4 +154,4 @@ void RenderLine(glm::vec3 inPoint, glm::vec3 outPoint, const glm::mat4& projecti
     glDeleteVertexArrays(1, &lVAO);
 }
 
-}
+} // namespace Renderer

@@ -3,10 +3,10 @@
 
 class SoundDevice
 {
-public:
+  public:
     static SoundDevice* Get();
 
-private:
+  private:
     SoundDevice();
     ~SoundDevice();
 

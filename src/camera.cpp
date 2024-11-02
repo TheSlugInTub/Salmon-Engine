@@ -2,10 +2,7 @@
 #include <iostream>
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
-    : Front(glm::vec3(0.0f, 0.0f, -1.0f)),
-    MovementSpeed(2.5f),
-    MouseSensitivity(0.1f),
-    Zoom(45.0f) 
+   : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(2.5f), MouseSensitivity(0.1f), Zoom(45.0f)
 {
     Position = position;
     WorldUp = up;
@@ -14,7 +11,7 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     updateCameraVectors();
 }
 
-void Camera::ProcessKeyboard(CameraMovement direction, float deltaTime) 
+void Camera::ProcessKeyboard(CameraMovement direction, float deltaTime)
 {
     float velocity = MovementSpeed * deltaTime;
     if (direction == CameraMovement::FORWARD)
@@ -31,7 +28,7 @@ void Camera::ProcessKeyboard(CameraMovement direction, float deltaTime)
         Position -= Up * velocity;
 }
 
-void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch) 
+void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch)
 {
     xoffset *= MouseSensitivity;
     yoffset *= MouseSensitivity;
@@ -39,7 +36,8 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPi
     Yaw += xoffset;
     Pitch += yoffset;
 
-    if (constrainPitch) {
+    if (constrainPitch)
+    {
         if (Pitch > 89.0f)
             Pitch = 89.0f;
         if (Pitch < -89.0f)
@@ -49,7 +47,7 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPi
     updateCameraVectors();
 }
 
-void Camera::ProcessMouseScroll(float yoffset) 
+void Camera::ProcessMouseScroll(float yoffset)
 {
     if (Zoom >= 1.0f && Zoom <= 45.0f)
         Zoom -= yoffset;
@@ -67,22 +65,22 @@ void Camera::PrintValues()
     std::cout << Up.x << ", " << Up.y << ", " << Up.z << '\n';
 }
 
-glm::mat4 Camera::GetViewMatrix() 
+glm::mat4 Camera::GetViewMatrix()
 {
     return glm::lookAt(Position, Position + Front, Up);
 }
 
-glm::mat4 Camera::GetProjMatrix(float aspectRatio) 
+glm::mat4 Camera::GetProjMatrix(float aspectRatio)
 {
     return glm::perspective(glm::radians(80.0f), aspectRatio, 0.1f, 500.0f);
 }
 
-float Camera::GetZoom() 
+float Camera::GetZoom()
 {
     return Zoom;
 }
 
-void Camera::updateCameraVectors() 
+void Camera::updateCameraVectors()
 {
     glm::vec3 front;
     front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
@@ -122,6 +120,6 @@ glm::vec3 Camera::ScreenToWorld(int windowWidth, int windowHeight, const glm::iv
     glm::mat4 viewInverse = glm::inverse(view);
 
     glm::vec4 point_world = viewInverse * view_space_intersect;
-    
+
     return glm::vec3(point_world);
 }

@@ -14,4 +14,4 @@ void EndFrame();
 // Terminates ImGui (Only call at end of program)
 void Terminate();
 
-}
+} // namespace ImGuiLayer

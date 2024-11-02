@@ -47,14 +47,14 @@ unsigned int LoadTexture(const char* path)
     return textureID;
 }
 
-template<typename T>
-int IndexInVec(std::vector<T>& v, T& K)
+template<typename T> int IndexInVec(std::vector<T>& v, T& K)
 {
     auto it = std::find(v.begin(), v.end(), K);
-    if (it != v.end()) {
+    if (it != v.end())
+    {
         return std::distance(v.begin(), it);
     }
-    return -1; 
+    return -1;
 }
 
 float GenerateRandomNumber(float min, float max)
@@ -62,8 +62,8 @@ float GenerateRandomNumber(float min, float max)
     std::random_device rd;
     std::mt19937 gen(rd()); // Mersenne Twister engine
     std::uniform_real_distribution<float> dist(min, max); // Distribution in range [min, max]
-    
+
     return dist(gen);
 }
 
-}
+} // namespace Utils

@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <iostream>
 
-#define dbgprint(message) \
+#define dbgprint(message)                                            \
     std::source_location location = std::source_location::current(); \
     std::cout << std::filesystem::path(location.file_name()).filename().string() << ": " << message << '\n';
 
@@ -22,11 +22,10 @@ unsigned int LoadTexture(const char* path);
 // The generated number can be the minimum, but it won't be the maximum
 float GenerateRandomNumber(float min, float max);
 
-/* 
+/*
 Returns the index of T in a vector of type T
 If a custom type is given, then it must have a == operator
 */
-template<typename T>
-int IndexInVec(std::vector<T>& v, T& K);
+template<typename T> int IndexInVec(std::vector<T>& v, T& K);
 
-}
+} // namespace Utils

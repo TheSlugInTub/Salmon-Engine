@@ -53,39 +53,34 @@ inline bool IsEntityValid(EntityID id)
 #define INVALID_ENTITY CreateEntityId(EntityIndex(-1), 0)
 
 // Gets the id of a component
-template<class T>
-int GetId()
+template<class T> int GetId()
 {
-	static int componentId = componentCounter++;
-	return componentId;
+    static int componentId = componentCounter++;
+    return componentId;
 }
 
 // Memory pool for the components
 // Just stores chars
 struct ComponentPool
 {
-	ComponentPool(size_t elementsize)
+    ComponentPool(size_t elementsize)
     {
-	  	// We'll allocate enough memory to hold MAX_ENTITIES, each with element size
-	  	elementSize = elementsize;
-	  	pData = new char[elementSize * MAX_ENTITIES];
-	}
+        // We'll allocate enough memory to hold MAX_ENTITIES, each with element size
+        elementSize = elementsize;
+        pData = new char[elementSize * MAX_ENTITIES];
+    }
 
-	~ComponentPool()
-	{
-	  	delete[] pData;
-	}
+    ~ComponentPool() { delete[] pData; }
 
-	inline void* get(size_t index)
-	{
-	  	// looking up the component at the desired index
-	  	return pData + index * elementSize;
-	}
+    inline void* get(size_t index)
+    {
+        // looking up the component at the desired index
+        return pData + index * elementSize;
+    }
 
-	char* pData{ nullptr };
-	size_t elementSize{ 0 };
+    char* pData {nullptr};
+    size_t elementSize {0};
 };
-
 
 // Scene struct, holds all the entities, basically a registry of entities
 struct Scene
@@ -93,52 +88,50 @@ struct Scene
     // Struct to store all the information needed for an entity
     struct EntityDesc
     {
-    	EntityID id;
-    	ComponentMask mask;
+        EntityID id;
+        ComponentMask mask;
     };
 
     // Creates an entity in the scene
     EntityID AddEntity()
     {
-  	if (!freeEntities.empty())
-  	{
+        if (!freeEntities.empty())
+        {
             EntityIndex newIndex = freeEntities.back();
-	    freeEntities.pop_back();
-	    EntityID newID = CreateEntityId(newIndex, GetEntityVersion(entities[newIndex].id));
-	    entities[newIndex].id = newID;
-	    return entities[newIndex].id;
-	}
+            freeEntities.pop_back();
+            EntityID newID = CreateEntityId(newIndex, GetEntityVersion(entities[newIndex].id));
+            entities[newIndex].id = newID;
+            return entities[newIndex].id;
+        }
 
-	entities.push_back({ CreateEntityId(EntityIndex(entities.size()), 0), ComponentMask() });
-	return entities.back().id;
+        entities.push_back({CreateEntityId(EntityIndex(entities.size()), 0), ComponentMask()});
+        return entities.back().id;
     }
 
     // Assigns a component to an entity ID
-    template<typename T>
-    T* Assign(EntityID id)
+    template<typename T> T* Assign(EntityID id)
     {
         int componentId = GetId<T>();
-  
+
         if (componentPools.size() <= componentId) // Not enough component pool
         {
             componentPools.resize(componentId + 1, nullptr);
         }
-	if (componentPools[componentId] == nullptr) // New component, make a new pool
+        if (componentPools[componentId] == nullptr) // New component, make a new pool
         {
-	    componentPools[componentId] = new ComponentPool(sizeof(T));
-	}
-  
-	// Looks up the component in the pool, and initializes it with placement new
+            componentPools[componentId] = new ComponentPool(sizeof(T));
+        }
+
+        // Looks up the component in the pool, and initializes it with placement new
         T* pComponent = new (componentPools[componentId]->get(GetEntityIndex(id))) T();
-  
-	// Set the bit for this component to true and return the created component
-	entities[GetEntityIndex(id)].mask.set(componentId);
-	return pComponent;
+
+        // Set the bit for this component to true and return the created component
+        entities[GetEntityIndex(id)].mask.set(componentId);
+        return pComponent;
     }
 
     // Assigns a component to an entity ID with a list of parameters (a constructor). use: <ent, 1.0f, 2.0f...>
-    template<typename T, typename... Args>
-    T* AssignParam(EntityID id, Args&&... args)
+    template<typename T, typename... Args> T* AssignParam(EntityID id, Args&&... args)
     {
         int componentId = GetId<T>();
 
@@ -160,35 +153,33 @@ struct Scene
     }
 
     // Retrieves a pointer to a given component from an entity id, use: Get<Type>(ent)
-    template<typename T>
-    T* Get(EntityID id)
+    template<typename T> T* Get(EntityID id)
     {
-	    int componentId = GetId<T>();
-	    if (!entities[GetEntityIndex(id)].mask.test(componentId))
-	        return nullptr;
+        int componentId = GetId<T>();
+        if (!entities[GetEntityIndex(id)].mask.test(componentId))
+            return nullptr;
 
-	    T* pComponent = static_cast<T*>(componentPools[componentId]->get(GetEntityIndex(id)));
-	    return pComponent;
+        T* pComponent = static_cast<T*>(componentPools[componentId]->get(GetEntityIndex(id)));
+        return pComponent;
     }
 
     // Removes a component from an entity ID
-    template<typename T>
-    void Remove(EntityID id)
+    template<typename T> void Remove(EntityID id)
     {
-	    // ensures you're not accessing an entity that has been deleted
-	    if (entities[GetEntityIndex(id)].id != id) 
-	        return;
+        // ensures you're not accessing an entity that has been deleted
+        if (entities[GetEntityIndex(id)].id != id)
+            return;
 
-	    int componentId = GetId<T>();
-	    entities[GetEntityIndex(id)].mask.reset(componentId);
+        int componentId = GetId<T>();
+        entities[GetEntityIndex(id)].mask.reset(componentId);
     }
 
     // Destroys an entity, resets its mask, adds the given entity's index to the list of free entities
     void DestroyEntity(EntityID id)
     {
-	    EntityID newID = CreateEntityId(EntityIndex(-1), GetEntityVersion(id) + 1);
-	    entities[GetEntityIndex(id)].id = newID;
-	    entities[GetEntityIndex(id)].mask.reset(); 
+        EntityID newID = CreateEntityId(EntityIndex(-1), GetEntityVersion(id) + 1);
+        entities[GetEntityIndex(id)].id = newID;
+        entities[GetEntityIndex(id)].mask.reset();
         freeEntities.push_back(GetEntityIndex(id));
     }
 
@@ -209,126 +200,113 @@ inline void AddStartSystem(std::function<void()> sys)
     startSystems.push_back(sys);
 }
 
-
 // Updates all the systems by calling them, call this function every frame to update all the systems each frame
 inline void UpdateSystems()
 {
-    for (auto system : systems)
-    {
-    	system();
-    }
+    for (auto system : systems) { system(); }
 }
 
 // Updates all the start systems, call this only on the start of the program
 inline void StartStartSystems()
 {
-    for (auto system : startSystems)
-    {
-        system();
-    }
+    for (auto system : startSystems) { system(); }
 }
 
-/* 
+/*
 This struct is used to make it easier to iterate through a list of entities with the components that you specify
 It looks like this ' SceneView<Transform, Info>(scene) '
 */
 
-template<typename... ComponentTypes>
-struct SceneView
+template<typename... ComponentTypes> struct SceneView
 {
-  	SceneView(Scene& scene) : pScene(&scene) 
-  	{
-    	if (sizeof...(ComponentTypes) == 0)
-    	{
-      		all = true;
-    	}
-    	else
-    	{
-      		// Unpack the template parameters into an initializer list
-      		int componentIds[] = { 0, GetId<ComponentTypes>() ... };
+    SceneView(Scene& scene) : pScene(&scene)
+    {
+        if (sizeof...(ComponentTypes) == 0)
+        {
+            all = true;
+        }
+        else
+        {
+            // Unpack the template parameters into an initializer list
+            int componentIds[] = {0, GetId<ComponentTypes>()...};
 
-      		for (int i = 1; i < (sizeof...(ComponentTypes) + 1); i++)
-        		componentMask.set(componentIds[i]);
-    	}
-  	}
+            for (int i = 1; i < (sizeof...(ComponentTypes) + 1); i++) componentMask.set(componentIds[i]);
+        }
+    }
 
-  	struct Iterator
-  	{
-  		Iterator(Scene* pScene, EntityIndex index, ComponentMask mask, bool all) 
-    		: pScene(pScene), index(index), mask(mask), all(all) {}
-    	
-    	EntityID operator*() const
-    	{
-      		return pScene->entities[index].id;
-    	}
-    
-	    bool operator==(const Iterator& other) const
-	    {
-	      	return index == other.index || index == pScene->entities.size();
-	    }
+    struct Iterator
+    {
+        Iterator(Scene* pScene, EntityIndex index, ComponentMask mask, bool all)
+           : pScene(pScene), index(index), mask(mask), all(all)
+        {
+        }
 
-	    bool operator!=(const Iterator& other) const
-	    {
-	     	return index != other.index && index != pScene->entities.size();
-	    }
+        EntityID operator*() const { return pScene->entities[index].id; }
 
-		bool ValidIndex()
-		{
-		  	return
-		    	// It's a valid entity ID
-		    	IsEntityValid(pScene->entities[index].id) &&
-		    	// It has the correct component mask
-		    	(all || mask == (mask & pScene->entities[index].mask));
-		}
+        bool operator==(const Iterator& other) const
+        {
+            return index == other.index || index == pScene->entities.size();
+        }
 
-	    Iterator& operator++()
-	    {
-		  	do
-		  	{
-		    	index++;
-		  	} 
-		  	while (index < pScene->entities.size() && !ValidIndex());
-		  	return *this;
-	    }
+        bool operator!=(const Iterator& other) const
+        {
+            return index != other.index && index != pScene->entities.size();
+        }
 
-	  	EntityIndex index;
-	  	Scene* pScene;
-	  	ComponentMask mask;
-	  	bool all{ false };
-  	};
+        bool ValidIndex()
+        {
+            return
+                // It's a valid entity ID
+                IsEntityValid(pScene->entities[index].id) &&
+                // It has the correct component mask
+                (all || mask == (mask & pScene->entities[index].mask));
+        }
 
-  	const Iterator begin() const
-  	{
-	  	int firstIndex = 0;
-	  	while (firstIndex < pScene->entities.size() &&
-	    	(componentMask != (componentMask & pScene->entities[firstIndex].mask) 
-	      	|| !IsEntityValid(pScene->entities[firstIndex].id))) 
-	  	{
-	    	firstIndex++;
-	  	}
-	  	return Iterator(pScene, firstIndex, componentMask, all);
-  	}
+        Iterator& operator++()
+        {
+            do {
+                index++;
+            } while (index < pScene->entities.size() && !ValidIndex());
+            return *this;
+        }
 
-  	const Iterator end() const
-  	{
-		return Iterator(pScene, EntityIndex(pScene->entities.size()), componentMask, all);
-  	}
+        EntityIndex index;
+        Scene* pScene;
+        ComponentMask mask;
+        bool all {false};
+    };
 
-  	Scene* pScene{ nullptr };
-  	ComponentMask componentMask;
-  	bool all{ false };
+    const Iterator begin() const
+    {
+        int firstIndex = 0;
+        while (firstIndex < pScene->entities.size() &&
+               (componentMask != (componentMask & pScene->entities[firstIndex].mask) ||
+                !IsEntityValid(pScene->entities[firstIndex].id)))
+        {
+            firstIndex++;
+        }
+        return Iterator(pScene, firstIndex, componentMask, all);
+    }
+
+    const Iterator end() const { return Iterator(pScene, EntityIndex(pScene->entities.size()), componentMask, all); }
+
+    Scene* pScene {nullptr};
+    ComponentMask componentMask;
+    bool all {false};
 };
 
 // Macro for registering systems outside the main function
-#define REGISTER_SYSTEM(scriptClass) \
-    static bool scriptClass##_registered = []() { \
-    	AddSystem(scriptClass); \
-        return true; \
+#define REGISTER_SYSTEM(scriptClass)            \
+    static bool scriptClass##_registered = []() \
+    {                                           \
+        AddSystem(scriptClass);                 \
+        return true;                            \
     }();
 
 // Macro for registering start systems outside the main function
-#define REGISTER_START_SYSTEM(scriptClass) \
-    static bool scriptClass##_registered = []() { \
-    	AddStartSystem(scriptClass); \
-        return true; \
+#define REGISTER_START_SYSTEM(scriptClass)      \
+    static bool scriptClass##_registered = []() \
+    {                                           \
+        AddStartSystem(scriptClass);            \
+        return true;                            \
     }();

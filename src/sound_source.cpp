@@ -30,10 +30,13 @@ void SoundSource::Play(const Sound sound)
 
     // Capture 'this' in a weak_ptr to ensure the object isn't destructed prematurely
     std::weak_ptr<SoundSource> weakSelf = shared_from_this();
-    std::thread playbackThread([weakSelf]() {
-        if (auto self = weakSelf.lock()) {
-            self->MonitorPlayback();
-        }
+    std::thread playbackThread(
+        [weakSelf]()
+        {
+            if (auto self = weakSelf.lock())
+            {
+                self->MonitorPlayback();
+            }
         });
     playbackThread.detach();
 }

@@ -26,9 +26,12 @@ struct Light
     unsigned int depthCubemap;
     bool castShadows = true;
 
-    Light(glm::vec3 position, float radius, float innerRadius, float intensity, glm::vec4 color, bool castShadows = true)
-        : position(position), radius(radius), innerRadius(innerRadius), intensity(intensity), color(color), castShadows(castShadows)
-    {}
+    Light(glm::vec3 position, float radius, float innerRadius, float intensity, glm::vec4 color,
+          bool castShadows = true)
+       : position(position), radius(radius), innerRadius(innerRadius), intensity(intensity), color(color),
+         castShadows(castShadows)
+    {
+    }
 };
 
 // 3D renderer for the engine
@@ -57,4 +60,4 @@ inline Shader depthShader;
 // All the lights in the scene
 inline std::vector<Light> lights;
 
-}
+} // namespace Renderer

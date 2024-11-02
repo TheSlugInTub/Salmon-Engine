@@ -8,7 +8,7 @@
 // Uses GLFW to make a window
 class Window
 {
-public:
+  public:
     Window(const char* title, int width, int height, bool fullscreen);
     ~Window();
 
@@ -20,7 +20,7 @@ public:
     void SetTitle(const char* newTitle);
     // Returns true if the window closes, used for the main loop
     bool ShouldClose();
-	
+
     GLFWwindow* window;
     unsigned int width, height;
     const char* title;

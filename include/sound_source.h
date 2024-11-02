@@ -7,7 +7,7 @@
 
 class SoundSource : public std::enable_shared_from_this<SoundSource>
 {
-public:
+  public:
     SoundSource();
     ~SoundSource();
 
@@ -16,11 +16,11 @@ public:
 
     float p_Pitch = 1.f;
     float p_Gain = 1.f;
-    float p_Position[3] = { 0,0,0 };
-    float p_Velocity[3] = { 0,0,0 };
+    float p_Position[3] = {0, 0, 0};
+    float p_Velocity[3] = {0, 0, 0};
     bool p_LoopSound = false;
 
-private:
+  private:
     ALuint p_Source;
     ALuint p_Buffer = 0;
 };

@@ -4,21 +4,26 @@
 // You should be able to include this file and not have to include anything else
 
 // Macro for clearing the screen
-#define ClearScreen() glClear(GL_COLOR_BUFFER_BIT); glClear(GL_DEPTH_BUFFER_BIT)
+#define ClearScreen()             \
+    glClear(GL_COLOR_BUFFER_BIT); \
+    glClear(GL_DEPTH_BUFFER_BIT)
 
-// Macro for initializing Jolt physics, this isn't a function because it doesn't register the default allocator if it is a function for some reason
-#define StartPhysics() \
-    JPH::RegisterDefaultAllocator(); \
-    JPH::Trace = TraceImpl; \
-    JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;) \
-    JPH::Factory::sInstance = new JPH::Factory(); \
-    JPH::RegisterTypes(); \
-    tempAllocator = new JPH::TempAllocatorImpl(200 * 1024 * 1024); \
-    jobSystem = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, JPH::thread::hardware_concurrency() - 1); \
-    BPLayerInterfaceImpl broadPhaseLayerInterface; \
-    ObjectVsBroadPhaseLayerFilterImpl objectVsBroadphaseLayerFilter; \
-    ObjectLayerPairFilterImpl objectVsObjectLayerFilter; \
-    physicsSystem.Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, broadPhaseLayerInterface, objectVsBroadphaseLayerFilter, objectVsObjectLayerFilter);
+// Macro for initializing Jolt physics, this isn't a function because it doesn't register the default allocator if it is
+// a function for some reason
+#define StartPhysics()                                                                                               \
+    JPH::RegisterDefaultAllocator();                                                                                 \
+    JPH::Trace = TraceImpl;                                                                                          \
+    JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)                                                          \
+    JPH::Factory::sInstance = new JPH::Factory();                                                                    \
+    JPH::RegisterTypes();                                                                                            \
+    tempAllocator = new JPH::TempAllocatorImpl(200 * 1024 * 1024);                                                   \
+    jobSystem = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers,                         \
+                                             JPH::thread::hardware_concurrency() - 1);                               \
+    BPLayerInterfaceImpl broadPhaseLayerInterface;                                                                   \
+    ObjectVsBroadPhaseLayerFilterImpl objectVsBroadphaseLayerFilter;                                                 \
+    ObjectLayerPairFilterImpl objectVsObjectLayerFilter;                                                             \
+    physicsSystem.Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, broadPhaseLayerInterface, \
+                       objectVsBroadphaseLayerFilter, objectVsObjectLayerFilter);
 
 #include <glm/gtc/quaternion.hpp>
 #include <utils.h>

@@ -12,39 +12,39 @@
 
 struct AssimpNodeData
 {
-	glm::mat4 transformation;
-	std::string name;
-	int childrenCount;
-	std::vector<AssimpNodeData> children;
+    glm::mat4 transformation;
+    std::string name;
+    int childrenCount;
+    std::vector<AssimpNodeData> children;
 };
 
 class Animation
 {
-public:
-	Animation() = default;
+  public:
+    Animation() = default;
 
-	Animation(const std::string& animationPath, Model* model);
+    Animation(const std::string& animationPath, Model* model);
 
-	~Animation();
+    ~Animation();
 
-	Bone* FindBone(const std::string& name);
-	
-	float GetTicksPerSecond();
+    Bone* FindBone(const std::string& name);
 
-	float GetDuration();
+    float GetTicksPerSecond();
 
-	const AssimpNodeData& GetRootNode();
+    float GetDuration();
 
-	const std::map<std::string,BoneInfo>& GetBoneIDMap();
+    const AssimpNodeData& GetRootNode();
 
-private:
-	void ReadMissingBones(const aiAnimation* animation, Model& model);
+    const std::map<std::string, BoneInfo>& GetBoneIDMap();
 
-	void ReadHierarchyData(AssimpNodeData& dest, const aiNode* src);
+  private:
+    void ReadMissingBones(const aiAnimation* animation, Model& model);
 
-	float duration;
-	int ticksPerSecond;
-	std::vector<Bone> bones;
-	AssimpNodeData rootNode;
-	std::map<std::string, BoneInfo> boneInfoMap;
+    void ReadHierarchyData(AssimpNodeData& dest, const aiNode* src);
+
+    float duration;
+    int ticksPerSecond;
+    std::vector<Bone> bones;
+    AssimpNodeData rootNode;
+    std::map<std::string, BoneInfo> boneInfoMap;
 };

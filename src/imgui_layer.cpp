@@ -4,18 +4,19 @@
 #include <imgui/imgui_impl_opengl3.h>
 #include <engine.h>
 
-namespace ImGuiLayer 
+namespace ImGuiLayer
 {
 
 void Init()
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     // ImFont* mainfont = io.Fonts->AddFontFromFileTTF("Resources/Fonts/newfont.ttf", 18.5f);
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(engineState.window->window, true);
@@ -28,14 +29,15 @@ void NewFrame()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    //ImGui::PushFont(mainfont);
+    // ImGui::PushFont(mainfont);
 
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->Pos);
     ImGui::SetNextWindowSize(viewport->Size);
     ImGui::SetNextWindowViewport(viewport->ID);
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
-    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    window_flags |=
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
     window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
     window_flags |= ImGuiWindowFlags_NoBackground; // No background
 
@@ -60,22 +62,23 @@ void EndFrame()
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
-	GLFWwindow* backup_current_context = glfwGetCurrentContext();
-	ImGui::UpdatePlatformWindows();
-	ImGui::RenderPlatformWindowsDefault();
-	glfwMakeContextCurrent(backup_current_context);
+        GLFWwindow* backup_current_context = glfwGetCurrentContext();
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+        glfwMakeContextCurrent(backup_current_context);
     }
 }
 
 void Terminate()
 {
-    //End of program.
+    // End of program.
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
 
-}
+} // namespace ImGuiLayer

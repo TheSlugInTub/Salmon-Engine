@@ -13,7 +13,7 @@
 
 class Shader
 {
-public:
+  public:
     unsigned int ID;
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
@@ -96,24 +96,14 @@ public:
         glDeleteShader(fragment);
         if (geometryPath != nullptr)
             glDeleteShader(geometry);
-
     }
 
-    Shader()
-    {
-
-    }
+    Shader() {}
 
     // activate the shader
     // ------------------------------------------------------------------------
-    void use()
-    {
-        glUseProgram(ID);
-    }
-    void deuse()
-    {
-        glDeleteProgram(ID);
-    }
+    void use() { glUseProgram(ID); }
+    void deuse() { glDeleteProgram(ID); }
     // utility uniform functions
     // ------------------------------------------------------------------------
     void setBool(const std::string& name, bool value) const
@@ -175,11 +165,11 @@ public:
     void setTexture2D(const std::string& name, GLuint textureID, GLenum textureUnit) const
     {
         glActiveTexture(GL_TEXTURE0 + textureUnit); // Activate texture unit
-        glBindTexture(GL_TEXTURE_2D, textureID);    // Bind the texture to the specified unit
+        glBindTexture(GL_TEXTURE_2D, textureID); // Bind the texture to the specified unit
         glUniform1i(glGetUniformLocation(ID, name.c_str()), textureUnit); // Set the sampler to use the texture unit
     }
 
-private:
+  private:
     // utility function for checking shader compilation/linking errors.
     // ------------------------------------------------------------------------
     void checkCompileErrors(GLuint shader, std::string type)
@@ -192,7 +182,8 @@ private:
             if (!success)
             {
                 glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-                std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+                std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n"
+                          << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
             }
         }
         else
@@ -201,7 +192,8 @@ private:
             if (!success)
             {
                 glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-                std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+                std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n"
+                          << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
             }
         }
     }

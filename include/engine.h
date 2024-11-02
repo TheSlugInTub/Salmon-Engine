@@ -13,17 +13,11 @@ struct EngineState
     Camera* camera;
     Window* window;
     float deltaTime;
+    
+    void SetScene(const Scene& newScene) { scene = newScene; }
 
-    void SetScene(const Scene& newScene)
-    {
-        scene = newScene;
-    }
-
-    void SetCamera(Camera& newCamera)
-    {
-        camera = &newCamera;
-    }
-};  
+    void SetCamera(Camera& newCamera) { camera = &newCamera; }
+};
 
 // Global state of the engine
 inline EngineState engineState;
