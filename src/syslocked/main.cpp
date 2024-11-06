@@ -35,6 +35,7 @@ int main()
                                  glm::vec3(1.0f, 1.0f, 1.0f));
     scene.AssignParam<RigidBody3D>(player, ColliderType::Capsule, BodyState::Dynamic, 1.0f, 2.0f, RigidbodyID_Player);
     scene.AssignParam<PlayerMovement>(player, 0.34f, 0.6f);
+    scene.AssignParam<Health>(player, 3);
 
     EntityID ground = scene.AddEntity();
     scene.AssignParam<Transform>(ground, glm::vec3(0.0f, -3.0f, 0.0f), glm::vec3(0.0f, 0.0001f, 0.0f),
@@ -61,7 +62,7 @@ int main()
                              glm::vec4(1.0f, 0.647f, 0.0f, 1.0f), false);
 
     EntityID enemy = scene.AddEntity();
-    scene.AssignParam<Transform>(enemy, glm::vec3(2.0f, 4.0f, 0.0f), glm::vec3(2.5f, 0.0f, 0.0f),
+    scene.AssignParam<Transform>(enemy, glm::vec3(2.0f, -5.0f, 0.0f), glm::vec3(2.5f, 0.0f, 0.0f),
                                  glm::vec3(3.03f, 3.03f, 3.03f));
     scene.AssignParam<MeshRenderer>(enemy, strayModel, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), bottomTex);
     scene.AssignParam<RigidBody3D>(enemy, ColliderType::Capsule, BodyState::Dynamic, 1.0f, 4.0f, RigidbodyID_Enemy,
@@ -69,6 +70,10 @@ int main()
     scene.AssignParam<Enemy>(enemy, 15);
     scene.AssignParam<Stray>(enemy, 799110.0f, 10000000.0f, scene.Get<Transform>(player));
     scene.AssignParam<Animator>(enemy, &strayRunAnim, true, true, 1.7f);
+
+    EntityID enemySpawner = scene.AddEntity();
+    scene.AssignParam<EnemySpawner>(enemySpawner, 3.0f, scene.Get<Transform>(ground), scene.Get<Transform>(player),
+                                    &strayModel, &strayRunAnim);
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
@@ -107,7 +112,7 @@ int main()
         camera.Position = cameraPos;
         Renderer::lights[1].position = scene.Get<Transform>(player)->position;
 
-        physicsSystem.DrawBodies(settings, &debugRenderer, filter);
+        //physicsSystem.DrawBodies(settings, &debugRenderer, filter);
 
         ImGuiLayer::EndFrame();
         window.Update();

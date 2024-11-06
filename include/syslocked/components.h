@@ -22,6 +22,15 @@ struct PlayerMovement
     float jumpSpeed;
 };
 
+struct Health 
+{
+    int health;
+
+    SoundDevice* soundDevice;
+    Sound hitSound;
+    std::shared_ptr<SoundSource> soundSource;
+};
+
 struct Gun
 {
     float forwardOffset;
@@ -60,3 +69,15 @@ struct Bullet
 {
     int randomValueThatWillGetReplaced;
 };
+
+struct EnemySpawner
+{
+    float timeBetweenSpawn;
+    Transform* platformTrans;
+    Transform* playerTrans;
+    Model* enemyModel;
+    Animation* enemyRunAnim;
+    float spawnTimer = 5.0f;
+};
+
+void EnemyStartSys();

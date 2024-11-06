@@ -282,18 +282,59 @@ void EnemySys()
 
             DestroyBody(rigid->body->GetID());
 
-            registeredCollisions.erase(registeredCollisions.begin() + enemy->registeredCollisionIndex);
+            //registeredCollisions.erase(registeredCollisions.begin() + enemy->registeredCollisionIndex);
         }
     }
+}
+
+void HealthStartSys()
+{
+    for (EntityID ent : SceneView<Health>(engineState.scene))
+    {
+        auto rigid = engineState.scene.Get<RigidBody3D>(ent);
+        auto healthComp = engineState.scene.Get<Health>(ent);
+
+        healthComp->soundDevice = SoundDevice::Get();
+        healthComp->hitSound = SoundBuffer::Get()->AddSoundEffect("res/sounds/PlayerHurt.wav");
+
+        healthComp->soundSource = std::make_shared<SoundSource>();
+
+        AddCollisionEnterEvent(rigid->body,
+                               [ent, healthComp, rigid](const JPH::Body* id1, const JPH::Body* id2)
+                               {
+                                   // Bullet hit callback!
+
+                                   int group1 = id1->GetCollisionGroup().GetGroupID();
+                                   int group2 = id2->GetCollisionGroup().GetGroupID();
+
+                                   if (group1 == RigidbodyID_Enemy || group2 == RigidbodyID_Enemy)
+                                   {
+                                       healthComp->health--;
+                                       healthComp->soundSource->Play(healthComp->hitSound);
+                                   }
+
+                                   if (healthComp->health <= 0)
+                                   {
+                                       exit(0);
+                                   }
+                               });
+    }
+}
+
+void HealthSys()
+{
+    for (EntityID ent : SceneView<Health>(engineState.scene)) {}
 }
 
 // Start systems
 REGISTER_START_SYSTEM(EnemyStartSys);
 REGISTER_START_SYSTEM(GunStartSys);
+REGISTER_START_SYSTEM(HealthStartSys);
 
 // Regular systems
 REGISTER_SYSTEM(GunSys);
 REGISTER_SYSTEM(EnemySys);
 REGISTER_SYSTEM(PlayerMovementSys);
+// REGISTER_SYSTEM(HealthSys);
 REGISTER_SYSTEM(CameraMoveSys);
 REGISTER_SYSTEM(CameraLookSys);

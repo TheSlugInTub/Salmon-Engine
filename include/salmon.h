@@ -13,7 +13,7 @@
 #define StartPhysics()                                                                                               \
     JPH::RegisterDefaultAllocator();                                                                                 \
     JPH::Trace = TraceImpl;                                                                                          \
-    JPH_IF_ENABLE_ASSERTS(AssertFailed = AssertFailedImpl;)                                                          \
+    JPH_IF_ENABLE_ASSERTS(JPH::AssertFailed = AssertFailedImpl;)                                                          \
     JPH::Factory::sInstance = new JPH::Factory();                                                                    \
     JPH::RegisterTypes();                                                                                            \
     tempAllocator = new JPH::TempAllocatorImpl(200 * 1024 * 1024);                                                   \

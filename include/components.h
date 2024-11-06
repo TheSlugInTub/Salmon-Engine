@@ -106,6 +106,7 @@ struct Animator
 void MeshRendererSys();
 void RigidBody3DStartSys();
 void RigidBody3DSys();
+void AnimatorStartSys();
 
 inline void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform, Animator* anim)
 {

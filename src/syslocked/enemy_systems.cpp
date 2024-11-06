@@ -1,3 +1,4 @@
+#include <random>
 #include <syslocked/components.h>
 #include <ecs.h>
 #include <engine.h>
@@ -64,4 +65,44 @@ void StraySys()
     }
 }
 
+void EnemySpawnerSys()
+{
+    for (EntityID ent : SceneView<EnemySpawner>(engineState.scene))
+    {
+        auto spawner = engineState.scene.Get<EnemySpawner>(ent);
+
+        spawner->spawnTimer -= engineState.deltaTime;
+
+        if (spawner->spawnTimer <= 0)
+        {
+            // Spawn enemy
+            glm::vec3 halfExtents = 0.5f * spawner->platformTrans->scale;
+
+            float randomX = Utils::GenerateRandomNumber(spawner->platformTrans->position.x - halfExtents.x,
+                                                        spawner->platformTrans->position.x + halfExtents.x);
+            float randomZ = Utils::GenerateRandomNumber(spawner->platformTrans->position.z - halfExtents.z,
+                                                        spawner->platformTrans->position.z + halfExtents.z);
+
+            glm::vec3 randomPos = glm::vec3(randomX, 5.0f, randomZ);
+
+            EntityID enemy = engineState.scene.AddEntity();
+            engineState.scene.AssignParam<Transform>(enemy, randomPos, glm::vec3(2.5f, 0.0f, 0.0f),
+                                         glm::vec3(3.03f, 3.03f, 3.03f));
+            engineState.scene.AssignParam<MeshRenderer>(enemy, *spawner->enemyModel, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), 0);
+            engineState.scene.AssignParam<RigidBody3D>(enemy, ColliderType::Capsule, BodyState::Dynamic, 1.0f, 4.0f,
+                                           RigidbodyID_Enemy, glm::vec3(0.0f, -3.4f, 0.0f));
+            engineState.scene.AssignParam<Enemy>(enemy, 15);
+            engineState.scene.AssignParam<Stray>(enemy, 799110.0f * 2.0f, 10000000.0f, spawner->playerTrans);
+            engineState.scene.AssignParam<Animator>(enemy, spawner->enemyRunAnim, true, true, 1.7f);
+
+            RigidBody3DStartSys();
+            EnemyStartSys();
+            AnimatorStartSys();
+
+            spawner->spawnTimer = spawner->timeBetweenSpawn;
+        }
+    }
+}
+
 REGISTER_SYSTEM(StraySys);
+REGISTER_SYSTEM(EnemySpawnerSys);
