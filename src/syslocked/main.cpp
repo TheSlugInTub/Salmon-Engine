@@ -112,7 +112,7 @@ int main()
         camera.Position = cameraPos;
         Renderer::lights[1].position = scene.Get<Transform>(player)->position;
 
-        //physicsSystem.DrawBodies(settings, &debugRenderer, filter);
+        // physicsSystem.DrawBodies(settings, &debugRenderer, filter);
 
         ImGuiLayer::EndFrame();
         window.Update();
