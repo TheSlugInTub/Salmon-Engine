@@ -1,5 +1,5 @@
-#include <sound_buffer.h>
-#include <audiofile.h>
+#include <salmon/sound_buffer.h>
+#include <salmon/audiofile.h>
 #include <inttypes.h>
 #include <AL/alext.h>
 #include <vector>

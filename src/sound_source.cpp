@@ -1,4 +1,4 @@
-#include <sound_source.h>
+#include <salmon/sound_source.h>
 #include <iostream>
 #include <thread>
 

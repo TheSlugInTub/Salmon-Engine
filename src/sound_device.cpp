@@ -1,4 +1,4 @@
-#include <sound_device.h>
+#include <salmon/sound_device.h>
 #include <AL\al.h>
 #include <stdio.h>
 

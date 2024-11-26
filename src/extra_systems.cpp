@@ -1,7 +1,7 @@
-#include <ecs.h>
-#include <engine.h>
-#include <input.h>
-#include <components.h>
+#include <salmon/ecs.h>
+#include <salmon/engine.h>
+#include <salmon/input.h>
+#include <salmon/components.h>
 
 void CameraMoveSys()
 {

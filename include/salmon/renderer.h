@@ -3,8 +3,8 @@
 // 3D renderer for the engine
 
 #include <glm/glm.hpp>
-#include <ecs.h>
-#include <shader.h>
+#include <salmon/ecs.h>
+#include <salmon/shader.h>
 #include <vector>
 
 // Resolution of the shadowDepthMap (cubemap which stores shadows)
@@ -49,6 +49,9 @@ glm::mat4 MakeModelTransform(Transform* trans);
 void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& view);
 // Renders a line from one vec3 to another vec3, uses the line shader
 void RenderLine(glm::vec3 inPoint, glm::vec3 outPoint, const glm::mat4& projection, const glm::mat4& view);
+// Takes an entityID, gets its Transform and SpriteRenderer components
+// and uses the data to render it onto the screen
+void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& view);
 
 // Default 3D shader
 inline Shader defaultShader;
@@ -56,8 +59,13 @@ inline Shader defaultShader;
 inline Shader lineShader;
 // Depth shader used for shadows and shadow mapping
 inline Shader depthShader;
+// Default 2D shader
+inline Shader twoShader;
 
 // All the lights in the scene
 inline std::vector<Light> lights;
+
+// OpenGL buffer objects for 2D
+inline unsigned int VAO, VBO, EBO;
 
 } // namespace Renderer

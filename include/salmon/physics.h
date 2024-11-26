@@ -23,8 +23,8 @@
 #include <Jolt/Physics/Collision/ContactListener.h>
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/CastResult.h>
-#include <renderer.h>
-#include <engine.h>
+#include <salmon/renderer.h>
+#include <salmon/engine.h>
 #include <functional>
 
 #ifdef JPH_DEBUG_RENDERER

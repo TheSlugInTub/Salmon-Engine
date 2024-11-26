@@ -1,7 +1,7 @@
 #pragma once
 
 #include <AL\al.h>
-#include <sound_buffer.h>
+#include <salmon/sound_buffer.h>
 #include <iostream>
 #include <memory>
 

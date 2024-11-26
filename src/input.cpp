@@ -1,7 +1,7 @@
-#include <input.h>
+#include <salmon/input.h>
 #include <unordered_map>
 #include <map>
-#include <engine.h>
+#include <salmon/engine.h>
 
 namespace Input
 {

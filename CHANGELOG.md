@@ -1,3 +1,8 @@
+# Salmon Engine 0.65
+26/11/2024 - November 
+
+Added a sprite renderer component and moved salmon headers to seperate folder.
+
 # Salmon Engine 0.6
 2/11/2024 - November
 

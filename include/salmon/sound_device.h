@@ -1,4 +1,5 @@
 #pragma once
+
 #include <AL\alc.h>
 
 class SoundDevice

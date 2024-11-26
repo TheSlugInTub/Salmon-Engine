@@ -1,15 +1,15 @@
-#include <renderer.h>
-#include <model.h>
+#include <salmon/renderer.h>
+#include <salmon/model.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/common.hpp>
 #include <glm/gtx/string_cast.hpp>
-#include <engine.h>
-#include <components.h>
-#include <utils.h>
-#include <stb_image.h>
+#include <salmon/engine.h>
+#include <salmon/components.h>
+#include <salmon/utils.h>
+#include <salmon/stb_image.h>
 
 namespace Renderer
 {
@@ -17,16 +17,51 @@ namespace Renderer
 // This function is run at the very start of the program
 void Init()
 {
-    Shader newShader("shaders/vertex.shad", "shaders/fragment.shad");
-    defaultShader = newShader;
-    Shader newLineShader("shaders/linevertex.shad", "shaders/linefragment.shad");
-    lineShader = newLineShader;
-    Shader newDepthShader("shaders/shadowvertex.shad", "shaders/shadowfragment.shad", "shaders/shadowgeometry.shad");
-    depthShader = newDepthShader;
+    defaultShader = Shader("shaders/vertex.shad", "shaders/fragment.shad");
+    lineShader = Shader("shaders/linevertex.shad", "shaders/linefragment.shad");
+    depthShader = Shader("shaders/shadowvertex.shad", "shaders/shadowfragment.shad", "shaders/shadowgeometry.shad");
+    twoShader = Shader("shaders/vertex2d.shad", "shaders/fragment2d.shad");
     stbi_set_flip_vertically_on_load(true);
+
+    /*
+    These are vertices for rendering a triangle and the indices make it a quad,
+    since those are all we need for a 2D renderer.
+    */
+    float vertices[] = {
+        // positions         // texture coords
+        0.5f,  0.5f,  0.0f, 1.0f, 1.0f, // top right
+        0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left
+        -0.5f, 0.5f,  0.0f, 0.0f, 1.0f // top left
+    };
+
+    unsigned int indices[] = {
+        0, 1, 3, // first triangle
+        1, 2, 3 // second triangle
+    };
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // texture attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // Enable the DEPTH_TEST, basically just so faces don't draw on top of eachother in weird ways
     glEnable(GL_DEPTH_TEST);
+    // Culls inside faces to save on performance
     glEnable(GL_CULL_FACE);
 }
 
@@ -152,6 +187,49 @@ void RenderLine(glm::vec3 inPoint, glm::vec3 outPoint, const glm::mat4& projecti
     glBindVertexArray(0);
     glDeleteBuffers(1, &lVBO);
     glDeleteVertexArrays(1, &lVAO);
+}
+
+void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& view)
+{
+    auto sprite = engineState.scene.Get<SpriteRenderer>(ent);
+    auto trans = engineState.scene.Get<Transform>(ent);
+
+    if (sprite->color.w == 0)
+    {
+        // If the alpha of the object is zero, then don't bother with rendering it.
+        return;
+    }
+
+    twoShader.use();
+    twoShader.setTexture2D("texture1", sprite->texture, 0);
+
+    glm::mat4 transform = glm::mat4(1.0f);
+
+    // Matrix multiplication to calculate the transform.
+    transform = glm::translate(transform, glm::vec3(trans->position.x, trans->position.y, trans->position.z));
+    transform = glm::rotate(transform, trans->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+    transform = glm::scale(transform, glm::vec3(trans->scale.x, trans->scale.y, 1.0f));
+
+    // Setting all the uniforms.
+    twoShader.setMat4("model", transform);
+    twoShader.setMat4("view", view);
+    twoShader.setMat4("projection", projection);
+    twoShader.setVec4("ourColor", sprite->color);
+
+    // This changes the vertices of the quad if the object is flipped.
+    float vertices[] = {
+        // positions     // texture coords
+        0.5f,  0.5f,  0.0f, sprite->flipped ? 0.0f : 1.0f, 1.0f, // top right (flipped if true)
+        0.5f,  -0.5f, 0.0f, sprite->flipped ? 0.0f : 1.0f, 0.0f, // bottom right (flipped if true)
+        -0.5f, -0.5f, 0.0f, sprite->flipped ? 1.0f : 0.0f, 0.0f, // bottom left (flipped if true)
+        -0.5f, 0.5f,  0.0f, sprite->flipped ? 1.0f : 0.0f, 1.0f // top left (flipped if true)
+    };
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 } // namespace Renderer

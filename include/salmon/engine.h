@@ -1,8 +1,8 @@
 #pragma once
 
-#include <ecs.h>
-#include <camera.h>
-#include <window.h>
+#include <salmon/ecs.h>
+#include <salmon/camera.h>
+#include <salmon/window.h>
 
 // Struct to store the state of the engine
 // This is just so I can make the current scene, camera, and window global

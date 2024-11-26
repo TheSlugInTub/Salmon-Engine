@@ -4,9 +4,9 @@
 #include <map>
 #include <glm/glm.hpp>
 #include <assimp/scene.h>
-#include <bone.h>
+#include <salmon/bone.h>
 #include <functional>
-#include <model.h>
+#include <salmon/model.h>
 
 // Courtesy of https://learnopengl.com
 

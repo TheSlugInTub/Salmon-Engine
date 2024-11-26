@@ -1,9 +1,9 @@
-#include <components.h>
-#include <ecs.h>
-#include <engine.h>
+#include <salmon/components.h>
+#include <salmon/ecs.h>
+#include <salmon/engine.h>
 #include <glm/gtc/quaternion.hpp>
 #include <iostream>
-#include <renderer.h>
+#include <salmon/renderer.h>
 #include <GLFW/glfw3.h>
 
 void MeshRendererSys()
@@ -47,6 +47,16 @@ void MeshRendererSys()
     for (EntityID ent : SceneView<Transform, MeshRenderer>(engineState.scene))
     {
         Renderer::RenderModel(ent, engineState.camera->GetProjMatrix(aspectRatio), engineState.camera->GetViewMatrix());
+    }
+}
+
+void SpriteRendererSys()
+{
+    float aspectRatio = engineState.window->GetAspectRatio();
+    
+    for (EntityID ent : SceneView<SpriteRenderer>(engineState.scene))
+    {
+        Renderer::RenderSprite(ent, engineState.camera->GetProjMatrix(aspectRatio), engineState.camera->GetViewMatrix());
     }
 }
 
@@ -306,4 +316,5 @@ REGISTER_START_SYSTEM(AnimatorStartSys);
 REGISTER_SYSTEM(DeltaTimeSystem);
 REGISTER_SYSTEM(AnimatorSys);
 REGISTER_SYSTEM(MeshRendererSys);
+REGISTER_SYSTEM(SpriteRendererSys);
 REGISTER_SYSTEM(RigidBody3DSys);

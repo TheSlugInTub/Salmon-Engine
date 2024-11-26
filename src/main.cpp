@@ -1,5 +1,5 @@
 #include <iostream>
-#include <salmon.h>
+#include <salmon/salmon.h>
 #include <string>
 
 // settings
@@ -10,7 +10,7 @@ Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
 float physTimer = 0.3f;
 
-int main()
+int main(int argc, char** argv)
 {
     Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false);
     glfwSetInputMode(window.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -39,6 +39,11 @@ int main()
     EntityID light2 = scene.AddEntity();
     scene.AssignParam<Light>(light2, glm::vec3(0.0f, 10.0f, 0.0f), 30.0f, 0.1f, 1.5f,
                              glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+    EntityID sprite = scene.AddEntity();
+    scene.AssignParam<Transform>(sprite, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+                                 glm::vec3(1.0f, 1.0f, 100.0f));
+    scene.AssignParam<SpriteRenderer>(sprite, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), "what da dog doin", false);
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);

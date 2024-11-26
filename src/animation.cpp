@@ -1,6 +1,6 @@
 #pragma once
 
-#include <animation.h>
+#include <salmon/animation.h>
 
 // Courtesy of https://learnopengl.com
 

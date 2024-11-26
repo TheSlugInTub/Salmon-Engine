@@ -7,7 +7,7 @@
 #include <list>
 #include <vector>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <assimp_glm_helpers.h>
+#include <salmon/assimp_glm_helpers.h>
 #include <glm/gtx/quaternion.hpp>
 
 // Courtesy of https://learnopengl.com

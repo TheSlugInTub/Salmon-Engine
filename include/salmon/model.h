@@ -7,13 +7,13 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <stb_image.h>
+#include <salmon/stb_image.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include <mesh.h>
-#include <shader.h>
+#include <salmon/mesh.h>
+#include <salmon/shader.h>
 
 #include <string>
 #include <fstream>
@@ -21,7 +21,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
-#include <assimp_glm_helpers.h>
+#include <salmon/assimp_glm_helpers.h>
 
 inline unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma = false);
 inline unsigned int TextureFromEmbeddedData(const aiTexture* embeddedTexture);

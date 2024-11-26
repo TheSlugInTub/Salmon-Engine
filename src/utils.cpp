@@ -1,5 +1,5 @@
-#include <utils.h>
-#include <stb_image.h>
+#include <salmon/utils.h>
+#include <salmon/stb_image.h>
 #include <glad/glad.h>
 #include <iostream>
 #include <random>

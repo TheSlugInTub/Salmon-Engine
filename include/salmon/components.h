@@ -1,11 +1,11 @@
-#include <ecs.h>
+#include <salmon/ecs.h>
 #include <glm/glm.hpp>
-#include <model.h>
+#include <salmon/model.h>
 #include <string>
-#include <physics.h>
-#include <bone.h>
-#include <animation.h>
-#include <utils.h>
+#include <salmon/physics.h>
+#include <salmon/bone.h>
+#include <salmon/animation.h>
+#include <salmon/utils.h>
 
 // This file creates a bunch of core components that are neccessary for the engine to run
 
@@ -44,6 +44,15 @@ struct MeshRenderer
     std::string texturePath = "";
     unsigned int depthMapFBO = 0;
     unsigned int depthCubemap = 0;
+};
+
+// Component that describes how a sprite should be rendered at the trasform of an entity
+struct SpriteRenderer
+{
+    unsigned int texture;
+    glm::vec4 color = glm::vec4(1.0f);
+    std::string texturePath = "";
+    bool flipped = false;
 };
 
 // Component that simulates physics on the entity's transform with Jolt Physics
