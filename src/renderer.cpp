@@ -63,6 +63,9 @@ void Init()
     glEnable(GL_DEPTH_TEST);
     // Culls inside faces to save on performance
     glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    // Enables anti-aliasing
+    glEnable(GL_MULTISAMPLE);
 }
 
 // This function is run for every model in the scene
@@ -207,7 +210,18 @@ void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& vi
 
     // Matrix multiplication to calculate the transform.
     transform = glm::translate(transform, glm::vec3(trans->position.x, trans->position.y, trans->position.z));
-    transform = glm::rotate(transform, trans->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+    if (!sprite->billboard)
+    {
+        transform = glm::rotate(transform, trans->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+    }
+    else
+    {
+        // Cancel out view rotation for billboarding
+        glm::mat4 rotationCancel = glm::transpose(glm::mat3(view));
+        transform = transform * glm::mat4(rotationCancel);
+    }
+
     transform = glm::scale(transform, glm::vec3(trans->scale.x, trans->scale.y, 1.0f));
 
     // Setting all the uniforms.
@@ -220,9 +234,9 @@ void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& vi
     float vertices[] = {
         // positions     // texture coords
         0.5f,  0.5f,  0.0f, sprite->flipped ? 0.0f : 1.0f, 1.0f, // top right (flipped if true)
-        0.5f,  -0.5f, 0.0f, sprite->flipped ? 0.0f : 1.0f, 0.0f, // bottom right (flipped if true)
+        -0.5f, 0.5f,  0.0f, sprite->flipped ? 1.0f : 0.0f, 1.0f, // top left (flipped if true)
         -0.5f, -0.5f, 0.0f, sprite->flipped ? 1.0f : 0.0f, 0.0f, // bottom left (flipped if true)
-        -0.5f, 0.5f,  0.0f, sprite->flipped ? 1.0f : 0.0f, 1.0f // top left (flipped if true)
+        0.5f,  -0.5f, 0.0f, sprite->flipped ? 0.0f : 1.0f, 0.0f // bottom right (flipped if true)
     };
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);

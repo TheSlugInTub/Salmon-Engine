@@ -21,7 +21,7 @@ class Camera
 {
   public:
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
-           float yaw = -90.0f, float pitch = 0.0f);
+           float yaw = -90.0f, float pitch = 0.0f, float fov = 90.0f);
 
     // Moves the camera based on the direction enum
     void ProcessKeyboard(CameraMovement direction, float deltaTime);
@@ -52,6 +52,7 @@ class Camera
     float MovementSpeed;
     float MouseSensitivity;
     float Zoom;
+    float FOV;
 
   private:
     void updateCameraVectors();

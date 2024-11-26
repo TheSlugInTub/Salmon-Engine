@@ -2,6 +2,7 @@
 #include <salmon/ecs.h>
 #include <salmon/engine.h>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/ext.hpp>
 #include <iostream>
 #include <salmon/renderer.h>
 #include <GLFW/glfw3.h>
@@ -53,10 +54,11 @@ void MeshRendererSys()
 void SpriteRendererSys()
 {
     float aspectRatio = engineState.window->GetAspectRatio();
-    
+
     for (EntityID ent : SceneView<SpriteRenderer>(engineState.scene))
     {
-        Renderer::RenderSprite(ent, engineState.camera->GetProjMatrix(aspectRatio), engineState.camera->GetViewMatrix());
+        Renderer::RenderSprite(ent, engineState.camera->GetProjMatrix(aspectRatio),
+                               engineState.camera->GetViewMatrix());
     }
 }
 
