@@ -31,7 +31,7 @@ struct ParticleSystem
     glm::vec4 startingColor; // Starting color of all particles
     glm::vec4 colorOverTime; // The amount of color added to each particle per frame
 
-    glm::vec3 gravity = glm::vec3(0.0f); // Gravity of the particles
+    glm::vec3 gravity; // Gravity of the particles
 
     float particleLifetime; // The amount of time, a particle can last before dying
     float duration;         // The amount of time, the system can produce particles

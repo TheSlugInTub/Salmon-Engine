@@ -48,9 +48,9 @@ int main(int argc, char** argv)
 
     EntityID par = scene.AddEntity();
     scene.AssignParam<ParticleSystem>(par, slugariusTex, glm::vec3(2.0f, 3.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-                                      glm::vec3(0.5f, 0.5f, 0.5f), -0.25f, glm::vec3(0.0f, 0.0f, 0.05f),
-                                      glm::vec3(0.0f, -0.1f, 0.0f), 1.0f, 0.01f, -0.5f, glm::vec4(1.0f), glm::vec4(0.0f),
-                                      glm::vec3(0.0f), 1.0f, 10.0f, 0.0f, 80.0f, 50, true, true);
+                                      glm::vec3(0.5f, 0.5f, 0.5f), -0.25f, glm::vec3(0.0f, 0.0f, 1.5f),
+                                      glm::vec3(0.0f, 0.0f, 0.4f), 13.0f, 0.1f, -1.0f, glm::vec4(1.0f), glm::vec4(0.0f),
+                                      glm::vec3(0.0f, -0.015f, 0.0f), 1.0f, 0.1f, 0.0f, 80.0f, 50, true, true);
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
@@ -93,6 +93,12 @@ int main(int argc, char** argv)
         if (physTimer <= 0)
         {
             StepPhysics(engineState.deltaTime);
+        }
+
+        if (Input::GetKeyDown(Key::R))
+        {
+            engineState.scene.Get<ParticleSystem>(par)->playing = true;
+            engineState.scene.Get<ParticleSystem>(par)->currentDuration = 0.0f;
         }
     }
 

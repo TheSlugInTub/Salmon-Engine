@@ -82,8 +82,8 @@ void Init()
     // Enable the DEPTH_TEST, basically just so faces don't draw on top of eachother in weird ways
     glEnable(GL_DEPTH_TEST);
     // Culls inside faces to save on performance
-    // glEnable(GL_CULL_FACE);
-    // glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
     // Enables anti-aliasing
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_BLEND);
@@ -274,22 +274,25 @@ void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection
     for (int i = 0; i < par.particles.size(); ++i)
     {
         particleMatrices.push_back(glm::mat4(1.0f));
+
+        // Apply position to he matrix
         particleMatrices[i] =
             glm::translate(particleMatrices[i], glm::vec3(par.particles[i].position.x, par.particles[i].position.y,
                                                           par.particles[i].position.z));
+
+        // Cancel out rotation for the billboarded alignment
         glm::mat4 rotationCancel = glm::transpose(glm::mat3(view));
         particleMatrices[i] = particleMatrices[i] * glm::mat4(rotationCancel);
+
+        // Apply 2D rotation (around Z-axis) for custom billboard rotation
+        float     angle = par.particles[i].rotation.z; // The rotation angle in radians
+        glm::mat4 rotation2D = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f));
+        particleMatrices[i] = particleMatrices[i] * rotation2D;
+
+        // Scale the matrix
         particleMatrices[i] =
             glm::scale(particleMatrices[i], glm::vec3(par.particles[i].size.x, par.particles[i].size.y, 1.0f));
     }
-
-    //if (par.particles.size() != 0)
-    //{
-    //    std::cout << "Position: " << glm::to_string(par.particles[0].position) << std::endl;
-    //    std::cout << "Size: " << glm::to_string(par.particles[0].size) << std::endl;
-    //    std::cout << "Color: " << glm::to_string(par.particles[0].color) << std::endl;
-    //    std::cout << "Matrix: " << glm::to_string(particleMatrices[0]) << std::endl;
-    //}
 
     // Update instance transformation data
     glBindBuffer(GL_ARRAY_BUFFER, instancedVBO);

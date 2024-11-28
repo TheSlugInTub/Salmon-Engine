@@ -52,11 +52,13 @@ void ParticleSystemSys()
         for (Particle& particle : par->particles)
         {
             particle.forceMagnitude += par->forceOverTime;
-            particle.position += (particle.force * particle.forceMagnitude) * engineState.deltaTime;
+            particle.position += (glm::normalize(particle.force) * particle.forceMagnitude) * engineState.deltaTime;
             particle.rotation += par->rotationOverTime * engineState.deltaTime;
             particle.size += par->sizeOverTime * engineState.deltaTime;
             particle.color += par->colorOverTime * engineState.deltaTime;
             particle.lifetime += engineState.deltaTime;
+            particle.force += par->gravity;
+            particle.forceMagnitude = par->forceMagnitude;
         }
 
         par->particles.erase(std::remove_if(par->particles.begin(), par->particles.end(), [&](const Particle& particle)
