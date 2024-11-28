@@ -1,15 +1,15 @@
 #include <salmon/renderer.h>
 #include <salmon/model.h>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/common.hpp>
-#include <glm/gtx/string_cast.hpp>
 #include <salmon/engine.h>
 #include <salmon/components.h>
 #include <salmon/utils.h>
 #include <salmon/stb_image.h>
+#include <salmon/particle_system.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/common.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 namespace Renderer
 {
@@ -21,6 +21,7 @@ void Init()
     lineShader = Shader("shaders/linevertex.shad", "shaders/linefragment.shad");
     depthShader = Shader("shaders/shadowvertex.shad", "shaders/shadowfragment.shad", "shaders/shadowgeometry.shad");
     twoShader = Shader("shaders/vertex2d.shad", "shaders/fragment2d.shad");
+    parShader = Shader("shaders/particlevertex.shad", "shaders/particlefragment.shad");
     stbi_set_flip_vertically_on_load(true);
 
     /*
@@ -30,14 +31,14 @@ void Init()
     float vertices[] = {
         // positions         // texture coords
         0.5f,  0.5f,  0.0f, 1.0f, 1.0f, // top right
-        0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, // bottom right
+        -0.5f, 0.5f,  0.0f, 0.0f, 1.0f, // top left
         -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left
-        -0.5f, 0.5f,  0.0f, 0.0f, 1.0f // top left
+        0.5f,  -0.5f, 0.0f, 1.0f, 0.0f  // bottom right
     };
 
     unsigned int indices[] = {
         0, 1, 3, // first triangle
-        1, 2, 3 // second triangle
+        1, 2, 3  // second triangle
     };
 
     glGenVertexArrays(1, &VAO);
@@ -59,13 +60,34 @@ void Init()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    particleMatrices.reserve(MAX_PARTICLES);
+
+    glGenBuffers(1, &instancedVBO);
+
+    // Reserve space for instance transformation matrices
+    glBindBuffer(GL_ARRAY_BUFFER, instancedVBO);
+    glBufferData(GL_ARRAY_BUFFER, MAX_PARTICLES * sizeof(glm::mat4), nullptr, GL_DYNAMIC_DRAW);
+
+    // Enable instanced attributes (mat4 takes 4 vec4 attributes)
+    glBindVertexArray(VAO);
+    for (int i = 0; i < 4; i++)
+    {
+        glVertexAttribPointer(2 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * sizeof(glm::vec4)));
+        glEnableVertexAttribArray(2 + i);
+        glVertexAttribDivisor(2 + i, 1); // Instance divisor for instancing
+    }
+
+    glBindVertexArray(0);
+
     // Enable the DEPTH_TEST, basically just so faces don't draw on top of eachother in weird ways
     glEnable(GL_DEPTH_TEST);
     // Culls inside faces to save on performance
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    // glEnable(GL_CULL_FACE);
+    // glCullFace(GL_BACK);
     // Enables anti-aliasing
     glEnable(GL_MULTISAMPLE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 // This function is run for every model in the scene
@@ -236,7 +258,7 @@ void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& vi
         0.5f,  0.5f,  0.0f, sprite->flipped ? 0.0f : 1.0f, 1.0f, // top right (flipped if true)
         -0.5f, 0.5f,  0.0f, sprite->flipped ? 1.0f : 0.0f, 1.0f, // top left (flipped if true)
         -0.5f, -0.5f, 0.0f, sprite->flipped ? 1.0f : 0.0f, 0.0f, // bottom left (flipped if true)
-        0.5f,  -0.5f, 0.0f, sprite->flipped ? 0.0f : 1.0f, 0.0f // bottom right (flipped if true)
+        0.5f,  -0.5f, 0.0f, sprite->flipped ? 0.0f : 1.0f, 0.0f  // bottom right (flipped if true)
     };
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -244,6 +266,45 @@ void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& vi
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection, const glm::mat4& view)
+{
+    particleMatrices.clear();
+    for (int i = 0; i < par.particles.size(); ++i)
+    {
+        particleMatrices.push_back(glm::mat4(1.0f));
+        particleMatrices[i] =
+            glm::translate(particleMatrices[i], glm::vec3(par.particles[i].position.x, par.particles[i].position.y,
+                                                          par.particles[i].position.z));
+        glm::mat4 rotationCancel = glm::transpose(glm::mat3(view));
+        particleMatrices[i] = particleMatrices[i] * glm::mat4(rotationCancel);
+        particleMatrices[i] =
+            glm::scale(particleMatrices[i], glm::vec3(par.particles[i].size.x, par.particles[i].size.y, 1.0f));
+    }
+
+    //if (par.particles.size() != 0)
+    //{
+    //    std::cout << "Position: " << glm::to_string(par.particles[0].position) << std::endl;
+    //    std::cout << "Size: " << glm::to_string(par.particles[0].size) << std::endl;
+    //    std::cout << "Color: " << glm::to_string(par.particles[0].color) << std::endl;
+    //    std::cout << "Matrix: " << glm::to_string(particleMatrices[0]) << std::endl;
+    //}
+
+    // Update instance transformation data
+    glBindBuffer(GL_ARRAY_BUFFER, instancedVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, particleMatrices.size() * sizeof(glm::mat4), particleMatrices.data());
+
+    parShader.use();
+    parShader.setTexture2D("texture1", par.texture, 0);
+
+    // Setting all the uniforms.
+    parShader.setMat4("view", view);
+    parShader.setMat4("projection", projection);
+    parShader.setVec4("ourColor", glm::vec4(1.0f));
+
+    glBindVertexArray(VAO);
+    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, par.particles.size());
 }
 
 } // namespace Renderer

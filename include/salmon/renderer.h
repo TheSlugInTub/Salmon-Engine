@@ -12,6 +12,7 @@
 inline unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 
 struct Transform;
+struct ParticleSystem;
 
 // Struct to store the information about a light
 struct Light
@@ -52,6 +53,8 @@ void RenderLine(glm::vec3 inPoint, glm::vec3 outPoint, const glm::mat4& projecti
 // Takes an entityID, gets its Transform and SpriteRenderer components
 // and uses the data to render it onto the screen
 void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& view);
+// Renders all the particles of particle system instanced
+void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection, const glm::mat4& view);
 
 // Default 3D shader
 inline Shader defaultShader;
@@ -61,11 +64,20 @@ inline Shader lineShader;
 inline Shader depthShader;
 // Default 2D shader
 inline Shader twoShader;
+// Particle shader for instancing particles
+inline Shader parShader;
 
 // All the lights in the scene
 inline std::vector<Light> lights;
 
 // OpenGL buffer objects for 2D
 inline unsigned int VAO, VBO, EBO;
+
+// Max amount of particles the renderer can handle
+inline const int MAX_PARTICLES = 1000; 
+// OpenGL buffer objects for 2d instanced particles 
+inline unsigned int instancedVBO, instancedVAO;
+// Vector of matrices for the particles
+inline std::vector<glm::mat4> particleMatrices;
 
 } // namespace Renderer

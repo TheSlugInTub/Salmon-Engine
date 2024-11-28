@@ -1,8 +1,10 @@
 ﻿---
 AlignAfterOpenBracket: Align
 AlignConsecutiveMacros: 'true'
+AlignConsecutiveAssignments: 'false'
+AlignConsecutiveDeclarations: 'true'
 AlignEscapedNewlines: Left
-AlignTrailingComments: 'false'
+AlignTrailingComments: 'true'
 AllowAllArgumentsOnNextLine: 'false'
 AllowShortBlocksOnASingleLine: 'true'
 AllowShortCaseLabelsOnASingleLine: 'false'

@@ -46,3 +46,4 @@
 #include <salmon/sound_buffer.h>
 #include <salmon/sound_device.h>
 #include <salmon/sound_source.h>
+#include <salmon/particle_system.h>

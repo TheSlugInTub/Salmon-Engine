@@ -1,3 +1,8 @@
+# Salmon Engine 0.69
+28/11/2024 - November 
+
+Added a particle system component that renders billboarded particles.
+
 # Salmon Engine 0.65
 26/11/2024 - November 
 

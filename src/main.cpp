@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 
     StartPhysics();
 
-    Model boxModel("res/models/Box.obj");
+    Model        boxModel("res/models/Box.obj");
     unsigned int groundTex = Utils::LoadTexture("res/textures/background.png");
     unsigned int slugariusTex = Utils::LoadTexture("res/textures/Slugarius.png");
 
@@ -43,7 +43,14 @@ int main(int argc, char** argv)
     EntityID sprite = scene.AddEntity();
     scene.AssignParam<Transform>(sprite, glm::vec3(2.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
                                  glm::vec3(1.0f, 1.0f, 1.0f));
-    scene.AssignParam<SpriteRenderer>(sprite, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), "what da dog doin", false, true);
+    scene.AssignParam<SpriteRenderer>(sprite, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), "what da dog doin",
+                                      false, true);
+
+    EntityID par = scene.AddEntity();
+    scene.AssignParam<ParticleSystem>(par, slugariusTex, glm::vec3(2.0f, 3.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+                                      glm::vec3(0.5f, 0.5f, 0.5f), -0.25f, glm::vec3(0.0f, 0.0f, 0.05f),
+                                      glm::vec3(0.0f, -0.1f, 0.0f), 1.0f, 0.01f, -0.5f, glm::vec4(1.0f), glm::vec4(0.0f),
+                                      glm::vec3(0.0f), 1.0f, 10.0f, 0.0f, 80.0f, 50, true, true);
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
@@ -78,7 +85,7 @@ int main(int argc, char** argv)
 
         physTimer -= engineState.deltaTime;
 
-        physicsSystem.DrawBodies(settings, &debugRenderer, filter);
+        // physicsSystem.DrawBodies(settings, &debugRenderer, filter);
 
         ImGuiLayer::EndFrame();
         window.Update();
