@@ -10,6 +10,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/common.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <salmon/clock.h>
 
 namespace Renderer
 {
@@ -77,6 +78,19 @@ void Init()
         glVertexAttribDivisor(2 + i, 1); // Instance divisor for instancing
     }
 
+    glGenBuffers(1, &instancedColorVBO);
+
+    // Reserve space for instance colors
+    glBindBuffer(GL_ARRAY_BUFFER, instancedColorVBO);
+    glBufferData(GL_ARRAY_BUFFER, MAX_PARTICLES * sizeof(glm::vec4), nullptr, GL_DYNAMIC_DRAW);
+
+    // Enable the instance color attribute
+    glBindVertexArray(VAO);
+    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
+    glEnableVertexAttribArray(6);
+    glVertexAttribDivisor(6, 1); // Color updates per instance
+    glBindVertexArray(0);
+
     glBindVertexArray(0);
 
     // Enable the DEPTH_TEST, basically just so faces don't draw on top of eachother in weird ways
@@ -86,6 +100,7 @@ void Init()
     glCullFace(GL_BACK);
     // Enables anti-aliasing
     glEnable(GL_MULTISAMPLE);
+    // Enables transparency
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -270,6 +285,11 @@ void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& vi
 
 void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection, const glm::mat4& view)
 {
+    if (par.particles.size() == 0)
+        return;
+
+    glDisable(GL_DEPTH_TEST);
+
     particleMatrices.clear();
     for (int i = 0; i < par.particles.size(); ++i)
     {
@@ -279,7 +299,6 @@ void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection
         particleMatrices[i] =
             glm::translate(particleMatrices[i], glm::vec3(par.particles[i].position.x, par.particles[i].position.y,
                                                           par.particles[i].position.z));
-
         // Cancel out rotation for the billboarded alignment
         glm::mat4 rotationCancel = glm::transpose(glm::mat3(view));
         particleMatrices[i] = particleMatrices[i] * glm::mat4(rotationCancel);
@@ -296,7 +315,13 @@ void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection
 
     // Update instance transformation data
     glBindBuffer(GL_ARRAY_BUFFER, instancedVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, particleMatrices.size() * sizeof(glm::mat4), particleMatrices.data());
+    glBufferSubData(GL_ARRAY_BUFFER, 0, par.particles.size() * sizeof(glm::mat4), particleMatrices.data());
+
+    std::vector<glm::vec4> colors(par.particles.size());
+    for (size_t i = 0; i < par.particles.size(); ++i) { colors[i] = par.particles[i].color; }
+
+    glBindBuffer(GL_ARRAY_BUFFER, instancedColorVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, par.particles.size() * sizeof(glm::vec4), colors.data());
 
     parShader.use();
     parShader.setTexture2D("texture1", par.texture, 0);
@@ -304,10 +329,12 @@ void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection
     // Setting all the uniforms.
     parShader.setMat4("view", view);
     parShader.setMat4("projection", projection);
-    parShader.setVec4("ourColor", glm::vec4(1.0f));
+    parShader.setVec4("ourColor", par.startingColor);
 
     glBindVertexArray(VAO);
     glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, par.particles.size());
+
+    glEnable(GL_DEPTH_TEST);
 }
 
 } // namespace Renderer

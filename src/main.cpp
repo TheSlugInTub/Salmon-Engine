@@ -21,6 +21,7 @@ int main(int argc, char** argv)
     Model        boxModel("res/models/Box.obj");
     unsigned int groundTex = Utils::LoadTexture("res/textures/background.png");
     unsigned int slugariusTex = Utils::LoadTexture("res/textures/Slugarius.png");
+    unsigned int lineTex = Utils::LoadTexture("res/textures/Line.png");
 
     Scene scene;
 
@@ -47,10 +48,11 @@ int main(int argc, char** argv)
                                       false, true);
 
     EntityID par = scene.AddEntity();
-    scene.AssignParam<ParticleSystem>(par, slugariusTex, glm::vec3(2.0f, 3.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-                                      glm::vec3(0.5f, 0.5f, 0.5f), -0.25f, glm::vec3(0.0f, 0.0f, 1.5f),
-                                      glm::vec3(0.0f, 0.0f, 0.4f), 13.0f, 0.1f, -1.0f, glm::vec4(1.0f), glm::vec4(0.0f),
-                                      glm::vec3(0.0f, -0.015f, 0.0f), 1.0f, 0.1f, 0.0f, 80.0f, 50, true, true);
+    scene.AssignParam<ParticleSystem>(par, lineTex, glm::vec3(2.0f, 3.0f, 0.0f), glm::vec3(0.0f, 0.0f, 3.0f),
+                                      glm::vec3(0.5f, 0.5f, 0.5f), -0.25f, glm::vec3(0.0f, 0.0f, 5.0f),
+                                      glm::vec3(0.0f, 0.0f, 0.4f), 7.0f, glm::vec3(2.0f, 0.0f, 2.0f), -1.0f,
+                                      glm::vec4(1.0f, 0.2f, 0.2f, 1.0f), glm::vec4(0.0f, 0.5f, 0.0f, -0.4f),
+                                      glm::vec3(0.0f, -0.035f, 0.0f), 2.0f, 0.1f, 0.0f, 200.0f, 500, true, true, true);
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);

@@ -10,9 +10,10 @@
 - [X] Shadows
 - [X] Skeletal animation importing
 - [X] Animation system
-- [ ] Particle effects
+- [X] Particle effects
 - [X] Audio
 - [ ] Text rendering with freetype
 - [ ] UI
-- [ ] 2D renderer
+- [X] 2D renderer
 - [ ] 2D physics
+- [ ] Make the Particle rendering efficient by calculating the stride and offset to not have to create a new vector for the colors

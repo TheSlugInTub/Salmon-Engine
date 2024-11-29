@@ -27,9 +27,9 @@ void ParticleSystemSys()
                 particle.size = par->startingSize;
                 particle.color = par->startingColor;
                 particle.force =
-                    (par->force + glm::vec3(glm::linearRand(-par->forceRandomness, par->forceRandomness),
-                                            glm::linearRand(-par->forceRandomness, par->forceRandomness),
-                                            glm::linearRand(-par->forceRandomness, par->forceRandomness))) *
+                    (par->force + glm::vec3(glm::linearRand(-par->forceRandomness.x, par->forceRandomness.x),
+                                            glm::linearRand(-par->forceRandomness.y, par->forceRandomness.y),
+                                            glm::linearRand(-par->forceRandomness.z, par->forceRandomness.z))) *
                     par->forceMagnitude;
                 particle.force = glm::normalize(particle.force);
                 particle.lifetime = 0.0f;
@@ -70,4 +70,3 @@ void ParticleSystemSys()
                                        engineState.camera->GetViewMatrix());
     }
 }
-

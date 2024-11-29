@@ -76,7 +76,7 @@ inline unsigned int VAO, VBO, EBO;
 // Max amount of particles the renderer can handle
 inline const int MAX_PARTICLES = 1000; 
 // OpenGL buffer objects for 2d instanced particles 
-inline unsigned int instancedVBO, instancedVAO;
+inline unsigned int instancedVBO, instancedColorVBO, instancedVAO;
 // Vector of matrices for the particles
 inline std::vector<glm::mat4> particleMatrices;
 

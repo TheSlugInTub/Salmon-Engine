@@ -25,7 +25,7 @@ struct ParticleSystem
     glm::vec3 force;          // The force applied on each particle (normalized)
     float     forceMagnitude; // The magnitude of the force, this is here so that randomizing force doesn't change its
                               // magnitude
-    float forceRandomness;    // How randomized the force is, only affects direction
+    glm::vec3 forceRandomness;    // How randomized the force is, only affects direction
     float forceOverTime;      // The magnitude of the force over time, positive = force grows, negative = force shrinks
 
     glm::vec4 startingColor; // Starting color of all particles
@@ -41,6 +41,7 @@ struct ParticleSystem
     unsigned int maxParticles; // The maximum amount of particles that the system can have
     bool         looping;      // Does the system loop after it's reached its max duration?
     bool         playing;      // Determines whether the system is currently playing right now
+    bool         billboarded;  // Determines whether the sprites are billboarded or not
 
     std::vector<Particle> particles;
 };
