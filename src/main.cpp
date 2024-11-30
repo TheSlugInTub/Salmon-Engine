@@ -50,7 +50,7 @@ int main(int argc, char** argv)
     EntityID par = scene.AddEntity();
     scene.AssignParam<ParticleSystem>(par, lineTex, glm::vec3(2.0f, 3.0f, 0.0f), glm::vec3(0.0f, 0.0f, 3.0f),
                                       glm::vec3(0.5f, 0.5f, 0.5f), -0.25f, glm::vec3(0.0f, 0.0f, 5.0f),
-                                      glm::vec3(0.0f, 0.0f, 0.4f), 7.0f, glm::vec3(2.0f, 0.0f, 2.0f), -1.0f,
+                                      glm::vec3(0.0f, 0.8f, 0.4f), 7.0f, glm::vec3(2.0f, 0.0f, 2.0f), -1.0f,
                                       glm::vec4(1.0f, 0.2f, 0.2f, 1.0f), glm::vec4(0.0f, 0.5f, 0.0f, -0.4f),
                                       glm::vec3(0.0f, -0.035f, 0.0f), 2.0f, 0.1f, 0.0f, 200.0f, 500, true, true, true);
 
