@@ -16,11 +16,12 @@ namespace Renderer
 {
 
 // This function is run at the very start of the program
-void Init()
+void Init(bool depth)
 {
     defaultShader = Shader("shaders/vertex.shad", "shaders/fragment.shad");
     lineShader = Shader("shaders/linevertex.shad", "shaders/linefragment.shad");
-    depthShader = Shader("shaders/shadowvertex.shad", "shaders/shadowfragment.shad", "shaders/shadowgeometry.shad");
+    depthShader = Shader("shaders/shadowvertex.shad", "shaders/shadowfragment.shad",
+                         "shaders/shadowgeometry.shad");
     twoShader = Shader("shaders/vertex2d.shad", "shaders/fragment2d.shad");
     parShader = Shader("shaders/particlevertex.shad", "shaders/particlefragment.shad");
     stbi_set_flip_vertically_on_load(true);
@@ -73,7 +74,8 @@ void Init()
     glBindVertexArray(VAO);
     for (int i = 0; i < 4; i++)
     {
-        glVertexAttribPointer(2 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * sizeof(glm::vec4)));
+        glVertexAttribPointer(2 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4),
+                              (void*)(i * sizeof(glm::vec4)));
         glEnableVertexAttribArray(2 + i);
         glVertexAttribDivisor(2 + i, 1); // Instance divisor for instancing
     }
@@ -94,7 +96,8 @@ void Init()
     glBindVertexArray(0);
 
     // Enable the DEPTH_TEST, basically just so faces don't draw on top of eachother in weird ways
-    glEnable(GL_DEPTH_TEST);
+    if (depth)
+        glEnable(GL_DEPTH_TEST);
     // Culls inside faces to save on performance
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -183,18 +186,20 @@ glm::mat4 MakeModelTransform(Transform* trans)
 
     // Matrix multiplication to calculate the transform
     transform = glm::translate(transform, trans->position);
-    transform = glm::rotate(transform, trans->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotation around X-axis
-    transform = glm::rotate(transform, trans->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f)); // Rotation around Y-axis
-    transform = glm::rotate(transform, trans->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f)); // Rotation around Z-axis
+    transform = glm::rotate(transform, trans->rotation.x,
+                            glm::vec3(1.0f, 0.0f, 0.0f)); // Rotation around X-axis
+    transform = glm::rotate(transform, trans->rotation.y,
+                            glm::vec3(0.0f, 1.0f, 0.0f)); // Rotation around Y-axis
+    transform = glm::rotate(transform, trans->rotation.z,
+                            glm::vec3(0.0f, 0.0f, 1.0f)); // Rotation around Z-axis
     transform = glm::scale(transform, trans->scale);
 
     return transform;
 }
 
-void RenderLine(glm::vec3 inPoint, glm::vec3 outPoint, const glm::mat4& projection, const glm::mat4& view)
+void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projection,
+                const glm::mat4& view)
 {
-    std::vector<glm::vec3> points = {inPoint, outPoint};
-
     GLuint lVAO, lVBO;
     glGenVertexArrays(1, &lVAO);
     glGenBuffers(1, &lVBO);
@@ -217,7 +222,7 @@ void RenderLine(glm::vec3 inPoint, glm::vec3 outPoint, const glm::mat4& projecti
 
     // Draw line
     glLineWidth(3.0f);
-    glDrawArrays(GL_LINES, 0, (GLsizei)points.size());
+    glDrawArrays(GL_LINE_LOOP, 0, (GLsizei)points.size());
 
     // Draw points
     glPointSize(10.0f);
@@ -246,7 +251,8 @@ void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& vi
     glm::mat4 transform = glm::mat4(1.0f);
 
     // Matrix multiplication to calculate the transform.
-    transform = glm::translate(transform, glm::vec3(trans->position.x, trans->position.y, trans->position.z));
+    transform = glm::translate(transform,
+                               glm::vec3(trans->position.x, trans->position.y, trans->position.z));
 
     if (!sprite->billboard)
     {
@@ -283,7 +289,8 @@ void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& vi
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection, const glm::mat4& view)
+void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection,
+                          const glm::mat4& view)
 {
     if (par.particles.size() == 0)
         return;
@@ -296,9 +303,9 @@ void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection
         particleMatrices.push_back(glm::mat4(1.0f));
 
         // Apply position to he matrix
-        particleMatrices[i] =
-            glm::translate(particleMatrices[i], glm::vec3(par.particles[i].position.x, par.particles[i].position.y,
-                                                          par.particles[i].position.z));
+        particleMatrices[i] = glm::translate(
+            particleMatrices[i], glm::vec3(par.particles[i].position.x, par.particles[i].position.y,
+                                           par.particles[i].position.z));
         // Cancel out rotation for the billboarded alignment
         glm::mat4 rotationCancel = glm::transpose(glm::mat3(view));
         particleMatrices[i] = particleMatrices[i] * glm::mat4(rotationCancel);
@@ -309,13 +316,14 @@ void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection
         particleMatrices[i] = particleMatrices[i] * rotation2D;
 
         // Scale the matrix
-        particleMatrices[i] =
-            glm::scale(particleMatrices[i], glm::vec3(par.particles[i].size.x, par.particles[i].size.y, 1.0f));
+        particleMatrices[i] = glm::scale(
+            particleMatrices[i], glm::vec3(par.particles[i].size.x, par.particles[i].size.y, 1.0f));
     }
 
     // Update instance transformation data
     glBindBuffer(GL_ARRAY_BUFFER, instancedVBO);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, par.particles.size() * sizeof(glm::mat4), particleMatrices.data());
+    glBufferSubData(GL_ARRAY_BUFFER, 0, par.particles.size() * sizeof(glm::mat4),
+                    particleMatrices.data());
 
     std::vector<glm::vec4> colors(par.particles.size());
     for (size_t i = 0; i < par.particles.size(); ++i) { colors[i] = par.particles[i].color; }

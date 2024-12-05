@@ -17,3 +17,4 @@
 - [X] 2D renderer
 - [ ] 2D physics
 - [ ] Make the Particle rendering efficient by calculating the stride and offset to not have to create a new vector for the colors
+- [X] Make the line rendering more efficient

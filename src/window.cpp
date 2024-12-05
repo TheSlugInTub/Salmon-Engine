@@ -26,7 +26,7 @@ Window::Window(const char* title, int width, int height, bool fullscreen)
         exit(1);
     }
     glfwMakeContextCurrent(window);
-    // glfwMaximizeWindow(window);
+    glfwMaximizeWindow(window);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {

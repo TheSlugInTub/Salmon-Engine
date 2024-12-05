@@ -17,20 +17,20 @@ struct ParticleSystem;
 // Struct to store the information about a light
 struct Light
 {
-    glm::vec3 position = glm::vec3(0.0f);
-    glm::vec4 color = glm::vec4(1.0f);
-    float radius = 1.0f;
-    float innerRadius = 0.1f;
-    float intensity = 1.0f;
+    glm::vec3              position = glm::vec3(0.0f);
+    glm::vec4              color = glm::vec4(1.0f);
+    float                  radius = 1.0f;
+    float                  innerRadius = 0.1f;
+    float                  intensity = 1.0f;
     std::vector<glm::mat4> shadowTransforms;
-    unsigned int depthMapFBO;
-    unsigned int depthCubemap;
-    bool castShadows = true;
+    unsigned int           depthMapFBO;
+    unsigned int           depthCubemap;
+    bool                   castShadows = true;
 
     Light(glm::vec3 position, float radius, float innerRadius, float intensity, glm::vec4 color,
           bool castShadows = true)
-       : position(position), radius(radius), innerRadius(innerRadius), intensity(intensity), color(color),
-         castShadows(castShadows)
+       : position(position), radius(radius), innerRadius(innerRadius), intensity(intensity),
+         color(color), castShadows(castShadows)
     {
     }
 };
@@ -40,7 +40,7 @@ namespace Renderer
 {
 
 // Intializes OpenGL (only makes the shaders at the moment)
-void Init();
+void Init(bool depth = true);
 
 // Makes a 4x4 matrix from a transform component
 glm::mat4 MakeModelTransform(Transform* trans);
@@ -49,12 +49,14 @@ glm::mat4 MakeModelTransform(Transform* trans);
 // and uses the data to render it to the screen
 void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& view);
 // Renders a line from one vec3 to another vec3, uses the line shader
-void RenderLine(glm::vec3 inPoint, glm::vec3 outPoint, const glm::mat4& projection, const glm::mat4& view);
+void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projection,
+                const glm::mat4& view);
 // Takes an entityID, gets its Transform and SpriteRenderer components
 // and uses the data to render it onto the screen
 void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& view);
 // Renders all the particles of particle system instanced
-void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection, const glm::mat4& view);
+void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection,
+                          const glm::mat4& view);
 
 // Default 3D shader
 inline Shader defaultShader;
@@ -74,8 +76,8 @@ inline std::vector<Light> lights;
 inline unsigned int VAO, VBO, EBO;
 
 // Max amount of particles the renderer can handle
-inline const int MAX_PARTICLES = 1000; 
-// OpenGL buffer objects for 2d instanced particles 
+inline const int MAX_PARTICLES = 1000;
+// OpenGL buffer objects for 2d instanced particles
 inline unsigned int instancedVBO, instancedColorVBO, instancedVAO;
 // Vector of matrices for the particles
 inline std::vector<glm::mat4> particleMatrices;

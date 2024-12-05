@@ -1,3 +1,5 @@
+#pragma once
+
 #include <salmon/ecs.h>
 #include <glm/glm.hpp>
 #include <salmon/model.h>

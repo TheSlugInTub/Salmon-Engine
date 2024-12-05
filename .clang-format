@@ -17,7 +17,7 @@ BreakBeforeBraces: Allman
 BreakBeforeTernaryOperators: 'true'
 BreakConstructorInitializers: BeforeColon
 BreakInheritanceList: BeforeColon
-ColumnLimit: '120'
+ColumnLimit: '100'
 ConstructorInitializerIndentWidth: '3'
 FixNamespaceComments: 'true'
 IndentCaseLabels: 'true'

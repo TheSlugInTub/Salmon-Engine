@@ -47,3 +47,6 @@
 #include <salmon/sound_device.h>
 #include <salmon/sound_source.h>
 #include <salmon/particle_system.h>
+#include <sm2d/types.h>
+#include <sm2d/functions.h>
+#include <sm2d/colliders.h>
