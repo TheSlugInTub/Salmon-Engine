@@ -1,3 +1,5 @@
+#include "colliders.h"
+#include "types.h"
 #include <sm2d/functions.h>
 #include <cassert>
 
@@ -426,6 +428,93 @@ void RemoveDeletedLeaves(Tree& tree)
 
     // Replace old nodes vector
     tree.nodes = std::move(newNodes);
+}
+
+void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collisionResults)
+{
+    // Recursive lambda function to traverse the tree
+    std::function<void(int)> Traverse = [&](int nodeIndex)
+    {
+        if (nodeIndex == -1)
+            return; // Invalid node, stop traversal
+
+        const Node& node = tree.nodes[nodeIndex];
+
+        // If the node is an internal node with two children
+        if (!node.leaf)
+        {
+            const Node& child1 = tree.nodes[node.child1];
+            const Node& child2 = tree.nodes[node.child2];
+
+            // Check for collisions between leaf children
+            if (child1.leaf && child2.leaf)
+            {
+                CollisionData data;
+                if (child1.collider->type == ColliderType::sm2d_AABB)
+                {
+                    data = TestColAABB(*child1.collider, *child2.collider);
+                }
+                else if (child1.collider->type == ColliderType::sm2d_AABB)
+                {
+                    // FIXME: Implement me you lazy son of a gun!
+                }
+
+                if (data)
+                    collisionResults.push_back(data);
+            }
+
+            // Recurse into child nodes
+            Traverse(node.child1);
+            Traverse(node.child2);
+        }
+    };
+
+    // Start traversal from the root node
+    Traverse(tree.rootIndex);
+}
+
+void ResolveCollisions(const Tree& tree, std::vector<CollisionData>& collisionResults)
+{
+    for (auto& colData : collisionResults)
+    {
+        Collider*  objectA = colData.objectA;
+        Collider*  objectB = colData.objectB;
+        Rigidbody* rigid1 = objectA->body;
+        Rigidbody* rigid2 = objectB->body;
+
+        // Positional correction
+        float totalMass = rigid1->mass + rigid2->mass;
+        if (totalMass > 0.0f)
+        {
+            glm::vec2 correctionA =
+                -(colData.penetrationDepth / totalMass) * colData.collisionNormal * rigid2->mass;
+            glm::vec2 correctionB =
+                +(colData.penetrationDepth / totalMass) * colData.collisionNormal * rigid1->mass;
+
+            if (rigid1->type == BodyType::sm2d_Dynamic)
+                rigid1->transform->position += glm::vec3(correctionA, 0.0f);
+            if (rigid2->type == BodyType::sm2d_Dynamic)
+                rigid2->transform->position += glm::vec3(correctionB, 0.0f);
+        }
+
+        // Velocity adjustment
+        glm::vec2 relativeVelocity = rigid2->linearVelocity - rigid1->linearVelocity;
+        float     velocityAlongNormal = glm::dot(relativeVelocity, colData.collisionNormal);
+
+        if (velocityAlongNormal < 0)
+        {
+            float e =
+                std::min(rigid1->restitution, rigid2->restitution); // Coefficient of restitution
+            float impulseMagnitude =
+                -(1 + e) * velocityAlongNormal / (1.0f / rigid1->mass + 1.0f / rigid2->mass);
+
+            glm::vec2 impulse = impulseMagnitude * colData.collisionNormal;
+            if (rigid1->type == BodyType::sm2d_Dynamic)
+                rigid1->linearVelocity -= impulse / (rigid1->mass);
+            if (rigid2->type == BodyType::sm2d_Dynamic)
+                rigid2->linearVelocity += impulse / (rigid2->mass);
+        }
+    }
 }
 
 AABB ColAABBToABBB(const Collider& box)

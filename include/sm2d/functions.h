@@ -39,6 +39,12 @@ void RemoveLeaf(Tree& tree, int leafIndex);
 // Removes all the marked leaves from the tree's vector of nodes
 void RemoveDeletedLeaves(Tree& tree);
 
+// Traverses through a tree and detects all the collisions and puts them in collisionResults
+void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collisionResults);
+
+// Resolves all collisions based on the given ColiisionData
+void ResolveCollisions(const Tree& tree, std::vector<CollisionData>& collisionResults);
+
 // Conversion functions
 
 AABB ColAABBToABBB(const Collider& box);

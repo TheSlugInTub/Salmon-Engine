@@ -41,34 +41,36 @@ struct Rigidbody
     float linearDamping;
     float angularDamping;
 
-    glm::vec2 linearVelocity;
-    float     angularVelocity; // In radians
+    float restitution = 0.0f;
 
-    void* userData;
-    bool  fixedRotation; // If this is true, the body won't rotate
+    glm::vec2 linearVelocity = glm::vec2(0.0f);
+    float     angularVelocity = 0.0f; // In radians
 
-    glm::vec2 force;
-    float     torque; // In radians
+    void* userData = nullptr;
+    bool  fixedRotation = false; // If this is true, the body won't rotate
 
-    bool hasMoved; // Indicates if it has moved in the last frame
-    glm::vec2 lastPosition;
+    glm::vec2 force = glm::vec2(0.0f);
+    float     torque = 0.0f; // In radians
+
+    bool      hasMoved = false; // Indicates if it has moved in the last frame
+    glm::vec2 lastPosition = glm::vec2(0.0f);
 };
 
 struct Node
 {
-    int index;
-    Collider* collider; 
-    AABB box;
-    int parentIndex;
-    int child1;
-    int child2;
-    bool leaf;
+    int       index;
+    Collider* collider;
+    AABB      box;
+    int       parentIndex;
+    int       child1;
+    int       child2;
+    bool      leaf;
 };
 
 struct Tree
 {
     std::vector<Node> nodes;
-    int rootIndex; // Index of the root node
+    int               rootIndex; // Index of the root node
 };
 
 inline Tree bvh;

@@ -30,7 +30,7 @@ struct Collider
         ColCircle circle;
     };
     Rigidbody* body;
-    int treeIndex = -1; // Index in the AABB tree
+    int        treeIndex = -1; // Index in the AABB tree
 
     Collider(ColliderType type, const ColAABB& aabb, Rigidbody* body)
        : type(type), aabb(aabb), body(body)

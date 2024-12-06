@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 {
     Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false);
     glfwSetInputMode(window.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSwapInterval(1);
+    //glfwSwapInterval(1);
 
     unsigned int groundTex = Utils::LoadTexture("res/textures/background.png");
     unsigned int slugariusTex = Utils::LoadTexture("res/textures/Slugarius.png");
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     scene.AssignParam<SpriteRenderer>(ground, groundTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                       "what da dog doin", false, false);
     scene.AssignParam<sm2d::Rigidbody>(ground, sm2d::BodyType::sm2d_Static,
-                                       scene.Get<Transform>(ground), 10.0f, true, 0.7f, 0.7f);
+                                       scene.Get<Transform>(ground), 50.0f, true, 0.7f, 0.7f);
     scene.AssignParam<sm2d::Collider>(ground, sm2d::ColliderType::sm2d_AABB,
                                       sm2d::ColAABB(glm::vec2(5.0f, 0.5f)),
                                       scene.Get<sm2d::Rigidbody>(ground));
@@ -39,7 +39,7 @@ int main(int argc, char** argv)
     scene.AssignParam<SpriteRenderer>(ground2, groundTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                       "what da dog doin", false, false);
     scene.AssignParam<sm2d::Rigidbody>(ground2, sm2d::BodyType::sm2d_Static,
-                                       scene.Get<Transform>(ground2), 10.0f, true, 0.7f, 0.7f);
+                                       scene.Get<Transform>(ground2), 50.0f, true, 0.7f, 0.7f);
     scene.AssignParam<sm2d::Collider>(ground2, sm2d::ColliderType::sm2d_AABB,
                                       sm2d::ColAABB(glm::vec2(1.0f, 0.5f)),
                                       scene.Get<sm2d::Rigidbody>(ground2));
@@ -50,7 +50,8 @@ int main(int argc, char** argv)
     scene.AssignParam<SpriteRenderer>(sprite, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                       "what da dog doin", false, false);
     scene.AssignParam<sm2d::Rigidbody>(sprite, sm2d::BodyType::sm2d_Dynamic,
-                                       scene.Get<Transform>(sprite), 2.0f, true, 0.7f, 0.7f);
+                                       scene.Get<Transform>(sprite), 2.0f, true, 0.56f, 0.56f,
+                                       1.0f);
     scene.AssignParam<sm2d::Collider>(sprite, sm2d::ColliderType::sm2d_AABB,
                                       sm2d::ColAABB(glm::vec2(0.5f, 0.5f)),
                                       scene.Get<sm2d::Rigidbody>(sprite));
@@ -83,6 +84,8 @@ int main(int argc, char** argv)
     sm2d::InsertLeaf(sm2d::bvh, col2, sm2d::ColAABBToABBB(*col2));
     sm2d::InsertLeaf(sm2d::bvh, col3, sm2d::ColAABBToABBB(*col3));
 
+    std::vector<sm2d::CollisionData> colResults;
+
     // Main loop
     // -----------
     while (!window.ShouldClose())
@@ -104,12 +107,6 @@ int main(int argc, char** argv)
             engineState.scene.Get<sm2d::Rigidbody>(sprite)->torque += 500.0f;
         }
 
-        auto data = sm2d::TestColAABB(*col1, *col2);
-        if (data)
-        {
-            col2->body->force.y += 20.0f;
-        }
-
         for (auto& node : sm2d::bvh.nodes)
         {
             if (node.index == -1)
@@ -124,6 +121,10 @@ int main(int argc, char** argv)
                 points, engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
                 engineState.camera->GetViewMatrix());
         }
+
+        colResults.clear();
+        sm2d::GetCollisionsInTree(sm2d::bvh, colResults);
+        sm2d::ResolveCollisions(sm2d::bvh, colResults);
 
         // End of frame
         ImGuiLayer::EndFrame();
