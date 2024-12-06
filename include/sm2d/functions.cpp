@@ -454,7 +454,7 @@ void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collision
                 {
                     data = TestColAABB(*child1.collider, *child2.collider);
                 }
-                else if (child1.collider->type == ColliderType::sm2d_AABB)
+                else if (child1.collider->type == ColliderType::sm2d_Circle)
                 {
                     // FIXME: Implement me you lazy son of a gun!
                 }
