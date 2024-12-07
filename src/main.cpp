@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 {
     Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false);
     glfwSetInputMode(window.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    //glfwSwapInterval(1);
+    // glfwSwapInterval(1);
 
     unsigned int groundTex = Utils::LoadTexture("res/textures/background.png");
     unsigned int slugariusTex = Utils::LoadTexture("res/textures/Slugarius.png");
@@ -26,7 +26,7 @@ int main(int argc, char** argv)
     scene.AssignParam<Transform>(ground, glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
                                  glm::vec3(10.0f, 1.0f, 1.0f));
     scene.AssignParam<SpriteRenderer>(ground, groundTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-                                      "what da dog doin", false, false);
+                                      "Ground", false, false);
     scene.AssignParam<sm2d::Rigidbody>(ground, sm2d::BodyType::sm2d_Static,
                                        scene.Get<Transform>(ground), 50.0f, true, 0.7f, 0.7f);
     scene.AssignParam<sm2d::Collider>(ground, sm2d::ColliderType::sm2d_AABB,
@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     scene.AssignParam<Transform>(ground2, glm::vec3(15.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
                                  glm::vec3(2.0f, 1.0f, 1.0f));
     scene.AssignParam<SpriteRenderer>(ground2, groundTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-                                      "what da dog doin", false, false);
+                                      "Ground2", false, false);
     scene.AssignParam<sm2d::Rigidbody>(ground2, sm2d::BodyType::sm2d_Static,
                                        scene.Get<Transform>(ground2), 50.0f, true, 0.7f, 0.7f);
     scene.AssignParam<sm2d::Collider>(ground2, sm2d::ColliderType::sm2d_AABB,
@@ -48,13 +48,25 @@ int main(int argc, char** argv)
     scene.AssignParam<Transform>(sprite, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
                                  glm::vec3(1.0f, 1.0f, 1.0f));
     scene.AssignParam<SpriteRenderer>(sprite, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-                                      "what da dog doin", false, false);
+                                      "Sprite", false, false);
     scene.AssignParam<sm2d::Rigidbody>(sprite, sm2d::BodyType::sm2d_Dynamic,
                                        scene.Get<Transform>(sprite), 2.0f, true, 0.56f, 0.56f,
                                        1.0f);
     scene.AssignParam<sm2d::Collider>(sprite, sm2d::ColliderType::sm2d_AABB,
                                       sm2d::ColAABB(glm::vec2(0.5f, 0.5f)),
                                       scene.Get<sm2d::Rigidbody>(sprite));
+
+    EntityID circle = scene.AddEntity();
+    scene.AssignParam<Transform>(circle, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+                                 glm::vec3(1.0f, 1.0f, 1.0f));
+    scene.AssignParam<SpriteRenderer>(circle, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+                                      "Circle", false, false);
+    scene.AssignParam<sm2d::Rigidbody>(circle, sm2d::BodyType::sm2d_Dynamic,
+                                       scene.Get<Transform>(circle), 2.0f, true, 0.56f, 0.56f,
+                                       1.0f);
+    scene.AssignParam<sm2d::Collider>(circle, sm2d::ColliderType::sm2d_AABB,
+                                      sm2d::ColAABB(glm::vec2(0.5f, 0.5f)),
+                                      scene.Get<sm2d::Rigidbody>(circle));
 
     // EntityID par = scene.AddEntity();
     // scene.AssignParam<ParticleSystem>(par, lineTex, glm::vec3(2.0f, 3.0f, 0.0f),
@@ -79,12 +91,16 @@ int main(int argc, char** argv)
     sm2d::Collider* col1 = engineState.scene.Get<sm2d::Collider>(ground);
     sm2d::Collider* col2 = engineState.scene.Get<sm2d::Collider>(sprite);
     sm2d::Collider* col3 = engineState.scene.Get<sm2d::Collider>(ground2);
+    sm2d::Collider* col4 = engineState.scene.Get<sm2d::Collider>(circle);
 
     sm2d::InsertLeaf(sm2d::bvh, col1, sm2d::ColAABBToABBB(*col1));
     sm2d::InsertLeaf(sm2d::bvh, col2, sm2d::ColAABBToABBB(*col2));
     sm2d::InsertLeaf(sm2d::bvh, col3, sm2d::ColAABBToABBB(*col3));
+    sm2d::InsertLeaf(sm2d::bvh, col4, sm2d::ColAABBToABBB(*col4));
 
     std::vector<sm2d::CollisionData> colResults;
+
+    std::vector<int> testVec = {10, 20, 30};
 
     // Main loop
     // -----------

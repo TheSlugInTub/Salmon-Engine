@@ -199,8 +199,8 @@ int FindBestSibling(Tree& tree, const AABB& box)
         }
 
         assert(
-            tree.nodes[currentNode].leaf == true &&
-            "Current node being traversed has become a leaf or was always one in the first place");
+            tree.nodes[currentNode].leaf == false &&
+            "Current node is not a leaf");
     }
 
     return bestSibling;
@@ -352,24 +352,8 @@ void RemoveLeaf(Tree& tree, int leafIndex)
         tree.nodes[siblingIndex].parentIndex = -1;
     }
 
-    tree.nodes[leafIndex].index = -1;
-    tree.nodes[parentIndex].index = -1;
-
-    // tree.nodes.erase(tree.nodes.begin() + parentIndex);
-    // tree.nodes.erase(tree.nodes.begin() + leafIndex);
-
-    // // Adjust indices of all nodes in the tree
-    // for (int i = 0; i < tree.nodes.size(); ++i)
-    // {
-    //     Node& node = tree.nodes[i];
-    //     node.index = i; // Update node's own index
-    //     if (node.parentIndex > leafIndex)
-    //         --node.parentIndex;
-    //     if (node.child1 > leafIndex)
-    //         --node.child1;
-    //     if (node.child2 > leafIndex)
-    //         --node.child2;
-    // }
+    tree.nodes[leafIndex] = Node(-1);
+    tree.nodes[parentIndex] = Node(-1);
 
     // Refit the tree from the grandparent upwards
     int currentNode = grandParentIndex;
@@ -401,6 +385,8 @@ void RemoveDeletedLeaves(Tree& tree)
             indexMap[oldIndex] = newNodes.size();
             newNodes.push_back(tree.nodes[oldIndex]);
             newNodes.back().index = newNodes.size() - 1;
+            if (newNodes.back().collider)
+                newNodes.back().collider->treeIndex = newNodes.size() - 1;
         }
     }
 
@@ -432,45 +418,64 @@ void RemoveDeletedLeaves(Tree& tree)
 
 void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collisionResults)
 {
-    // Recursive lambda function to traverse the tree
-    std::function<void(int)> Traverse = [&](int nodeIndex)
+    // Recursive lambda function to traverse and check collisions
+    std::function<void(int, int)> CheckCollisions = [&](int node1Index, int node2Index)
     {
-        if (nodeIndex == -1)
-            return; // Invalid node, stop traversal
+        // Invalid node check
+        if (node1Index == -1 || node2Index == -1)
+            return;
 
-        const Node& node = tree.nodes[nodeIndex];
+        const Node& node1 = tree.nodes[node1Index];
+        const Node& node2 = tree.nodes[node2Index];
 
-        // If the node is an internal node with two children
-        if (!node.leaf)
+        // First, check if the bounding boxes of the nodes overlap
+        if (!AABBTest(node1.box, node2.box))
+            return;
+
+        // If both are leaf nodes, perform collision test
+        if (node1.leaf && node2.leaf)
         {
-            const Node& child1 = tree.nodes[node.child1];
-            const Node& child2 = tree.nodes[node.child2];
-
-            // Check for collisions between leaf children
-            if (child1.leaf && child2.leaf)
+            CollisionData data;
+            if (node1.collider->type == ColliderType::sm2d_AABB &&
+                node2.collider->type == ColliderType::sm2d_AABB)
             {
-                CollisionData data;
-                if (child1.collider->type == ColliderType::sm2d_AABB)
-                {
-                    data = TestColAABB(*child1.collider, *child2.collider);
-                }
-                else if (child1.collider->type == ColliderType::sm2d_Circle)
-                {
-                    // FIXME: Implement me you lazy son of a gun!
-                }
-
-                if (data)
-                    collisionResults.push_back(data);
+                data = TestColAABB(*node1.collider, *node2.collider);
+            }
+            else if (node1.collider->type == ColliderType::sm2d_Circle &&
+                     node2.collider->type == ColliderType::sm2d_Circle)
+            {
+                // FIXME: Implement circle-circle collision
             }
 
-            // Recurse into child nodes
-            Traverse(node.child1);
-            Traverse(node.child2);
+            if (data)
+                collisionResults.push_back(data);
+            return;
+        }
+
+        // If one or both nodes are internal nodes, recurse further
+        if (!node1.leaf && !node2.leaf)
+        {
+            // Check combinations of children for both internal nodes
+            CheckCollisions(node1.child1, node2.child1);
+            CheckCollisions(node1.child1, node2.child2);
+            CheckCollisions(node1.child2, node2.child1);
+            CheckCollisions(node1.child2, node2.child2);
+        }
+        else if (!node1.leaf)
+        {
+            // One node is internal, the other is a leaf
+            CheckCollisions(node1.child1, node2Index);
+            CheckCollisions(node1.child2, node2Index);
+        }
+        else // node2 is internal
+        {
+            CheckCollisions(node1Index, node2.child1);
+            CheckCollisions(node1Index, node2.child2);
         }
     };
 
-    // Start traversal from the root node
-    Traverse(tree.rootIndex);
+    // Start by checking the root node against itself and all other nodes
+    CheckCollisions(tree.rootIndex, tree.rootIndex);
 }
 
 void ResolveCollisions(const Tree& tree, std::vector<CollisionData>& collisionResults)
