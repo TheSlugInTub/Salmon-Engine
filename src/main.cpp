@@ -13,12 +13,12 @@ float physTimer = 0.3f;
 int main(int argc, char** argv)
 {
     Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false);
-    glfwSetInputMode(window.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     // glfwSwapInterval(1);
 
     unsigned int groundTex = Utils::LoadTexture("res/textures/background.png");
     unsigned int slugariusTex = Utils::LoadTexture("res/textures/Slugarius.png");
     unsigned int lineTex = Utils::LoadTexture("res/textures/Line.png");
+    unsigned int circleTex = Utils::LoadTexture("res/textures/SlugariusCircle.png");
 
     Scene scene;
 
@@ -50,34 +50,34 @@ int main(int argc, char** argv)
     scene.AssignParam<SpriteRenderer>(sprite, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                       "Sprite", false, false);
     scene.AssignParam<sm2d::Rigidbody>(sprite, sm2d::BodyType::sm2d_Dynamic,
-                                       scene.Get<Transform>(sprite), 2.0f, true, 0.56f, 0.56f,
-                                       1.0f);
+                                       scene.Get<Transform>(sprite), 2.0f, true, 0.56f, 0.56f, 1.0f,
+                                       true);
     scene.AssignParam<sm2d::Collider>(sprite, sm2d::ColliderType::sm2d_AABB,
                                       sm2d::ColAABB(glm::vec2(0.5f, 0.5f)),
                                       scene.Get<sm2d::Rigidbody>(sprite));
 
-    EntityID circle = scene.AddEntity();
-    scene.AssignParam<Transform>(circle, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-                                 glm::vec3(1.0f, 1.0f, 1.0f));
-    scene.AssignParam<SpriteRenderer>(circle, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-                                      "Circle", false, false);
-    scene.AssignParam<sm2d::Rigidbody>(circle, sm2d::BodyType::sm2d_Dynamic,
-                                       scene.Get<Transform>(circle), 2.0f, true, 0.56f, 0.56f,
-                                       1.0f);
-    scene.AssignParam<sm2d::Collider>(circle, sm2d::ColliderType::sm2d_AABB,
-                                      sm2d::ColAABB(glm::vec2(0.5f, 0.5f)),
-                                      scene.Get<sm2d::Rigidbody>(circle));
+    // EntityID circle = scene.AddEntity();
+    // scene.AssignParam<Transform>(circle, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f,
+    // 0.0f),
+    //                              glm::vec3(1.0f, 1.0f, 1.0f));
+    // scene.AssignParam<SpriteRenderer>(circle, circleTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+    //                                   "Circle", false, false);
+    // scene.AssignParam<sm2d::Rigidbody>(circle, sm2d::BodyType::sm2d_Dynamic,
+    //                                    scene.Get<Transform>(circle), 2.0f, true, 0.56f,
+    //                                    0.9f, 1.0f, false, -0.001f);
+    // scene.AssignParam<sm2d::Collider>(circle, sm2d::ColliderType::sm2d_Circle,
+    //                                   sm2d::ColCircle(0.5f), scene.Get<sm2d::Rigidbody>(circle));
 
-    // EntityID par = scene.AddEntity();
-    // scene.AssignParam<ParticleSystem>(par, lineTex, glm::vec3(2.0f, 3.0f, 0.0f),
-    // glm::vec3(0.0f, 0.0f, 3.0f),
-    //                                   glm::vec3(0.5f, 0.5f, 0.5f), -0.25f,
-    //                                   glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f,
-    //                                   0.8f, 0.4f), 7.0f, glm::vec3(2.0f, 0.0f, 2.0f),
-    //                                   -1.0f, glm::vec4(1.0f, 0.2f, 0.2f, 1.0f),
-    //                                   glm::vec4(0.0f, 0.5f, 0.0f, -0.4f),
-    //                                   glm::vec3(0.0f, -0.035f, 0.0f), 2.0f, 0.1f, 0.0f,
-    //                                   200.0f, 500, true, true, true);
+    EntityID box = scene.AddEntity();
+    scene.AssignParam<Transform>(box, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+                                 glm::vec3(1.0f, 1.0f, 1.0f));
+    scene.AssignParam<SpriteRenderer>(box, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+                                      "Circle", false, false);
+    scene.AssignParam<sm2d::Rigidbody>(box, sm2d::BodyType::sm2d_Dynamic,
+                                       scene.Get<Transform>(box), 2.0f, true, 0.56f, 0.9f, 1.0f,
+                                       false, -0.001f);
+    scene.AssignParam<sm2d::Collider>(box, sm2d::ColliderType::sm2d_OBB,
+                                      sm2d::ColOBB(glm::vec2(0.5f, 0.5)), scene.Get<sm2d::Rigidbody>(box));
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
@@ -91,16 +91,14 @@ int main(int argc, char** argv)
     sm2d::Collider* col1 = engineState.scene.Get<sm2d::Collider>(ground);
     sm2d::Collider* col2 = engineState.scene.Get<sm2d::Collider>(sprite);
     sm2d::Collider* col3 = engineState.scene.Get<sm2d::Collider>(ground2);
-    sm2d::Collider* col4 = engineState.scene.Get<sm2d::Collider>(circle);
+    sm2d::Collider* col4 = engineState.scene.Get<sm2d::Collider>(box);
 
     sm2d::InsertLeaf(sm2d::bvh, col1, sm2d::ColAABBToABBB(*col1));
     sm2d::InsertLeaf(sm2d::bvh, col2, sm2d::ColAABBToABBB(*col2));
     sm2d::InsertLeaf(sm2d::bvh, col3, sm2d::ColAABBToABBB(*col3));
-    sm2d::InsertLeaf(sm2d::bvh, col4, sm2d::ColAABBToABBB(*col4));
+    sm2d::InsertLeaf(sm2d::bvh, col4, sm2d::ColOBBToAABB(*col4));
 
     std::vector<sm2d::CollisionData> colResults;
-
-    std::vector<int> testVec = {10, 20, 30};
 
     // Main loop
     // -----------
@@ -117,10 +115,15 @@ int main(int argc, char** argv)
             engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.y += 500.0f;
             engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.x += 100.0f;
         }
+        if (Input::GetKeyDown(Key::T))
+        {
+            engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.y += 500.0f;
+            engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.x -= 100.0f;
+        }
 
         if (Input::GetKeyDown(Key::F))
         {
-            engineState.scene.Get<sm2d::Rigidbody>(sprite)->torque += 500.0f;
+            engineState.scene.Get<sm2d::Rigidbody>(box)->torque += 500.0f;
         }
 
         for (auto& node : sm2d::bvh.nodes)

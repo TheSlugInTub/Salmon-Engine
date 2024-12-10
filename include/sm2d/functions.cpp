@@ -1,5 +1,4 @@
 #include "colliders.h"
-#include "types.h"
 #include <sm2d/functions.h>
 #include <cassert>
 
@@ -198,9 +197,7 @@ int FindBestSibling(Tree& tree, const AABB& box)
             directCost = directCost2;
         }
 
-        assert(
-            tree.nodes[currentNode].leaf == false &&
-            "Current node is not a leaf");
+        assert(tree.nodes[currentNode].leaf == false && "Current node is not a leaf");
     }
 
     return bestSibling;
@@ -231,7 +228,7 @@ void InsertLeaf(Tree& tree, Collider* body, const AABB& box)
     Node newNode;
     newNode.collider = body;
     newNode.box = box;
-    newNode.index = tree.nodes.size();
+    newNode.index = (int)tree.nodes.size();
     newNode.collider->treeIndex = newNode.index;
     newNode.leaf = true;
     newNode.child1 = -1;
@@ -253,7 +250,7 @@ void InsertLeaf(Tree& tree, Collider* body, const AABB& box)
     newParent.box = AABBUnion(box, tree.nodes[sibling].box);
     newParent.leaf = false;
     newParent.collider = nullptr;
-    newParent.index = tree.nodes.size();
+    newParent.index = (int)tree.nodes.size();
 
     tree.nodes.push_back(newParent);
     int newParentIndex = newParent.index;
@@ -382,11 +379,11 @@ void RemoveDeletedLeaves(Tree& tree)
     {
         if (tree.nodes[oldIndex].index != -1)
         {
-            indexMap[oldIndex] = newNodes.size();
+            indexMap[oldIndex] = (int)newNodes.size();
             newNodes.push_back(tree.nodes[oldIndex]);
-            newNodes.back().index = newNodes.size() - 1;
+            newNodes.back().index = (int)newNodes.size() - 1;
             if (newNodes.back().collider)
-                newNodes.back().collider->treeIndex = newNodes.size() - 1;
+                newNodes.back().collider->treeIndex = (int)newNodes.size() - 1;
         }
     }
 
@@ -439,12 +436,37 @@ void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collision
             if (node1.collider->type == ColliderType::sm2d_AABB &&
                 node2.collider->type == ColliderType::sm2d_AABB)
             {
-                data = TestColAABB(*node1.collider, *node2.collider);
+                data = TestColAABBAABB(*node1.collider, *node2.collider);
             }
             else if (node1.collider->type == ColliderType::sm2d_Circle &&
                      node2.collider->type == ColliderType::sm2d_Circle)
             {
-                // FIXME: Implement circle-circle collision
+                data = TestColCircleCircle(*node1.collider, *node2.collider);
+            }
+            else if (node1.collider->type == ColliderType::sm2d_Circle &&
+                     node2.collider->type == ColliderType::sm2d_AABB)
+            {
+                data = TestColAABBCircle(*node2.collider, *node1.collider);
+            }
+            else if (node1.collider->type == ColliderType::sm2d_AABB &&
+                     node2.collider->type == ColliderType::sm2d_Circle)
+            {
+                data = TestColAABBCircle(*node1.collider, *node2.collider);
+            }
+            else if (node1.collider->type == ColliderType::sm2d_OBB &&
+                     node2.collider->type == ColliderType::sm2d_OBB)
+            {
+                data = TestColOBBOBB(*node1.collider, *node2.collider);
+            }
+            else if (node1.collider->type == ColliderType::sm2d_OBB &&
+                     node2.collider->type == ColliderType::sm2d_AABB)
+            {
+                data = TestColAABBOBB(*node2.collider, *node1.collider);
+            }
+            else if (node1.collider->type == ColliderType::sm2d_AABB &&
+                     node2.collider->type == ColliderType::sm2d_OBB)
+            {
+                data = TestColAABBOBB(*node1.collider, *node2.collider);
             }
 
             if (data)
@@ -476,6 +498,11 @@ void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collision
 
     // Start by checking the root node against itself and all other nodes
     CheckCollisions(tree.rootIndex, tree.rootIndex);
+}
+
+float CrossProduct(const glm::vec2& a, const glm::vec2& b)
+{
+    return a.x * b.y - a.y * b.x;
 }
 
 void ResolveCollisions(const Tree& tree, std::vector<CollisionData>& collisionResults)
@@ -518,6 +545,22 @@ void ResolveCollisions(const Tree& tree, std::vector<CollisionData>& collisionRe
                 rigid1->linearVelocity -= impulse / (rigid1->mass);
             if (rigid2->type == BodyType::sm2d_Dynamic)
                 rigid2->linearVelocity += impulse / (rigid2->mass);
+
+            // Apply angular velocity changes
+            glm::vec2 rA = colData.contactPoint - glm::vec2(rigid1->transform->position);
+            glm::vec2 rB = colData.contactPoint - glm::vec2(rigid2->transform->position);
+
+            if (rigid1->type == BodyType::sm2d_Dynamic && !rigid1->fixedRotation)
+            {
+                float torqueA = CrossProduct(rA, -impulse); // Torque due to impulse on A
+                rigid1->angularVelocity -= torqueA / rigid1->momentOfInertia;
+            }
+
+            if (rigid2->type == BodyType::sm2d_Dynamic && !rigid2->fixedRotation)
+            {
+                float torqueB = CrossProduct(rB, impulse); // Torque due to impulse on B
+                rigid2->angularVelocity += torqueB / rigid2->momentOfInertia;
+            }
         }
     }
 }
@@ -529,6 +572,52 @@ AABB ColAABBToABBB(const Collider& box)
     glm::vec2 bottomLeft = glm::vec2(box.body->transform->position) +
                            glm::vec2(-box.aabb.halfwidths.x, -box.aabb.halfwidths.y);
     return AABB(topRight, bottomLeft);
+}
+
+AABB ColCircleToABBB(const Collider& circle)
+{
+    glm::vec2 center = glm::vec2(circle.body->transform->position);
+    glm::vec2 topRight = center + circle.circle.radius;
+    glm::vec2 bottomLeft = center - circle.circle.radius;
+    return AABB(topRight, bottomLeft);
+}
+
+AABB ColOBBToAABB(const Collider& obb)
+{
+    // Compute the cosine and sine of the rotation angle
+    float cosTheta = cos(obb.body->transform->rotation.z);
+    float sinTheta = sin(obb.body->transform->rotation.z);
+
+    // The corners of the OBB in local space relative to its position
+    glm::vec2 corners[4] = {
+        {obb.obb.halfwidths.x, obb.obb.halfwidths.y},   // Top-right
+        {obb.obb.halfwidths.x, -obb.obb.halfwidths.y},  // Bottom-right
+        {-obb.obb.halfwidths.x, -obb.obb.halfwidths.y}, // Bottom-left
+        {-obb.obb.halfwidths.x, obb.obb.halfwidths.y}   // Top-left
+    };
+
+    // Rotate the corners into world space and compute AABB bounds
+    glm::vec2 minBounds = obb.body->transform->position; // Initialize min bounds
+    glm::vec2 maxBounds = obb.body->transform->position; // Initialize max bounds
+
+    for (int i = 0; i < 4; ++i)
+    {
+        // Rotate the corner
+        glm::vec2 rotatedCorner = {
+            obb.body->transform->position.x + corners[i].x * cosTheta - corners[i].y * sinTheta,
+            obb.body->transform->position.y + corners[i].x * sinTheta + corners[i].y * cosTheta};
+
+        // Update the min and max bounds
+        minBounds = glm::min(minBounds, rotatedCorner);
+        maxBounds = glm::max(maxBounds, rotatedCorner);
+    }
+
+    // Create the resulting AABB
+    AABB aabb;
+    aabb.lowerBound = minBounds;
+    aabb.upperBound = maxBounds;
+
+    return aabb;
 }
 
 } // namespace sm2d

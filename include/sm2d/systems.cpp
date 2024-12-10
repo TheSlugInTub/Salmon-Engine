@@ -95,7 +95,15 @@ void ColliderSys()
         }
         else if (collider->type == ColliderType::sm2d_Circle)
         {
-            // Implement me, you lazy bastard!
+            RemoveLeaf(bvh, collider->treeIndex);
+            RemoveDeletedLeaves(bvh);
+            InsertLeaf(bvh, collider, ColCircleToABBB(*collider));
+        }
+        else if (collider->type == ColliderType::sm2d_OBB)
+        {
+            RemoveLeaf(bvh, collider->treeIndex);
+            RemoveDeletedLeaves(bvh);
+            InsertLeaf(bvh, collider, ColOBBToAABB(*collider));
         }
     }
 }

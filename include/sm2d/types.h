@@ -43,11 +43,13 @@ struct Rigidbody
 
     float restitution = 0.0f;
 
-    glm::vec2 linearVelocity = glm::vec2(0.0f);
-    float     angularVelocity = 0.0f; // In radians
+    bool  fixedRotation = false; // If this is true, the body won't rotate
+    float momentOfInertia;
 
     void* userData = nullptr;
-    bool  fixedRotation = false; // If this is true, the body won't rotate
+
+    glm::vec2 linearVelocity = glm::vec2(0.0f);
+    float     angularVelocity = 0.0f; // In radians
 
     glm::vec2 force = glm::vec2(0.0f);
     float     torque = 0.0f; // In radians

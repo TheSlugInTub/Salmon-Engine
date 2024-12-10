@@ -10,6 +10,11 @@ struct ColAABB
     glm::vec2 halfwidths;
 };
 
+struct ColOBB
+{
+    glm::vec2 halfwidths;
+};
+
 struct ColCircle
 {
     float radius;
@@ -18,7 +23,8 @@ struct ColCircle
 enum ColliderType
 {
     sm2d_AABB,
-    sm2d_Circle
+    sm2d_Circle,
+    sm2d_OBB
 };
 
 struct Collider
@@ -28,6 +34,7 @@ struct Collider
     {
         ColAABB   aabb;
         ColCircle circle;
+        ColOBB    obb;
     };
     Rigidbody* body;
     int        treeIndex = -1; // Index in the AABB tree
@@ -38,6 +45,10 @@ struct Collider
     }
     Collider(ColliderType type, const ColCircle& circle, Rigidbody* body)
        : type(type), circle(circle), body(body)
+    {
+    }
+    Collider(ColliderType type, const ColOBB& obb, Rigidbody* body)
+       : type(type), obb(obb), body(body)
     {
     }
 };
@@ -54,6 +65,13 @@ struct CollisionData
     operator bool() const { return colliding; }
 };
 
-CollisionData TestColAABB(const Collider& a, const Collider& b);
+// Intersection tests for the narrow phase
+
+CollisionData TestColAABBAABB(const Collider& a, const Collider& b);
+CollisionData TestColCircleCircle(const Collider& a, const Collider& b);
+CollisionData TestColOBBOBB(const Collider& a, const Collider& b);
+
+CollisionData TestColAABBCircle(const Collider& aabb, const Collider& circle);
+CollisionData TestColAABBOBB(const Collider& aabb, const Collider& obb);
 
 } // namespace sm2d
