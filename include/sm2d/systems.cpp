@@ -18,7 +18,7 @@ void RigidbodySys()
         if (rigid->type == sm2d_Static || rigid->awake == false)
             continue;
 
-        rigid->force.y += -10.0f;
+        // rigid->force.y += -10.0f;
 
         rigid->lastPosition = glm::vec2(rigid->transform->position);
 
@@ -84,8 +84,8 @@ void ColliderSys()
     {
         auto collider = engineState.scene.Get<Collider>(ent);
 
-        if (!collider->body->hasMoved)
-            continue;
+        // if (!collider->body->hasMoved)
+        //     continue;
 
         if (collider->type == ColliderType::sm2d_AABB)
         {

@@ -1,3 +1,4 @@
+#include "functions.h"
 #include <sm2d/colliders.h>
 #include <cmath>
 #include <array>
@@ -49,6 +50,7 @@ CollisionData TestColAABBAABB(const Collider& a, const Collider& b)
 CollisionData TestColCircleCircle(const Collider& a, const Collider& b)
 {
     CollisionData collisionData;
+    collisionData.colliding = false;
 
     // Vector between the two circle centers
     glm::vec2 delta = glm::vec2(b.body->transform->position - a.body->transform->position);
@@ -97,6 +99,7 @@ CollisionData TestColCircleCircle(const Collider& a, const Collider& b)
 CollisionData TestColAABBCircle(const Collider& aabb, const Collider& circle)
 {
     CollisionData result;
+    result.colliding = false;
 
     glm::vec2 circleCenter = glm::vec2(circle.body->transform->position);
     glm::vec2 aabbCenter = glm::vec2(aabb.body->transform->position);
@@ -155,6 +158,7 @@ CollisionData TestColAABBCircle(const Collider& aabb, const Collider& circle)
 CollisionData TestColOBBOBB(const Collider& a, const Collider& b)
 {
     CollisionData result = {};
+    result.colliding = false;
 
     // Step 1: Calculate the rotation matrices for both OBBs
     float cos1 = std::cos(a.body->transform->rotation.z);
@@ -244,6 +248,31 @@ CollisionData TestColOBBOBB(const Collider& a, const Collider& b)
     return result;
 }
 
+// struct ColAABB
+// {
+//     glm::vec2 halfwidths;
+//     glm::vec2 position;
+// };
+// 
+// struct ColOBB
+// {
+//     glm::vec2 halfwidths;
+//     glm::vec2 position;
+//     float rotation;
+// };
+// 
+// struct CollisionData
+// {
+//     bool      colliding;
+//     glm::vec2 collisionNormal;  // Normal of the collision (direction of resolution)
+//     float     penetrationDepth; // Depth of penetration between the objects
+//     glm::vec2 contactPoint;     // Point of contact (optional, for accuracy in physics)
+//     Collider* objectA;          // Pointer to the first object involved in the collision
+//     Collider* objectB;          // Pointer to the second object involved in the collision
+// 
+//     operator bool() const { return colliding; }
+// };
+
 CollisionData TestColAABBOBB(const Collider& aabb, const Collider& obb)
 {
     CollisionData result;
@@ -255,61 +284,84 @@ CollisionData TestColAABBOBB(const Collider& aabb, const Collider& obb)
     glm::mat2 rotationMatrix = glm::mat2(cosTheta, -sinTheta, sinTheta, cosTheta);
 
     // Transform AABB vertices to OBB's local space
-    glm::vec2 centerOffset = glm::vec2(aabb.body->transform->position - obb.body->transform->position);
+    glm::vec2 centerOffset =
+        glm::vec2(aabb.body->transform->position - obb.body->transform->position);
     centerOffset = glm::transpose(rotationMatrix) * centerOffset;
 
-    // Compute the AABB vertices in OBB local space
+    // AABB vertices in its local space
     glm::vec2 aabbVertices[4] = {glm::vec2(-aabb.aabb.halfwidths.x, -aabb.aabb.halfwidths.y),
-                                 glm::vec2( aabb.aabb.halfwidths.x, -aabb.aabb.halfwidths.y),
-                                 glm::vec2( aabb.aabb.halfwidths.x,  aabb.aabb.halfwidths.y),
-                                 glm::vec2(-aabb.aabb.halfwidths.x,  aabb.aabb.halfwidths.y)};
+                                 glm::vec2(aabb.aabb.halfwidths.x, -aabb.aabb.halfwidths.y),
+                                 glm::vec2(aabb.aabb.halfwidths.x, aabb.aabb.halfwidths.y),
+                                 glm::vec2(-aabb.aabb.halfwidths.x, aabb.aabb.halfwidths.y)};
 
-    // Check overlap on projection axes
-    float minOBB[2] = {-obb.obb.halfwidths.x, -obb.obb.halfwidths.y};
-    float maxOBB[2] = {obb.obb.halfwidths.x, obb.obb.halfwidths.y};
-    float minAABB[2] = {centerOffset.x - aabb.aabb.halfwidths.x, centerOffset.y - aabb.aabb.halfwidths.y};
-    float maxAABB[2] = {centerOffset.x + aabb.aabb.halfwidths.x, centerOffset.y + aabb.aabb.halfwidths.y};
+    // Transform AABB vertices to OBB's local space
+    for (auto& vertex : aabbVertices) { vertex = glm::transpose(rotationMatrix) * vertex; }
 
-    // Test overlap on X and Y axes
-    for (int i = 0; i < 2; ++i)
+    // Axes to test (OBB local axes)
+    glm::vec2 obbAxes[2] = {glm::vec2(1, 0), glm::vec2(0, 1)};
+
+    float     minPenetration = std::numeric_limits<float>::max();
+    glm::vec2 bestAxis;
+
+    // Test separation on OBB local axes
+    for (const auto& axis : obbAxes)
     {
-        if (maxOBB[i] < minAABB[i] || minOBB[i] > maxAABB[i])
+        float minOBB = std::numeric_limits<float>::max();
+        float maxOBB = std::numeric_limits<float>::lowest();
+        float minAABB = std::numeric_limits<float>::max();
+        float maxAABB = std::numeric_limits<float>::lowest();
+
+        // Project OBB vertices
+        for (float hw : {-obb.obb.halfwidths.x, obb.obb.halfwidths.x})
+        {
+            for (float hh : {-obb.obb.halfwidths.y, obb.obb.halfwidths.y})
+            {
+                glm::vec2 vertex(hw, hh);
+                float     proj = glm::dot(vertex, axis);
+                minOBB = std::min(minOBB, proj);
+                maxOBB = std::max(maxOBB, proj);
+            }
+        }
+
+        // Project AABB vertices
+        for (const auto& vertex : aabbVertices)
+        {
+            float proj = glm::dot(vertex + centerOffset, axis);
+            minAABB = std::min(minAABB, proj);
+            maxAABB = std::max(maxAABB, proj);
+        }
+
+        // Check for separation
+        if (maxOBB < minAABB || minOBB > maxAABB)
         {
             return result; // No collision
         }
+
+        // Calculate penetration
+        float penetration = std::min(maxOBB - minAABB, maxAABB - minOBB);
+        if (penetration < minPenetration)
+        {
+            minPenetration = penetration;
+            bestAxis = axis;
+        }
     }
 
-    // Collision detected, calculate details
+    // Collision detected
     result.colliding = true;
-
-    // Calculate penetration depth and collision normal
-    float overlapX = std::min(maxOBB[0], maxAABB[0]) - std::max(minOBB[0], minAABB[0]);
-    float overlapY = std::min(maxOBB[1], maxAABB[1]) - std::max(minOBB[1], minAABB[1]);
-
-    result.penetrationDepth = std::min(overlapX, overlapY);
+    result.penetrationDepth = minPenetration;
 
     // Determine collision normal in world space
-    if (overlapX < overlapY)
+    result.collisionNormal = rotationMatrix * bestAxis;
+    if (glm::dot(result.collisionNormal, centerOffset) > 0)
     {
-        // X-axis collision
-        result.collisionNormal =
-            (centerOffset.x < 0) ? glm::vec2(-1.0f, 0.0f) : glm::vec2(1.0f, 0.0f);
-    }
-    else
-    {
-        // Y-axis collision
-        result.collisionNormal =
-            (centerOffset.y < 0) ? glm::vec2(0.0f, -1.0f) : glm::vec2(0.0f, 1.0f);
+        result.collisionNormal = -result.collisionNormal;
     }
 
     result.objectA = const_cast<Collider*>(&obb);
     result.objectB = const_cast<Collider*>(&aabb);
-    
-    // Rotate collision normal back to world space
-    result.collisionNormal = rotationMatrix * result.collisionNormal;
 
-    // Approximate contact point (center of overlap)
-    result.contactPoint = glm::vec2(obb.body->transform->position) + centerOffset;
+    // Approximate contact point
+    result.contactPoint = ClosestPointOnAABB(result.contactPoint, aabb);
 
     return result;
 }

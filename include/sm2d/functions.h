@@ -21,6 +21,9 @@ bool AABBTest(const AABB& a, const AABB& b);
 // Get the center of an AABB
 glm::vec2 AABBCenter(const AABB& a);
 
+// Calculates the closest point on the surface of the AABB to the glm::vec2 point
+glm::vec2 ClosestPointOnAABB(const glm::vec2& point, const Collider& aabb);
+
 // Returns the smaller float
 float MinFloat(float a, float b);
 

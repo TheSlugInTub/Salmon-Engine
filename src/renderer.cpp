@@ -256,7 +256,7 @@ void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& vi
 
     if (!sprite->billboard)
     {
-        transform = glm::rotate(transform, trans->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+        transform = glm::rotate(transform, -trans->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
     }
     else
     {

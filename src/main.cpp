@@ -29,8 +29,8 @@ int main(int argc, char** argv)
                                       "Ground", false, false);
     scene.AssignParam<sm2d::Rigidbody>(ground, sm2d::BodyType::sm2d_Static,
                                        scene.Get<Transform>(ground), 50.0f, true, 0.7f, 0.7f);
-    scene.AssignParam<sm2d::Collider>(ground, sm2d::ColliderType::sm2d_AABB,
-                                      sm2d::ColAABB(glm::vec2(5.0f, 0.5f)),
+    scene.AssignParam<sm2d::Collider>(ground, sm2d::ColliderType::sm2d_OBB,
+                                      sm2d::ColOBB(glm::vec2(5.0f, 0.5f)),
                                       scene.Get<sm2d::Rigidbody>(ground));
 
     EntityID ground2 = scene.AddEntity();
@@ -52,8 +52,8 @@ int main(int argc, char** argv)
     scene.AssignParam<sm2d::Rigidbody>(sprite, sm2d::BodyType::sm2d_Dynamic,
                                        scene.Get<Transform>(sprite), 2.0f, true, 0.56f, 0.56f, 1.0f,
                                        true);
-    scene.AssignParam<sm2d::Collider>(sprite, sm2d::ColliderType::sm2d_AABB,
-                                      sm2d::ColAABB(glm::vec2(0.5f, 0.5f)),
+    scene.AssignParam<sm2d::Collider>(sprite, sm2d::ColliderType::sm2d_OBB,
+                                      sm2d::ColOBB(glm::vec2(0.5f, 0.5f)),
                                       scene.Get<sm2d::Rigidbody>(sprite));
 
     // EntityID circle = scene.AddEntity();
@@ -69,15 +69,15 @@ int main(int argc, char** argv)
     //                                   sm2d::ColCircle(0.5f), scene.Get<sm2d::Rigidbody>(circle));
 
     EntityID box = scene.AddEntity();
-    scene.AssignParam<Transform>(box, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+    scene.AssignParam<Transform>(box, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.78f),
                                  glm::vec3(1.0f, 1.0f, 1.0f));
     scene.AssignParam<SpriteRenderer>(box, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                       "Circle", false, false);
-    scene.AssignParam<sm2d::Rigidbody>(box, sm2d::BodyType::sm2d_Dynamic,
-                                       scene.Get<Transform>(box), 2.0f, true, 0.56f, 0.9f, 1.0f,
-                                       false, -0.001f);
+    scene.AssignParam<sm2d::Rigidbody>(box, sm2d::BodyType::sm2d_Dynamic, scene.Get<Transform>(box),
+                                       2.0f, true, 0.56f, 0.56f, 1.0f, false, 10.0f);
     scene.AssignParam<sm2d::Collider>(box, sm2d::ColliderType::sm2d_OBB,
-                                      sm2d::ColOBB(glm::vec2(0.5f, 0.5)), scene.Get<sm2d::Rigidbody>(box));
+                                      sm2d::ColOBB(glm::vec2(0.5f, 0.5)),
+                                      scene.Get<sm2d::Rigidbody>(box));
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
@@ -110,15 +110,21 @@ int main(int argc, char** argv)
 
         // Main loop logic
         // ---
-        if (Input::GetKeyDown(Key::R))
+        if (Input::GetKey(Key::Left))
         {
-            engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.y += 500.0f;
-            engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.x += 100.0f;
+            engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.x -= 10.0f;
         }
-        if (Input::GetKeyDown(Key::T))
+        if (Input::GetKey(Key::Right))
         {
-            engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.y += 500.0f;
-            engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.x -= 100.0f;
+            engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.x += 10.0f;
+        }
+        if (Input::GetKey(Key::Up))
+        {
+            engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.y += 10.0f;
+        }
+        if (Input::GetKey(Key::Down))
+        {
+            engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.y -= 10.0f;
         }
 
         if (Input::GetKeyDown(Key::F))

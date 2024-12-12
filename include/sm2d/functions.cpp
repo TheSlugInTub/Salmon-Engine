@@ -74,6 +74,19 @@ glm::vec2 AABBCenter(const AABB& a)
     return b;
 }
 
+glm::vec2 ClosestPointOnAABB(const glm::vec2& point, const Collider& aabb)
+{
+    glm::vec2 localPoint = point - glm::vec2(aabb.body->transform->position);
+
+    // Clamp the point to the AABB's bounds
+    glm::vec2 closestLocal = glm::clamp(localPoint, -aabb.aabb.halfwidths, aabb.aabb.halfwidths);
+
+    // Transform back to world space
+    glm::vec2 worldClosest = closestLocal + glm::vec2(aabb.body->transform->position);
+
+    return worldClosest;
+}
+
 int FindBestSibling(Tree& tree, const AABB& box)
 {
     float     boxArea = AABBPerimeter(box);
@@ -596,16 +609,18 @@ AABB ColOBBToAABB(const Collider& obb)
         {-obb.obb.halfwidths.x, obb.obb.halfwidths.y}   // Top-left
     };
 
-    // Rotate the corners into world space and compute AABB bounds
-    glm::vec2 minBounds = obb.body->transform->position; // Initialize min bounds
-    glm::vec2 maxBounds = obb.body->transform->position; // Initialize max bounds
+    // Rotate the corners and compute AABB bounds
+    glm::vec2 minBounds(std::numeric_limits<float>::max());
+    glm::vec2 maxBounds(std::numeric_limits<float>::lowest());
 
     for (int i = 0; i < 4; ++i)
     {
         // Rotate the corner
-        glm::vec2 rotatedCorner = {
-            obb.body->transform->position.x + corners[i].x * cosTheta - corners[i].y * sinTheta,
-            obb.body->transform->position.y + corners[i].x * sinTheta + corners[i].y * cosTheta};
+        glm::vec2 rotatedCorner = {corners[i].x * cosTheta - corners[i].y * sinTheta,
+                                   corners[i].x * sinTheta + corners[i].y * cosTheta};
+
+        // Translate the rotated corner to world space
+        rotatedCorner += glm::vec2(obb.body->transform->position);
 
         // Update the min and max bounds
         minBounds = glm::min(minBounds, rotatedCorner);
