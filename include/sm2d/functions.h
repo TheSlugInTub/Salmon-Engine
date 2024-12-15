@@ -6,6 +6,18 @@
 namespace sm2d
 {
 
+// Transforms a point from object space into world space
+glm::vec2 LocalToWorld(glm::vec2 point, const glm::vec2 pos, float cosine, float sine);
+
+// Updates a polygon's vertices to match its world space position and rotation
+void UpdatePolygon(Collider& poly);
+
+// Computes the geometric center of a polygon
+glm::vec2 ComputePolygonCenter(ColPolygon& poly);
+
+// Cross product between vector and a scalar
+glm::vec2 VectorScalarCross(const glm::vec2& v, float s);
+
 // Enlarge AABB: a to encompass AABB: b
 bool AABBEnlarge(AABB* a, const AABB& b);
 
@@ -55,6 +67,7 @@ float CrossProduct(const glm::vec2& a, const glm::vec2& b);
 
 AABB ColAABBToABBB(const Collider& box);      // Returns bounding box encapsulating an AABB collider
 AABB ColCircleToABBB(const Collider& circle); // Returns bounding box encapsulating a Circle
-AABB ColOBBToAABB(const Collider& obb);       // Returns bounding box encapsulating an OBB collider
+AABB ColPolygonToAABB(
+    const Collider& poly); // Returns bounding box encapsulating a Polygon collider
 
 } // namespace sm2d

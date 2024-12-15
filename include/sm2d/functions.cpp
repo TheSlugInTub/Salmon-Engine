@@ -1,9 +1,71 @@
-#include "colliders.h"
 #include <sm2d/functions.h>
 #include <cassert>
+#include <cmath>
 
 namespace sm2d
 {
+
+glm::vec2 LocalToWorld(glm::vec2 point, const glm::vec2 pos, float cosine, float sine)
+{
+    float x = (cosine * point.x - sine * point.y) + pos.x;
+    float y = (sine * point.x + cosine * point.y) + pos.y;
+    return glm::vec2(x, y);
+}
+
+void UpdatePolygon(Collider& poly)
+{
+    float sine = sin(poly.body->transform->rotation.z);
+    float cosine = cos(poly.body->transform->rotation.z);
+
+    glm::vec2 pos = glm::vec2(poly.body->transform->position);
+
+    for (int i = 0; i < poly.polygon.points.size(); ++i)
+    {
+        poly.polygon.worldPoints[i] = LocalToWorld(poly.polygon.points[i], pos, cosine, sine);
+
+        glm::mat2 rotMatrix = glm::mat2(cosine, -sine, sine, cosine);
+        poly.polygon.normals[i] = poly.polygon.normals[i] * rotMatrix;
+    }
+}
+
+glm::vec2 ComputePolygonCenter(ColPolygon& poly)
+{
+    glm::vec2 center = glm::vec2(0.0f, 0.0f);
+    float  area = 0.0f;
+
+    // Get a reference point for forming triangles.
+    // Use the first vertex to reduce round-off errors.
+    glm::vec2 origin = poly.worldPoints[0];
+
+    const float inv3 = 1.0f / 3.0f;
+
+    for (int i = 1; i < poly.worldPoints.size() - 1; ++i)
+    {
+        // Triangle edges
+        glm::vec2 e1 = poly.worldPoints[i] - origin;
+        glm::vec2 e2 = poly.worldPoints[i + 1] - origin;
+        float  a = 0.5f * CrossProduct(e1, e2);
+
+        // Area weighted centroid
+        center = center + (a * inv3) * (e1 + e2);
+        area += a;
+    }
+
+    assert(area > FLT_EPSILON);
+    float invArea = 1.0f / area;
+    center.x *= invArea;
+    center.y *= invArea;
+
+    // Restore offset
+    center = origin + center;
+
+    return center;
+}
+
+glm::vec2 VectorScalarCross(const glm::vec2& v, float s)
+{
+    return glm::vec2(s * v.y, -s * v.x);
+}
 
 bool AABBEnlarge(AABB* a, const AABB& b)
 {
@@ -451,6 +513,31 @@ void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collision
             {
                 data = TestColAABBAABB(*node1.collider, *node2.collider);
             }
+            else if (node1.collider->type == ColliderType::sm2d_Polygon &&
+                     node2.collider->type == ColliderType::sm2d_Polygon)
+            {
+                data = TestColPolygonPolygon(*node1.collider, *node2.collider);
+            }
+            else if (node1.collider->type == ColliderType::sm2d_Polygon &&
+                     node2.collider->type == ColliderType::sm2d_AABB)
+            {
+                data = TestColAABBPolygon(*node2.collider, *node1.collider);
+            }
+            else if (node1.collider->type == ColliderType::sm2d_AABB &&
+                     node2.collider->type == ColliderType::sm2d_Polygon)
+            {
+                data = TestColAABBPolygon(*node1.collider, *node2.collider);
+            }
+            else if (node1.collider->type == ColliderType::sm2d_Polygon &&
+                     node2.collider->type == ColliderType::sm2d_Circle)
+            {
+                data = TestColCirclePolygon(*node2.collider, *node1.collider);
+            }
+            else if (node1.collider->type == ColliderType::sm2d_Circle &&
+                     node2.collider->type == ColliderType::sm2d_Polygon)
+            {
+                data = TestColCirclePolygon(*node1.collider, *node2.collider);
+            }
             else if (node1.collider->type == ColliderType::sm2d_Circle &&
                      node2.collider->type == ColliderType::sm2d_Circle)
             {
@@ -465,21 +552,6 @@ void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collision
                      node2.collider->type == ColliderType::sm2d_Circle)
             {
                 data = TestColAABBCircle(*node1.collider, *node2.collider);
-            }
-            else if (node1.collider->type == ColliderType::sm2d_OBB &&
-                     node2.collider->type == ColliderType::sm2d_OBB)
-            {
-                data = TestColOBBOBB(*node1.collider, *node2.collider);
-            }
-            else if (node1.collider->type == ColliderType::sm2d_OBB &&
-                     node2.collider->type == ColliderType::sm2d_AABB)
-            {
-                data = TestColAABBOBB(*node2.collider, *node1.collider);
-            }
-            else if (node1.collider->type == ColliderType::sm2d_AABB &&
-                     node2.collider->type == ColliderType::sm2d_OBB)
-            {
-                data = TestColAABBOBB(*node1.collider, *node2.collider);
             }
 
             if (data)
@@ -522,6 +594,7 @@ void ResolveCollisions(const Tree& tree, std::vector<CollisionData>& collisionRe
 {
     for (auto& colData : collisionResults)
     {
+        // Get the objects of collision
         Collider*  objectA = colData.objectA;
         Collider*  objectB = colData.objectB;
         Rigidbody* rigid1 = objectA->body;
@@ -531,6 +604,8 @@ void ResolveCollisions(const Tree& tree, std::vector<CollisionData>& collisionRe
         float totalMass = rigid1->mass + rigid2->mass;
         if (totalMass > 0.0f)
         {
+            // Position corrections based on how far they're penetrating multiplied by the
+            // collisionNormal
             glm::vec2 correctionA =
                 -(colData.penetrationDepth / totalMass) * colData.collisionNormal * rigid2->mass;
             glm::vec2 correctionB =
@@ -595,44 +670,18 @@ AABB ColCircleToABBB(const Collider& circle)
     return AABB(topRight, bottomLeft);
 }
 
-AABB ColOBBToAABB(const Collider& obb)
+AABB ColPolygonToAABB(const Collider& poly)
 {
-    // Compute the cosine and sine of the rotation angle
-    float cosTheta = cos(obb.body->transform->rotation.z);
-    float sinTheta = sin(obb.body->transform->rotation.z);
-
-    // The corners of the OBB in local space relative to its position
-    glm::vec2 corners[4] = {
-        {obb.obb.halfwidths.x, obb.obb.halfwidths.y},   // Top-right
-        {obb.obb.halfwidths.x, -obb.obb.halfwidths.y},  // Bottom-right
-        {-obb.obb.halfwidths.x, -obb.obb.halfwidths.y}, // Bottom-left
-        {-obb.obb.halfwidths.x, obb.obb.halfwidths.y}   // Top-left
-    };
-
-    // Rotate the corners and compute AABB bounds
-    glm::vec2 minBounds(std::numeric_limits<float>::max());
-    glm::vec2 maxBounds(std::numeric_limits<float>::lowest());
-
-    for (int i = 0; i < 4; ++i)
+    glm::vec2 upperBound = glm::vec2(poly.body->transform->position);
+    glm::vec2 lowerBound = upperBound;
+    for (auto& point : poly.polygon.worldPoints)
     {
-        // Rotate the corner
-        glm::vec2 rotatedCorner = {corners[i].x * cosTheta - corners[i].y * sinTheta,
-                                   corners[i].x * sinTheta + corners[i].y * cosTheta};
-
-        // Translate the rotated corner to world space
-        rotatedCorner += glm::vec2(obb.body->transform->position);
-
-        // Update the min and max bounds
-        minBounds = glm::min(minBounds, rotatedCorner);
-        maxBounds = glm::max(maxBounds, rotatedCorner);
+        upperBound.x = MaxFloat(point.x, upperBound.x);
+        upperBound.y = MaxFloat(point.y, upperBound.y);
+        lowerBound.x = MinFloat(point.x, lowerBound.x);
+        lowerBound.y = MinFloat(point.y, lowerBound.y);
     }
-
-    // Create the resulting AABB
-    AABB aabb;
-    aabb.lowerBound = minBounds;
-    aabb.upperBound = maxBounds;
-
-    return aabb;
+    return AABB(upperBound, lowerBound);
 }
 
 } // namespace sm2d

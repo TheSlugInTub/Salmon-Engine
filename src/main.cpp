@@ -29,8 +29,8 @@ int main(int argc, char** argv)
                                       "Ground", false, false);
     scene.AssignParam<sm2d::Rigidbody>(ground, sm2d::BodyType::sm2d_Static,
                                        scene.Get<Transform>(ground), 50.0f, true, 0.7f, 0.7f);
-    scene.AssignParam<sm2d::Collider>(ground, sm2d::ColliderType::sm2d_OBB,
-                                      sm2d::ColOBB(glm::vec2(5.0f, 0.5f)),
+    scene.AssignParam<sm2d::Collider>(ground, sm2d::ColliderType::sm2d_AABB,
+                                      sm2d::ColAABB(glm::vec2(5.0f, 0.5f)),
                                       scene.Get<sm2d::Rigidbody>(ground));
 
     EntityID ground2 = scene.AddEntity();
@@ -51,10 +51,12 @@ int main(int argc, char** argv)
                                       "Sprite", false, false);
     scene.AssignParam<sm2d::Rigidbody>(sprite, sm2d::BodyType::sm2d_Dynamic,
                                        scene.Get<Transform>(sprite), 2.0f, true, 0.56f, 0.56f, 1.0f,
-                                       true);
-    scene.AssignParam<sm2d::Collider>(sprite, sm2d::ColliderType::sm2d_OBB,
-                                      sm2d::ColOBB(glm::vec2(0.5f, 0.5f)),
-                                      scene.Get<sm2d::Rigidbody>(sprite));
+                                       false, 0.8f);
+    scene.AssignParam<sm2d::Collider>(
+        sprite, sm2d::ColliderType::sm2d_Polygon,
+        sm2d::ColPolygon({glm::vec2(-0.5f, -0.5f), glm::vec2(-0.5f, 0.5f), glm::vec2(0.5f, 0.5f),
+                          glm::vec2(0.5f, -0.5f)}),
+        scene.Get<sm2d::Rigidbody>(sprite));
 
     // EntityID circle = scene.AddEntity();
     // scene.AssignParam<Transform>(circle, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f,
@@ -69,15 +71,17 @@ int main(int argc, char** argv)
     //                                   sm2d::ColCircle(0.5f), scene.Get<sm2d::Rigidbody>(circle));
 
     EntityID box = scene.AddEntity();
-    scene.AssignParam<Transform>(box, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.78f),
+    scene.AssignParam<Transform>(box, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
                                  glm::vec3(1.0f, 1.0f, 1.0f));
     scene.AssignParam<SpriteRenderer>(box, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                       "Circle", false, false);
     scene.AssignParam<sm2d::Rigidbody>(box, sm2d::BodyType::sm2d_Dynamic, scene.Get<Transform>(box),
-                                       2.0f, true, 0.56f, 0.56f, 1.0f, false, 10.0f);
-    scene.AssignParam<sm2d::Collider>(box, sm2d::ColliderType::sm2d_OBB,
-                                      sm2d::ColOBB(glm::vec2(0.5f, 0.5)),
-                                      scene.Get<sm2d::Rigidbody>(box));
+                                       2.0f, true, 0.56f, 0.56f, 1.0f, false, 0.8f);
+    scene.AssignParam<sm2d::Collider>(
+        box, sm2d::ColliderType::sm2d_Polygon,
+        sm2d::ColPolygon({glm::vec2(-0.5f, -0.5f), glm::vec2(-0.5f, 0.5f), glm::vec2(0.5f, 0.5f),
+                          glm::vec2(0.5f, -0.5f)}),
+        /*sm2d::ColAABB(glm::vec2(0.5f, 0.5f)),*/ scene.Get<sm2d::Rigidbody>(box));
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
@@ -93,11 +97,6 @@ int main(int argc, char** argv)
     sm2d::Collider* col3 = engineState.scene.Get<sm2d::Collider>(ground2);
     sm2d::Collider* col4 = engineState.scene.Get<sm2d::Collider>(box);
 
-    sm2d::InsertLeaf(sm2d::bvh, col1, sm2d::ColAABBToABBB(*col1));
-    sm2d::InsertLeaf(sm2d::bvh, col2, sm2d::ColAABBToABBB(*col2));
-    sm2d::InsertLeaf(sm2d::bvh, col3, sm2d::ColAABBToABBB(*col3));
-    sm2d::InsertLeaf(sm2d::bvh, col4, sm2d::ColOBBToAABB(*col4));
-
     std::vector<sm2d::CollisionData> colResults;
 
     // Main loop
@@ -107,6 +106,9 @@ int main(int argc, char** argv)
         // Start of frame
         ImGuiLayer::NewFrame();
         UpdateSystems();
+
+        // std::cout << "Is root node's child1 a leaf? " <<
+        // sm2d::bvh.nodes[sm2d::bvh.nodes[sm2d::bvh.rootIndex].child2].leaf << '\n';
 
         // Main loop logic
         // ---

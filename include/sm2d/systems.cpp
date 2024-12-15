@@ -75,6 +75,52 @@ void DebugSys()
                 points, engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
                 engineState.camera->GetViewMatrix());
         }
+        else if (collider->type == ColliderType::sm2d_Polygon)
+        {
+            std::vector<glm::vec3> threedpoints;
+            for (auto& point : collider->polygon.worldPoints)
+            {
+                threedpoints.push_back(glm::vec3(point, 0.0f));
+            }
+            Renderer::RenderLine(
+                threedpoints,
+                engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
+                engineState.camera->GetViewMatrix());
+
+            std::cout << "Polygon center point: " << glm::to_string(collider->polygon.center)
+                      << '\n';
+
+            Renderer::RenderLine(
+                {glm::vec3(collider->polygon.center, 0.0f),
+                 glm::vec3(collider->polygon.center, 0.0f)},
+                engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
+                engineState.camera->GetViewMatrix());
+        }
+    }
+}
+
+void ColliderStartSys()
+{
+    for (EntityID ent : SceneView<Collider>(engineState.scene))
+    {
+        auto collider = engineState.scene.Get<Collider>(ent);
+
+        if (collider->type == ColliderType::sm2d_AABB)
+        {
+            // Not needed yet
+        }
+        else if (collider->type == ColliderType::sm2d_Circle)
+        {
+            // Not needed yet
+        }
+        else if (collider->type == ColliderType::sm2d_Polygon)
+        {
+            for (int i = 0; i < collider->polygon.points.size(); ++i)
+            {
+                collider->polygon.worldPoints.push_back(glm::vec2(0.0f, 0.0f));
+            }
+            UpdatePolygon(*collider);
+        }
     }
 }
 
@@ -99,17 +145,20 @@ void ColliderSys()
             RemoveDeletedLeaves(bvh);
             InsertLeaf(bvh, collider, ColCircleToABBB(*collider));
         }
-        else if (collider->type == ColliderType::sm2d_OBB)
+        else if (collider->type == ColliderType::sm2d_Polygon)
         {
+            UpdatePolygon(*collider);
+            collider->polygon.center = ComputePolygonCenter(collider->polygon);
             RemoveLeaf(bvh, collider->treeIndex);
             RemoveDeletedLeaves(bvh);
-            InsertLeaf(bvh, collider, ColOBBToAABB(*collider));
+            InsertLeaf(bvh, collider, ColPolygonToAABB(*collider));
         }
     }
 }
 
+REGISTER_START_SYSTEM(ColliderStartSys);
+// REGISTER_SYSTEM(DebugSys);
 REGISTER_SYSTEM(RigidbodySys);
 REGISTER_SYSTEM(ColliderSys);
-// REGISTER_SYSTEM(DebugSys);
 
 } // namespace sm2d

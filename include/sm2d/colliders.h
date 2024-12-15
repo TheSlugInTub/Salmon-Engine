@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sm2d/types.h>
+#include <algorithm>
 
 namespace sm2d
 {
@@ -10,9 +11,12 @@ struct ColAABB
     glm::vec2 halfwidths;
 };
 
-struct ColOBB
+struct ColPolygon
 {
-    glm::vec2 halfwidths;
+    std::vector<glm::vec2> points;      // Points in object space
+    std::vector<glm::vec2> normals;     // Normals for the polygon
+    std::vector<glm::vec2> worldPoints; // Points in world space, get recomputed every frame
+    glm::vec2              center;      // Geometric center
 };
 
 struct ColCircle
@@ -24,7 +28,7 @@ enum ColliderType
 {
     sm2d_AABB,
     sm2d_Circle,
-    sm2d_OBB
+    sm2d_Polygon
 };
 
 struct Collider
@@ -32,9 +36,9 @@ struct Collider
     ColliderType type;
     union
     {
-        ColAABB   aabb;
-        ColCircle circle;
-        ColOBB    obb;
+        ColAABB    aabb;
+        ColCircle  circle;
+        ColPolygon polygon;
     };
     Rigidbody* body;
     int        treeIndex = -1; // Index in the AABB tree
@@ -47,18 +51,18 @@ struct Collider
        : type(type), circle(circle), body(body)
     {
     }
-    Collider(ColliderType type, const ColOBB& obb, Rigidbody* body)
-       : type(type), obb(obb), body(body)
+    Collider(ColliderType type, const ColPolygon& poly, Rigidbody* body)
+       : type(type), polygon(poly), body(body)
     {
     }
 };
 
 struct CollisionData
 {
-    bool      colliding;
-    glm::vec2 collisionNormal;  // Normal of the collision (direction of resolution)
-    float     penetrationDepth; // Depth of penetration between the objects
-    glm::vec2 contactPoint;     // Point of contact (optional, for accuracy in physics)
+    bool      colliding;        // Are they colliding?
+    glm::vec2 collisionNormal;  // Direction of the collision used for impulse calculation
+    float     penetrationDepth; // How far they're inside each other
+    glm::vec2 contactPoint;     // Point of contact
     Collider* objectA;          // Pointer to the first object involved in the collision
     Collider* objectB;          // Pointer to the second object involved in the collision
 
@@ -69,9 +73,10 @@ struct CollisionData
 
 CollisionData TestColAABBAABB(const Collider& a, const Collider& b);
 CollisionData TestColCircleCircle(const Collider& a, const Collider& b);
-CollisionData TestColOBBOBB(const Collider& a, const Collider& b);
+CollisionData TestColPolygonPolygon(Collider& a, Collider& b);
 
 CollisionData TestColAABBCircle(const Collider& aabb, const Collider& circle);
-CollisionData TestColAABBOBB(const Collider& aabb, const Collider& obb);
+CollisionData TestColAABBPolygon(const Collider& aabb, const Collider& poly);
+CollisionData TestColCirclePolygon(const Collider& circle, const Collider& poly);
 
 } // namespace sm2d
