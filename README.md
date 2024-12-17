@@ -3,9 +3,7 @@
 Salmon engine is a simple, light-weight game engine with an ECS (Entity Component System) design.
 
 The engine includes a 3D OpenGL renderer and 3D physics with Jolt.
-This repository already has a working game in it, which uses the engine,
-that's because I'm making a game alongside this engine.
-Don't worry though, the game is completely decoupled.
+If you want to see an example game made with the engine, switch to the the 'syslocked' branch.
 
 # Getting started
 
