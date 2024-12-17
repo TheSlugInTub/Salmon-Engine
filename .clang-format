@@ -23,7 +23,7 @@ FixNamespaceComments: 'true'
 IndentCaseLabels: 'true'
 IndentPPDirectives: AfterHash
 IndentWidth: '4'
-KeepEmptyLinesAtTheStartOfBlocks: 'false'
+KeepEmptyLinesAtTheStartOfBlocks: 'true'
 Language: Cpp
 PointerAlignment: Left
 SortIncludes: 'false'

@@ -87,9 +87,6 @@ void DebugSys()
                 engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
                 engineState.camera->GetViewMatrix());
 
-            std::cout << "Polygon center point: " << glm::to_string(collider->polygon.center)
-                      << '\n';
-
             Renderer::RenderLine(
                 {glm::vec3(collider->polygon.center, 0.0f),
                  glm::vec3(collider->polygon.center, 0.0f)},

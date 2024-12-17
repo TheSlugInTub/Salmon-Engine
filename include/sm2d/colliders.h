@@ -14,7 +14,6 @@ struct ColAABB
 struct ColPolygon
 {
     std::vector<glm::vec2> points;      // Points in object space
-    std::vector<glm::vec2> normals;     // Normals for the polygon
     std::vector<glm::vec2> worldPoints; // Points in world space, get recomputed every frame
     glm::vec2              center;      // Geometric center
 };
@@ -76,7 +75,7 @@ CollisionData TestColCircleCircle(const Collider& a, const Collider& b);
 CollisionData TestColPolygonPolygon(Collider& a, Collider& b);
 
 CollisionData TestColAABBCircle(const Collider& aabb, const Collider& circle);
-CollisionData TestColAABBPolygon(const Collider& aabb, const Collider& poly);
+CollisionData TestColAABBPolygon(Collider& aabb, Collider& poly);
 CollisionData TestColCirclePolygon(const Collider& circle, const Collider& poly);
 
 } // namespace sm2d

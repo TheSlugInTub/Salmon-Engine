@@ -22,16 +22,13 @@ void UpdatePolygon(Collider& poly)
     for (int i = 0; i < poly.polygon.points.size(); ++i)
     {
         poly.polygon.worldPoints[i] = LocalToWorld(poly.polygon.points[i], pos, cosine, sine);
-
-        glm::mat2 rotMatrix = glm::mat2(cosine, -sine, sine, cosine);
-        poly.polygon.normals[i] = poly.polygon.normals[i] * rotMatrix;
     }
 }
 
 glm::vec2 ComputePolygonCenter(ColPolygon& poly)
 {
     glm::vec2 center = glm::vec2(0.0f, 0.0f);
-    float  area = 0.0f;
+    float     area = 0.0f;
 
     // Get a reference point for forming triangles.
     // Use the first vertex to reduce round-off errors.
@@ -44,7 +41,7 @@ glm::vec2 ComputePolygonCenter(ColPolygon& poly)
         // Triangle edges
         glm::vec2 e1 = poly.worldPoints[i] - origin;
         glm::vec2 e2 = poly.worldPoints[i + 1] - origin;
-        float  a = 0.5f * CrossProduct(e1, e2);
+        float     a = 0.5f * CrossProduct(e1, e2);
 
         // Area weighted centroid
         center = center + (a * inv3) * (e1 + e2);
@@ -60,6 +57,19 @@ glm::vec2 ComputePolygonCenter(ColPolygon& poly)
     center = origin + center;
 
     return center;
+}
+
+void ComputeAABBPoints(const Collider& collider, std::vector<glm::vec2>& points)
+{
+    glm::vec2 topLeft = glm::vec2(collider.body->transform->position) +
+                        glm::vec2(-collider.aabb.halfwidths.x, collider.aabb.halfwidths.y);
+    glm::vec2 topRight = glm::vec2(collider.body->transform->position) +
+                         glm::vec2(collider.aabb.halfwidths.x, collider.aabb.halfwidths.y);
+    glm::vec2 bottomRight = glm::vec2(collider.body->transform->position) +
+                            glm::vec2(collider.aabb.halfwidths.x, -collider.aabb.halfwidths.y);
+    glm::vec2 bottomLeft = glm::vec2(collider.body->transform->position) +
+                           glm::vec2(-collider.aabb.halfwidths.x, -collider.aabb.halfwidths.y);
+    points = {bottomLeft, topLeft, topRight, bottomRight};
 }
 
 glm::vec2 VectorScalarCross(const glm::vec2& v, float s)
@@ -623,8 +633,8 @@ void ResolveCollisions(const Tree& tree, std::vector<CollisionData>& collisionRe
 
         if (velocityAlongNormal < 0)
         {
-            float e =
-                std::min(rigid1->restitution, rigid2->restitution); // Coefficient of restitution
+            float e = std::min(rigid1->restitution,
+                               rigid2->restitution); // Coefficient of restitution
             float impulseMagnitude =
                 -(1 + e) * velocityAlongNormal / (1.0f / rigid1->mass + 1.0f / rigid2->mass);
 
@@ -641,7 +651,7 @@ void ResolveCollisions(const Tree& tree, std::vector<CollisionData>& collisionRe
             if (rigid1->type == BodyType::sm2d_Dynamic && !rigid1->fixedRotation)
             {
                 float torqueA = CrossProduct(rA, -impulse); // Torque due to impulse on A
-                rigid1->angularVelocity -= torqueA / rigid1->momentOfInertia;
+                rigid1->angularVelocity += torqueA / rigid1->momentOfInertia;
             }
 
             if (rigid2->type == BodyType::sm2d_Dynamic && !rigid2->fixedRotation)
