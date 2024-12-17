@@ -1,3 +1,10 @@
+# Salmon Engine 0.7
+17/12/2024 - December
+
+I've been working on 2d physics for the engine, with a custom physics engine.
+There is an AABB, circle and polygon collider implemented, the angular rotation with 
+the polygons is a bit broken, I'll fix that in the next commits.
+
 # Salmon Engine 0.69
 28/11/2024 - November 
 
