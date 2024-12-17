@@ -15,6 +15,9 @@ void UpdatePolygon(Collider& poly);
 // Computes the geometric center of a polygon
 glm::vec2 ComputePolygonCenter(ColPolygon& poly);
 
+// Computes the top, down, left and right points of an AABB collider
+void ComputeAABBPoints(const Collider& collider, std::vector<glm::vec2>& points);
+
 // Cross product between vector and a scalar
 glm::vec2 VectorScalarCross(const glm::vec2& v, float s);
 
