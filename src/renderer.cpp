@@ -273,18 +273,6 @@ void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& vi
     twoShader.setMat4("projection", projection);
     twoShader.setVec4("ourColor", sprite->color);
 
-    // This changes the vertices of the quad if the object is flipped.
-    float vertices[] = {
-        // positions     // texture coords
-        0.5f,  0.5f,  0.0f, sprite->flipped ? 0.0f : 1.0f, 1.0f, // top right (flipped if true)
-        -0.5f, 0.5f,  0.0f, sprite->flipped ? 1.0f : 0.0f, 1.0f, // top left (flipped if true)
-        -0.5f, -0.5f, 0.0f, sprite->flipped ? 1.0f : 0.0f, 0.0f, // bottom left (flipped if true)
-        0.5f,  -0.5f, 0.0f, sprite->flipped ? 0.0f : 1.0f, 0.0f  // bottom right (flipped if true)
-    };
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }

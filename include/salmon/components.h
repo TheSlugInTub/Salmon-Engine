@@ -54,8 +54,7 @@ struct SpriteRenderer
     unsigned int texture;
     glm::vec4 color = glm::vec4(1.0f);
     std::string texturePath = "";
-    bool flipped = false;
-    bool billboard = false;
+    bool billboard = false; // It's faster to leave this off
 };
 
 // Component that simulates physics on the entity's transform with Jolt Physics
