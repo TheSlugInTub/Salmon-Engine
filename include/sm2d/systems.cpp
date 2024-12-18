@@ -18,7 +18,7 @@ void RigidbodySys()
         if (rigid->type == sm2d_Static || rigid->awake == false)
             continue;
 
-        // rigid->force.y += -10.0f;
+        rigid->force.y += -3.5f * rigid->mass; // GRAVITAS
 
         rigid->lastPosition = glm::vec2(rigid->transform->position);
 
@@ -154,7 +154,7 @@ void ColliderSys()
 }
 
 REGISTER_START_SYSTEM(ColliderStartSys);
-REGISTER_SYSTEM(DebugSys);
+// REGISTER_SYSTEM(DebugSys);
 REGISTER_SYSTEM(RigidbodySys);
 REGISTER_SYSTEM(ColliderSys);
 

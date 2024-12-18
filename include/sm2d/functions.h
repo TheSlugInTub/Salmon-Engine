@@ -2,9 +2,18 @@
 
 #include <sm2d/types.h>
 #include <sm2d/colliders.h>
+#include <optional>
 
 namespace sm2d
 {
+
+// If the two lines intersect then return the intersection point
+std::optional<glm::vec2> GetLineIntersection(const glm::vec2& p0, const glm::vec2& p1,
+                                             const glm::vec2& q0, const glm::vec2& q1);
+
+// Finds the closest point on a line segment to the vertex
+glm::vec2 ClosestPointOnLineSegment(const glm::vec2& vertex, const glm::vec2& lineStart,
+                                    const glm::vec2& lineEnd);
 
 // Transforms a point from object space into world space
 glm::vec2 LocalToWorld(glm::vec2 point, const glm::vec2 pos, float cosine, float sine);

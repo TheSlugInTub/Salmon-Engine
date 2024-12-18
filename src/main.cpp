@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     scene.AssignParam<SpriteRenderer>(ground, groundTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                       "Ground", false, false);
     scene.AssignParam<sm2d::Rigidbody>(ground, sm2d::BodyType::sm2d_Static,
-                                       scene.Get<Transform>(ground), 100.0f, true, 0.7f, 0.7f, 0.0f, true, 0.8f);
+                                       scene.Get<Transform>(ground), 100.0f, true, 0.7f, 0.7f, 0.0f, true, 1.5f);
     scene.AssignParam<sm2d::Collider>(
         ground, sm2d::ColliderType::sm2d_Polygon,
         sm2d::ColPolygon({glm::vec2(-5.0f, -0.5f), glm::vec2(-5.0f, 0.5f), glm::vec2(5.0f, 0.5f),
@@ -80,7 +80,7 @@ int main(int argc, char** argv)
     scene.AssignParam<SpriteRenderer>(box, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                       "Circle", false, false);
     scene.AssignParam<sm2d::Rigidbody>(box, sm2d::BodyType::sm2d_Dynamic, scene.Get<Transform>(box),
-                                       10.0f, true, 0.56f, 0.56f, 0.0f, false, 1.5f);
+                                       10.0f, true, 0.56f, 0.56f, 0.0f, false, 2.5f);
     scene.AssignParam<sm2d::Collider>(
         box, sm2d::ColliderType::sm2d_Polygon,
         sm2d::ColPolygon({glm::vec2(-1.5f, -0.5f), glm::vec2(-1.5f, 0.5f), glm::vec2(1.5f, 0.5f),

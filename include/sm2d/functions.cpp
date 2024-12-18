@@ -1,9 +1,64 @@
 #include <sm2d/functions.h>
 #include <cassert>
 #include <cmath>
+#include <algorithm>
 
 namespace sm2d
 {
+
+std::optional<glm::vec2> GetLineIntersection(const glm::vec2& p0, const glm::vec2& p1,
+                                             const glm::vec2& q0, const glm::vec2& q1)
+{
+    glm::vec2 s1 = p1 - p0;
+    glm::vec2 s2 = q1 - q0;
+
+    float s, t;
+    float denom = (-s2.x * s1.y + s1.x * s2.y);
+
+    if (denom == 0)
+    {
+        // Lines are parallel or collinear
+        return std::nullopt;
+    }
+
+    s = (-s1.y * (p0.x - q0.x) + s1.x * (p0.y - q0.y)) / denom;
+    t = (s2.x * (p0.y - q0.y) - s2.y * (p0.x - q0.x)) / denom;
+
+    if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+    {
+        // Intersection detected
+        return p0 + t * s1;
+    }
+
+    // No intersection
+    return std::nullopt;
+}
+
+glm::vec2 ClosestPointOnLineSegment(const glm::vec2& vertex, const glm::vec2& lineStart,
+                                    const glm::vec2& lineEnd)
+{
+    // Vector from lineStart to lineEnd
+    glm::vec2 lineVector = lineEnd - lineStart;
+    // Vector from lineStart to the vertex
+    glm::vec2 vertexVector = vertex - lineStart;
+
+    float lineLengthSquared = glm::dot(lineVector, lineVector);
+
+    // Avoid division by zero in case of a degenerate line segment
+    if (lineLengthSquared == 0.0f)
+    {
+        return lineStart; // Line segment is a point
+    }
+
+    // Compute the projection factor (t) of the vertex onto the line
+    float t = glm::dot(vertexVector, lineVector) / lineLengthSquared;
+
+    // Clamp t to the range [0, 1] to find the closest point on the segment
+    t = std::clamp(t, 0.0f, 1.0f);
+
+    // Calculate the closest point on the line segment
+    return lineStart + t * lineVector;
+}
 
 glm::vec2 LocalToWorld(glm::vec2 point, const glm::vec2 pos, float cosine, float sine)
 {
