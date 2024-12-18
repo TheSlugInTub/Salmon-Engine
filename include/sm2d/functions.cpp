@@ -635,6 +635,8 @@ void ResolveCollisions(const Tree& tree, std::vector<CollisionData>& collisionRe
         {
             float e = std::min(rigid1->restitution,
                                rigid2->restitution); // Coefficient of restitution
+            float maxInertia = std::max(rigid1->momentOfInertia,
+                                        rigid2->momentOfInertia); // Max inertia
             float impulseMagnitude =
                 -(1 + e) * velocityAlongNormal / (1.0f / rigid1->mass + 1.0f / rigid2->mass);
 
@@ -651,13 +653,13 @@ void ResolveCollisions(const Tree& tree, std::vector<CollisionData>& collisionRe
             if (rigid1->type == BodyType::sm2d_Dynamic && !rigid1->fixedRotation)
             {
                 float torqueA = CrossProduct(rA, -impulse); // Torque due to impulse on A
-                rigid1->angularVelocity += torqueA / rigid1->momentOfInertia;
+                rigid1->angularVelocity += torqueA / maxInertia;
             }
 
             if (rigid2->type == BodyType::sm2d_Dynamic && !rigid2->fixedRotation)
             {
                 float torqueB = CrossProduct(rB, impulse); // Torque due to impulse on B
-                rigid2->angularVelocity += torqueB / rigid2->momentOfInertia;
+                rigid2->angularVelocity += torqueB / maxInertia;
             }
         }
     }

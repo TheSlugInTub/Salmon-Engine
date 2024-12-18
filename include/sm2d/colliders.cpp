@@ -1,3 +1,4 @@
+#include <salmon/renderer.h>
 #include <sm2d/functions.h>
 #include <sm2d/colliders.h>
 #include <cmath>
@@ -253,6 +254,11 @@ CollisionData TestColPolygonPolygon(Collider& a, Collider& b)
         // If no exact contact points, use center point between the two polygons
         result.contactPoint = (a.polygon.center + b.polygon.center) * 0.5f;
     }
+
+    Renderer::RenderLine(
+        {glm::vec3(result.contactPoint, 0.0f), glm::vec3(result.contactPoint, 0.0f)},
+        engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
+        engineState.camera->GetViewMatrix());
 
     // Ensure normal points from A to B
     result.collisionNormal = minAxis;
