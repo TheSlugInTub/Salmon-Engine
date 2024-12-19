@@ -18,7 +18,7 @@ int main(int argc, char** argv)
     unsigned int groundTex = Utils::LoadTexture("res/textures/background.png");
     unsigned int slugariusTex = Utils::LoadTexture("res/textures/Slugarius.png");
     unsigned int lineTex = Utils::LoadTexture("res/textures/Line.png");
-    unsigned int circleTex = Utils::LoadTexture("res/textures/SlugariusCircle.png");
+    unsigned int triangleTex = Utils::LoadTexture("res/textures/SlugariusTriangle.png");
 
     Scene scene;
 
@@ -28,7 +28,8 @@ int main(int argc, char** argv)
     scene.AssignParam<SpriteRenderer>(ground, groundTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                       "Ground");
     scene.AssignParam<sm2d::Rigidbody>(ground, sm2d::BodyType::sm2d_Static,
-                                       scene.Get<Transform>(ground), 100.0f, true, 0.7f, 0.7f, 0.0f, true, 1.5f);
+                                       scene.Get<Transform>(ground), 100.0f, true, 0.7f, 0.7f, 0.0f,
+                                       true, 1.5f);
     scene.AssignParam<sm2d::Collider>(
         ground, sm2d::ColliderType::sm2d_Polygon,
         sm2d::ColPolygon({glm::vec2(-5.0f, -0.5f), glm::vec2(-5.0f, 0.5f), glm::vec2(5.0f, 0.5f),
@@ -54,7 +55,7 @@ int main(int argc, char** argv)
     scene.AssignParam<SpriteRenderer>(sprite, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                       "Sprite");
     scene.AssignParam<sm2d::Rigidbody>(sprite, sm2d::BodyType::sm2d_Dynamic,
-                                       scene.Get<Transform>(sprite), 2.0f, true, 0.56f, 0.56f, 0.0f,
+                                       scene.Get<Transform>(sprite), 2.0f, true, 0.01f, 0.56f, 0.0f,
                                        false, 0.8f);
     scene.AssignParam<sm2d::Collider>(
         sprite, sm2d::ColliderType::sm2d_Polygon,
@@ -76,16 +77,29 @@ int main(int argc, char** argv)
 
     EntityID box = scene.AddEntity();
     scene.AssignParam<Transform>(box, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-                                 glm::vec3(3.0f, 1.0f, 1.0f));
-    scene.AssignParam<SpriteRenderer>(box, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-                                      "Circle");
+                                 glm::vec3(1.0f, 1.0f, 1.0f));
+    scene.AssignParam<SpriteRenderer>(box, triangleTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+                                      "triangle");
     scene.AssignParam<sm2d::Rigidbody>(box, sm2d::BodyType::sm2d_Dynamic, scene.Get<Transform>(box),
-                                       10.0f, true, 0.56f, 0.56f, 0.0f, false, 2.5f);
+                                       10.0f, true, 0.46f, 0.56f, 0.0f, false, 2.5f);
     scene.AssignParam<sm2d::Collider>(
         box, sm2d::ColliderType::sm2d_Polygon,
-        sm2d::ColPolygon({glm::vec2(-1.5f, -0.5f), glm::vec2(-1.5f, 0.5f), glm::vec2(1.5f, 0.5f),
-                          glm::vec2(1.5f, -0.5f)}),
+        sm2d::ColPolygon({glm::vec2(-0.5f, 0.5f), glm::vec2(0.5f, 0.5f), glm::vec2(0.5f, -0.5f)}),
         /*sm2d::ColAABB(glm::vec2(0.5f, 0.5f)),*/ scene.Get<sm2d::Rigidbody>(box));
+
+    EntityID box2 = scene.AddEntity();
+    scene.AssignParam<Transform>(box2, glm::vec3(-2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+                                 glm::vec3(1.0f, 1.0f, 1.0f));
+    scene.AssignParam<SpriteRenderer>(box2, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+                                      "box2");
+    scene.AssignParam<sm2d::Rigidbody>(box2, sm2d::BodyType::sm2d_Dynamic,
+                                       scene.Get<Transform>(box2), 2.0f, true, 0.46f, 0.56f, 0.0f,
+                                       false, 0.8f);
+    scene.AssignParam<sm2d::Collider>(
+        box2, sm2d::ColliderType::sm2d_Polygon,
+        sm2d::ColPolygon({glm::vec2(-0.5f, -0.5f), glm::vec2(-0.5f, 0.5f), glm::vec2(0.5f, 0.5f),
+                          glm::vec2(0.5f, -0.5f)}),
+        scene.Get<sm2d::Rigidbody>(box2));
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
@@ -110,9 +124,6 @@ int main(int argc, char** argv)
         // Start of frame
         ImGuiLayer::NewFrame();
         UpdateSystems();
-
-        // std::cout << "Is root node's child1 a leaf? " <<
-        // sm2d::bvh.nodes[sm2d::bvh.nodes[sm2d::bvh.rootIndex].child2].leaf << '\n';
 
         // Main loop logic
         // ---

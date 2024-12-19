@@ -55,7 +55,8 @@ struct Rigidbody
     float     torque = 0.0f; // In radians
 
     bool      hasMoved = false; // Indicates if it has moved in the last frame
-    glm::vec2 lastPosition = glm::vec2(0.0f);
+
+    bool colliding; // Indicates whether the object is colliding, used for applying friction
 };
 
 struct Node

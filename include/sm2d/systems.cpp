@@ -20,19 +20,21 @@ void RigidbodySys()
 
         rigid->force.y += -3.5f * rigid->mass; // GRAVITAS
 
-        rigid->lastPosition = glm::vec2(rigid->transform->position);
-
         rigid->linearVelocity += rigid->force / rigid->mass * engineState.deltaTime;
-        rigid->linearVelocity *= glm::pow(rigid->linearDamping, engineState.deltaTime);
+        rigid->angularVelocity += rigid->torque / rigid->mass * engineState.deltaTime;
+
+        if (rigid->colliding)
+        {
+            rigid->linearVelocity *= glm::pow(rigid->linearDamping, engineState.deltaTime);
+            rigid->angularVelocity *= glm::pow(rigid->angularDamping, engineState.deltaTime);
+        }
+
+        rigid->transform->rotation.z += rigid->angularVelocity * engineState.deltaTime;
         rigid->transform->position.x += rigid->linearVelocity.x * engineState.deltaTime;
         rigid->transform->position.y += rigid->linearVelocity.y * engineState.deltaTime;
 
-        rigid->angularVelocity += rigid->torque / rigid->mass * engineState.deltaTime;
-        rigid->angularVelocity *= glm::pow(rigid->angularDamping, engineState.deltaTime);
-        rigid->transform->rotation.z += rigid->angularVelocity * engineState.deltaTime;
-
-        glm::vec2 diff = glm::vec2(rigid->transform->position) - rigid->lastPosition;
-        if (glm::length(diff) > 0.0001f)
+        if (glm::length(rigid->angularVelocity) > FLT_EPSILON ||
+            glm::length(rigid->linearVelocity) > FLT_EPSILON)
         {
             rigid->hasMoved = true;
         }
@@ -117,6 +119,7 @@ void ColliderStartSys()
                 collider->polygon.worldPoints.push_back(glm::vec2(0.0f, 0.0f));
             }
             UpdatePolygon(*collider);
+            //collider->polygon.center = ComputePolygonCenter(collider->polygon);
         }
     }
 }
@@ -127,7 +130,7 @@ void ColliderSys()
     {
         auto collider = engineState.scene.Get<Collider>(ent);
 
-        // if (!collider->body->hasMoved)
+        //if (!collider->body->hasMoved)
         //     continue;
 
         if (collider->type == ColliderType::sm2d_AABB)
