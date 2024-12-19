@@ -103,7 +103,7 @@ glm::vec2 ComputePolygonCenter(ColPolygon& poly)
         area += a;
     }
 
-    assert(area > FLT_EPSILON);
+    assert(area < FLT_EPSILON);
     float invArea = 1.0f / area;
     center.x *= invArea;
     center.y *= invArea;
@@ -620,7 +620,11 @@ void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collision
             }
 
             if (data)
+            {
                 collisionResults.push_back(data);
+                node1.collider->body->awake = true;
+                node1.collider->body->awake = true;
+            }
             return;
         }
 

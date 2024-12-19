@@ -50,3 +50,4 @@
 #include <sm2d/types.h>
 #include <sm2d/functions.h>
 #include <sm2d/colliders.h>
+#include <salmon/clock.h>

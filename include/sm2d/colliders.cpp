@@ -262,11 +262,6 @@ CollisionData TestColPolygonPolygon(Collider& a, Collider& b)
         result.contactPoint = intersections[0];
     }
 
-    Renderer::RenderLine(
-        {glm::vec3(result.contactPoint, 0.0f), glm::vec3(result.contactPoint, 0.0f)},
-        engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
-        engineState.camera->GetViewMatrix());
-
     // Ensure normal points from A to B
     result.collisionNormal = minAxis;
     if (glm::dot(result.collisionNormal, b.polygon.center - a.polygon.center) < 0)
@@ -349,30 +344,37 @@ CollisionData TestColAABBPolygon(Collider& aabb, Collider& poly)
     result.objectB = &poly;
     result.penetrationDepth = minOverlap;
 
-    // Determine contact point (simplified method)
-    result.contactPoint = glm::vec2(0.0f);
-    size_t contactPointCount = 0;
-    for (const auto& pointA : a.worldPoints)
+    // Contact point detection here
+    std::vector<glm::vec2> intersections;
+
+    size_t col1Size = col1->worldPoints.size();
+    size_t col2Size = col2->worldPoints.size();
+
+    for (size_t i = 0; i < col1Size; ++i)
     {
-        for (const auto& pointB : poly.polygon.worldPoints)
+        glm::vec2 p0 = col1->worldPoints[i];
+        glm::vec2 p1 = col1->worldPoints[(i + 1) % col1Size];
+
+        for (size_t j = 0; j < col2Size; ++j)
         {
-            if (glm::distance(pointA, pointB) < 0.001f) // Close points are considered contact
+            glm::vec2 q0 = col2->worldPoints[j];
+            glm::vec2 q1 = col2->worldPoints[(j + 1) % col2Size];
+
+            auto intersection = GetLineIntersection(p0, p1, q0, q1);
+            if (intersection)
             {
-                result.contactPoint += pointA;
-                contactPointCount++;
+                intersections.push_back(*intersection);
             }
         }
     }
 
-    // Average contact points if multiple found
-    if (contactPointCount > 0)
+    if (intersections.size() == 2)
     {
-        result.contactPoint /= static_cast<float>(contactPointCount);
+        result.contactPoint = (intersections[0] + intersections[1]) * 0.5f;
     }
     else
     {
-        // If no exact contact points, use center point between the two polygons
-        result.contactPoint = (a.center + poly.polygon.center) * 0.5f;
+        result.contactPoint = intersections[0];
     }
 
     // Ensure normal points from A to B

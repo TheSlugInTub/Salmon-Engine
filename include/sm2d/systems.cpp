@@ -1,3 +1,4 @@
+#include <cfloat>
 #include <sm2d/types.h>
 #include <sm2d/colliders.h>
 #include <salmon/ecs.h>
@@ -15,12 +16,10 @@ void RigidbodySys()
     {
         auto rigid = engineState.scene.Get<Rigidbody>(ent);
 
-        if (rigid->type == sm2d_Static || rigid->awake == false)
+        if (rigid->type == sm2d_Static || !rigid->awake)
             continue;
 
         rigid->force.y += -3.5f * rigid->mass; // GRAVITAS
-
-        rigid->lastPosition = glm::vec2(rigid->transform->position);
 
         rigid->linearVelocity += rigid->force / rigid->mass * engineState.deltaTime;
         rigid->linearVelocity *= glm::pow(rigid->linearDamping, engineState.deltaTime);
@@ -31,15 +30,18 @@ void RigidbodySys()
         rigid->angularVelocity *= glm::pow(rigid->angularDamping, engineState.deltaTime);
         rigid->transform->rotation.z += rigid->angularVelocity * engineState.deltaTime;
 
-        glm::vec2 diff = glm::vec2(rigid->transform->position) - rigid->lastPosition;
-        if (glm::length(diff) > 0.0001f)
+        if (glm::length(rigid->angularVelocity) > 0.1f ||
+            glm::length(rigid->linearVelocity) > 0.1f )
         {
-            rigid->hasMoved = true;
+            rigid->awake = true;
         }
         else
         {
-            rigid->hasMoved = false;
+            rigid->awake = false;
         }
+
+        std::cout << "Do it move? " << rigid->awake << '\n';
+        std::cout << "Length of linear velocity " << glm::length(rigid->linearVelocity) << '\n';
 
         rigid->force = glm::vec2(0.0f);
         rigid->torque = 0.0f;
@@ -104,11 +106,11 @@ void ColliderStartSys()
 
         if (collider->type == ColliderType::sm2d_AABB)
         {
-            // Not needed yet
+            InsertLeaf(bvh, collider, ColAABBToABBB(*collider));
         }
         else if (collider->type == ColliderType::sm2d_Circle)
         {
-            // Not needed yet
+            InsertLeaf(bvh, collider, ColCircleToABBB(*collider));
         }
         else if (collider->type == ColliderType::sm2d_Polygon)
         {
@@ -117,6 +119,8 @@ void ColliderStartSys()
                 collider->polygon.worldPoints.push_back(glm::vec2(0.0f, 0.0f));
             }
             UpdatePolygon(*collider);
+            collider->polygon.center = ComputePolygonCenter(collider->polygon);
+            InsertLeaf(bvh, collider, ColPolygonToAABB(*collider));
         }
     }
 }
@@ -127,8 +131,8 @@ void ColliderSys()
     {
         auto collider = engineState.scene.Get<Collider>(ent);
 
-        // if (!collider->body->hasMoved)
-        //     continue;
+        if (!collider->body->awake)
+            continue;
 
         if (collider->type == ColliderType::sm2d_AABB)
         {
@@ -154,7 +158,7 @@ void ColliderSys()
 }
 
 REGISTER_START_SYSTEM(ColliderStartSys);
-// REGISTER_SYSTEM(DebugSys);
+REGISTER_SYSTEM(DebugSys);
 REGISTER_SYSTEM(RigidbodySys);
 REGISTER_SYSTEM(ColliderSys);
 
