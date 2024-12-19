@@ -555,9 +555,6 @@ void RemoveDeletedLeaves(Tree& tree)
 
 void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collisionResults)
 {
-    if (tree.nodes.empty())
-        return;
-
     // Recursive lambda function to traverse and check collisions
     std::function<void(int, int)> CheckCollisions = [&](int node1Index, int node2Index)
     {
@@ -623,17 +620,7 @@ void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collision
             }
 
             if (data)
-            {
                 collisionResults.push_back(data);
-                node1.collider->body->colliding = true;
-                node2.collider->body->colliding = true;
-            }
-            else
-            {
-                node1.collider->body->colliding = false;
-                node2.collider->body->colliding = false;
-            }
-
             return;
         }
 

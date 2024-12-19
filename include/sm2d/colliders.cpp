@@ -262,6 +262,11 @@ CollisionData TestColPolygonPolygon(Collider& a, Collider& b)
         result.contactPoint = intersections[0];
     }
 
+    Renderer::RenderLine(
+        {glm::vec3(result.contactPoint, 0.0f), glm::vec3(result.contactPoint, 0.0f)},
+        engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
+        engineState.camera->GetViewMatrix());
+
     // Ensure normal points from A to B
     result.collisionNormal = minAxis;
     if (glm::dot(result.collisionNormal, b.polygon.center - a.polygon.center) < 0)
