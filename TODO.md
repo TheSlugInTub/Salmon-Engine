@@ -22,3 +22,4 @@
 - [X] Make the line rendering more efficient
 - [ ] Fix the GetCollisions function so it doesn't run the same test with the same collider as the
       two arguments
+- [ ] Figure out if collisions were carried over

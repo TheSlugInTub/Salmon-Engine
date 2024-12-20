@@ -118,19 +118,19 @@ int main(int argc, char** argv)
         // ---
         if (Input::GetKey(Key::Left))
         {
-            engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.x -= 20.0f;
+            col2->body->force.x -= 20.0f;
         }
         if (Input::GetKey(Key::Right))
         {
-            engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.x += 20.0f;
+            col2->body->force.x += 20.0f;
         }
         if (Input::GetKey(Key::Up))
         {
-            engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.y += 20.0f;
+            col2->body->force.y += 20.0f;
         }
         if (Input::GetKey(Key::Down))
         {
-            engineState.scene.Get<sm2d::Rigidbody>(sprite)->force.y -= 20.0f;
+            col2->body->force.y -= 20.0f;
         }
 
         if (Input::GetKeyDown(Key::F))

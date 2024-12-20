@@ -1,4 +1,5 @@
 #include <cfloat>
+#include <cmath>
 #include <sm2d/types.h>
 #include <sm2d/colliders.h>
 #include <salmon/ecs.h>
@@ -10,14 +11,26 @@
 namespace sm2d
 {
 
+void RigidbodyStartSys()
+{
+    for (EntityID ent : SceneView<Rigidbody>(engineState.scene))
+    {
+        auto rigid = engineState.scene.Get<Rigidbody>(ent);
+
+        rigid->gravityForce = sqrt(-3.5f * rigid->mass);
+    }
+}
+
 void RigidbodySys()
 {
     for (EntityID ent : SceneView<Rigidbody>(engineState.scene))
     {
         auto rigid = engineState.scene.Get<Rigidbody>(ent);
 
-        if (rigid->type == sm2d_Static || !rigid->awake)
+        if (rigid->type == sm2d_Static)
+        {
             continue;
+        }
 
         rigid->force.y += -3.5f * rigid->mass; // GRAVITAS
 
@@ -30,8 +43,8 @@ void RigidbodySys()
         rigid->angularVelocity *= glm::pow(rigid->angularDamping, engineState.deltaTime);
         rigid->transform->rotation.z += rigid->angularVelocity * engineState.deltaTime;
 
-        if (glm::length(rigid->angularVelocity) > 0.1f ||
-            glm::length(rigid->linearVelocity) > 0.1f )
+        if (rigid->angularVelocity > 0.1f || glm::length(rigid->linearVelocity) > 0.03f ||
+            glm::length(rigid->force) > rigid->gravityForce)
         {
             rigid->awake = true;
         }
@@ -39,9 +52,6 @@ void RigidbodySys()
         {
             rigid->awake = false;
         }
-
-        std::cout << "Do it move? " << rigid->awake << '\n';
-        std::cout << "Length of linear velocity " << glm::length(rigid->linearVelocity) << '\n';
 
         rigid->force = glm::vec2(0.0f);
         rigid->torque = 0.0f;
@@ -131,8 +141,10 @@ void ColliderSys()
     {
         auto collider = engineState.scene.Get<Collider>(ent);
 
-        if (!collider->body->awake)
+        if (collider->body->type == BodyType::sm2d_Static || !collider->body->awake)
+        {
             continue;
+        }
 
         if (collider->type == ColliderType::sm2d_AABB)
         {
@@ -158,6 +170,8 @@ void ColliderSys()
 }
 
 REGISTER_START_SYSTEM(ColliderStartSys);
+REGISTER_START_SYSTEM(RigidbodyStartSys);
+
 REGISTER_SYSTEM(DebugSys);
 REGISTER_SYSTEM(RigidbodySys);
 REGISTER_SYSTEM(ColliderSys);

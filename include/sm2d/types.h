@@ -54,7 +54,7 @@ struct Rigidbody
     glm::vec2 force = glm::vec2(0.0f);
     float     torque = 0.0f; // In radians
 
-    bool      hasMoved = false; // Indicates if it has moved in the last frame
+    float gravityForce; // Force of gravity being applied to this object (DO NOT MODIFY)
 };
 
 struct Node
