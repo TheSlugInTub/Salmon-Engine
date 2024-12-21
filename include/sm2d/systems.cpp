@@ -11,16 +11,6 @@
 namespace sm2d
 {
 
-void RigidbodyStartSys()
-{
-    for (EntityID ent : SceneView<Rigidbody>(engineState.scene))
-    {
-        auto rigid = engineState.scene.Get<Rigidbody>(ent);
-
-        rigid->gravityForce = sqrt(-3.5f * rigid->mass);
-    }
-}
-
 void RigidbodySys()
 {
     for (EntityID ent : SceneView<Rigidbody>(engineState.scene))
@@ -43,8 +33,7 @@ void RigidbodySys()
         rigid->angularVelocity *= glm::pow(rigid->angularDamping, engineState.deltaTime);
         rigid->transform->rotation.z += rigid->angularVelocity * engineState.deltaTime;
 
-        if (rigid->angularVelocity > 0.1f || glm::length(rigid->linearVelocity) > 0.021f ||
-            glm::length(rigid->force) > rigid->gravityForce)
+        if (rigid->angularVelocity > 0.1f || glm::length(rigid->linearVelocity) > 0.03f)
         {
             rigid->hasMoved = true;
         }
@@ -170,7 +159,6 @@ void ColliderSys()
 }
 
 REGISTER_START_SYSTEM(ColliderStartSys);
-REGISTER_START_SYSTEM(RigidbodyStartSys);
 
 REGISTER_SYSTEM(DebugSys);
 REGISTER_SYSTEM(RigidbodySys);

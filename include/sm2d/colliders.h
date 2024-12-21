@@ -54,6 +54,8 @@ struct Collider
        : type(type), polygon(poly), body(body)
     {
     }
+
+    ~Collider() {} // This is just here so the compiler doesn't yell at me
 };
 
 struct CollisionData
