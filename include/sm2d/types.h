@@ -36,25 +36,28 @@ struct Rigidbody
     Transform* transform;
 
     float mass;
-    bool  awake;
+    bool  awake; // Is the body's broadphase AABB gonna get updated or not? also skip the solver if
+                 // this is false, this is set true when hasMoved is false and the collisions have
+                 // transferred from last frame
 
-    float linearDamping;
-    float angularDamping;
+    float linearDamping;  // Linear velocity gets exponentiated by this every frame
+    float angularDamping; // Angular velocity gets exponentiated by this every frame
 
-    float restitution = 0.0f;
+    float restitution = 0.0f; // Bounciness
 
     bool  fixedRotation = false; // If this is true, the body won't rotate
-    float momentOfInertia;
+    float momentOfInertia;       // The closer to zero this is, the easier it is to be rotated
 
-    void* userData = nullptr;
+    void* userData = nullptr; // Put whatever you want in here, useful for marking tags
 
-    glm::vec2 linearVelocity = glm::vec2(0.0f);
-    float     angularVelocity = 0.0f; // In radians
+    glm::vec2 linearVelocity = glm::vec2(0.0f); // Rate of change of position
+    float     angularVelocity = 0.0f;           // In radians
 
-    glm::vec2 force = glm::vec2(0.0f);
-    float     torque = 0.0f; // In radians
+    glm::vec2 force = glm::vec2(0.0f); // Net force
+    float     torque = 0.0f;           // In radians
 
-    float gravityForce; // Force of gravity being applied to this object (DO NOT MODIFY)
+    float gravityForce; // Force of gravity being applied to this object (DO NOT MODIFY OR TOUCH)
+    bool  hasMoved;     // If it has moved in the last frame
 };
 
 struct Node

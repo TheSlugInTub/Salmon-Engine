@@ -621,9 +621,28 @@ void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collision
 
             if (data)
             {
+                bool node1Moved = node1.collider->body->hasMoved &&
+                                  !node1.collider->body->type == BodyType::sm2d_Static;
+                bool node2Moved = node2.collider->body->hasMoved &&
+                                  !node2.collider->body->type == BodyType::sm2d_Static;
+
+                if (node1Moved && !node2Moved)
+                {
+                    node2.collider->body->awake = true;
+                }
+                else if (node2Moved && !node1Moved)
+                {
+                    node1.collider->body->awake = true;
+                }
+                else if (!node1Moved && !node2Moved)
+                {
+                    // Skip pushing the result if neither has moved
+                    node1.collider->body->awake = false;
+                    node2.collider->body->awake = false;
+                    return;
+                }
+
                 collisionResults.push_back(data);
-                node1.collider->body->awake = true;
-                node1.collider->body->awake = true;
             }
             return;
         }

@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     scene.AssignParam<SpriteRenderer>(ground, groundTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                       "Ground");
     scene.AssignParam<sm2d::Rigidbody>(ground, sm2d::BodyType::sm2d_Static,
-                                       scene.Get<Transform>(ground), 100.0f, true, 0.7f, 0.7f, 0.0f,
+                                       scene.Get<Transform>(ground), 100.0f, false, 0.7f, 0.7f, 0.0f,
                                        true, 1.5f);
     scene.AssignParam<sm2d::Collider>(
         ground, sm2d::ColliderType::sm2d_Polygon,
@@ -42,7 +42,7 @@ int main(int argc, char** argv)
     scene.AssignParam<SpriteRenderer>(ground2, groundTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                       "Ground2");
     scene.AssignParam<sm2d::Rigidbody>(ground2, sm2d::BodyType::sm2d_Static,
-                                       scene.Get<Transform>(ground2), 50.0f, true, 0.7f, 0.7f);
+                                       scene.Get<Transform>(ground2), 50.0f, false, 0.7f, 0.7f);
     scene.AssignParam<sm2d::Collider>(
         ground2, sm2d::ColliderType::sm2d_Polygon,
         sm2d::ColPolygon({glm::vec2(-1.0f, -0.5f), glm::vec2(-1.0f, 0.5f), glm::vec2(1.0f, 0.5f),
@@ -111,25 +111,30 @@ int main(int argc, char** argv)
         ImGuiLayer::NewFrame();
         UpdateSystems();
 
-        // std::cout << "Is root node's child1 a leaf? " <<
-        // sm2d::bvh.nodes[sm2d::bvh.nodes[sm2d::bvh.rootIndex].child2].leaf << '\n';
-
         // Main loop logic
         // ---
         if (Input::GetKey(Key::Left))
         {
+            col2->body->hasMoved = true;
+            col2->body->awake = true;
             col2->body->force.x -= 20.0f;
         }
         if (Input::GetKey(Key::Right))
         {
+            col2->body->hasMoved = true;
+            col2->body->awake = true;
             col2->body->force.x += 20.0f;
         }
         if (Input::GetKey(Key::Up))
         {
+            col2->body->hasMoved = true;
+            col2->body->awake = true;
             col2->body->force.y += 20.0f;
         }
         if (Input::GetKey(Key::Down))
         {
+            col2->body->hasMoved = true;
+            col2->body->awake = true;
             col2->body->force.y -= 20.0f;
         }
 

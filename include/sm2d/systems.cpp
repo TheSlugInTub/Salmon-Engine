@@ -27,7 +27,7 @@ void RigidbodySys()
     {
         auto rigid = engineState.scene.Get<Rigidbody>(ent);
 
-        if (rigid->type == sm2d_Static)
+        if (rigid->type == sm2d_Static || !rigid->awake)
         {
             continue;
         }
@@ -43,14 +43,14 @@ void RigidbodySys()
         rigid->angularVelocity *= glm::pow(rigid->angularDamping, engineState.deltaTime);
         rigid->transform->rotation.z += rigid->angularVelocity * engineState.deltaTime;
 
-        if (rigid->angularVelocity > 0.1f || glm::length(rigid->linearVelocity) > 0.03f ||
+        if (rigid->angularVelocity > 0.1f || glm::length(rigid->linearVelocity) > 0.021f ||
             glm::length(rigid->force) > rigid->gravityForce)
         {
-            rigid->awake = true;
+            rigid->hasMoved = true;
         }
         else
         {
-            rigid->awake = false;
+            rigid->hasMoved = false;
         }
 
         rigid->force = glm::vec2(0.0f);
