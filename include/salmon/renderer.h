@@ -50,7 +50,7 @@ glm::mat4 MakeModelTransform(Transform* trans);
 void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& view);
 // Renders a line from one vec3 to another vec3, uses the line shader
 void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projection,
-                const glm::mat4& view);
+                const glm::mat4& view, const glm::vec4& color = glm::vec4(0.0, 1.0f, 0.0f, 1.0f));
 // Takes an entityID, gets its Transform and SpriteRenderer components
 // and uses the data to render it onto the screen
 void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& view);

@@ -682,22 +682,23 @@ void ResolveCollisions(const Tree& tree, std::vector<Manifold>& collisionResults
 {
     for (auto& colData : collisionResults)
     {
-        // Get the objects of collision
         Collider*  objectA = colData.objectA;
         Collider*  objectB = colData.objectB;
         Rigidbody* rigid1 = objectA->body;
         Rigidbody* rigid2 = objectB->body;
 
-        // Positional correction
+        // Position correction
         float totalMass = rigid1->mass + rigid2->mass;
         if (totalMass > 0.0f)
         {
-            // Position corrections based on how far they're penetrating multiplied by the
-            // collisionNormal
-            glm::vec2 correctionA =
-                -(colData.penetrationDepth / totalMass) * colData.collisionNormal * rigid2->mass;
-            glm::vec2 correctionB =
-                +(colData.penetrationDepth / totalMass) * colData.collisionNormal * rigid1->mass;
+            const float penetrationTolerance = 0.005f; // Adjust this value as needed
+            float correctionMagnitude = std::max(0.0f, 
+                colData.penetrationDepth - penetrationTolerance) * 0.8f; // Bias factor
+
+            glm::vec2 correctionA = -(correctionMagnitude / totalMass) * 
+                colData.collisionNormal * rigid2->mass;
+            glm::vec2 correctionB = +(correctionMagnitude / totalMass) * 
+                colData.collisionNormal * rigid1->mass;
 
             if (rigid1->type == BodyType::sm2d_Dynamic)
                 rigid1->transform->position += glm::vec3(correctionA, 0.0f);
@@ -705,39 +706,54 @@ void ResolveCollisions(const Tree& tree, std::vector<Manifold>& collisionResults
                 rigid2->transform->position += glm::vec3(correctionB, 0.0f);
         }
 
-        // Velocity adjustment
-        glm::vec2 relativeVelocity = rigid2->linearVelocity - rigid1->linearVelocity;
-        float     velocityAlongNormal = glm::dot(relativeVelocity, colData.collisionNormal);
+        // Velocity resolution
+        glm::vec2 rA = colData.contactPoint - glm::vec2(rigid1->transform->position);
+        glm::vec2 rB = colData.contactPoint - glm::vec2(rigid2->transform->position);
+        
+        glm::vec2 relativeVelocity = rigid2->linearVelocity + 
+            glm::vec2(-rigid2->angularVelocity * rB.y, rigid2->angularVelocity * rB.x) -
+            rigid1->linearVelocity - 
+            glm::vec2(-rigid1->angularVelocity * rA.y, rigid1->angularVelocity * rA.x);
+
+        float velocityAlongNormal = glm::dot(relativeVelocity, colData.collisionNormal);
 
         if (velocityAlongNormal < 0)
         {
-            float e = std::min(rigid1->restitution,
-                               rigid2->restitution); // Coefficient of restitution
-            float maxInertia = std::max(rigid1->momentOfInertia,
-                                        rigid2->momentOfInertia); // Max inertia
-            float impulseMagnitude =
-                -(1 + e) * velocityAlongNormal / (1.0f / rigid1->mass + 1.0f / rigid2->mass);
+            float e = std::min(rigid1->restitution, rigid2->restitution);
+            
+            // Calculate angular contributions
+            float rACrossN = CrossProduct(rA, colData.collisionNormal);
+            float rBCrossN = CrossProduct(rB, colData.collisionNormal);
+            
+            float angularFactor = (rACrossN * rACrossN) / rigid1->momentOfInertia +
+                                (rBCrossN * rBCrossN) / rigid2->momentOfInertia;
+
+            // Dampen angular impulse for vertex collisions
+            float vertexCollisionDamping = 0.7f; // Adjust this value to control angular damping
+            angularFactor *= vertexCollisionDamping;
+
+            float impulseMagnitude = -(1 + e) * velocityAlongNormal /
+                ((1.0f / rigid1->mass + 1.0f / rigid2->mass) + angularFactor);
 
             glm::vec2 impulse = impulseMagnitude * colData.collisionNormal;
+
+            // Apply linear impulses
             if (rigid1->type == BodyType::sm2d_Dynamic)
-                rigid1->linearVelocity -= impulse / (rigid1->mass);
+                rigid1->linearVelocity -= impulse / rigid1->mass;
             if (rigid2->type == BodyType::sm2d_Dynamic)
-                rigid2->linearVelocity += impulse / (rigid2->mass);
+                rigid2->linearVelocity += impulse / rigid2->mass;
 
-            // Apply angular velocity changes
-            glm::vec2 rA = colData.contactPoint - glm::vec2(rigid1->transform->position);
-            glm::vec2 rB = colData.contactPoint - glm::vec2(rigid2->transform->position);
-
+            // Apply angular impulses with damping
             if (rigid1->type == BodyType::sm2d_Dynamic && !rigid1->fixedRotation)
             {
-                float torqueA = CrossProduct(rA, -impulse); // Torque due to impulse on A
-                rigid1->angularVelocity += torqueA / maxInertia;
+                float torqueA = CrossProduct(rA, -impulse);
+                rigid1->angularVelocity += (torqueA / rigid1->momentOfInertia) * vertexCollisionDamping;
             }
 
             if (rigid2->type == BodyType::sm2d_Dynamic && !rigid2->fixedRotation)
             {
-                float torqueB = CrossProduct(rB, impulse); // Torque due to impulse on B
-                rigid2->angularVelocity += torqueB / maxInertia;
+                float torqueB = CrossProduct(rB, impulse);
+                rigid2->angularVelocity += (torqueB / rigid2->momentOfInertia) * vertexCollisionDamping;
             }
         }
     }

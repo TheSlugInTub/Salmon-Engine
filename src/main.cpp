@@ -25,8 +25,8 @@ int main(int argc, char** argv)
     scene.AssignParam<SpriteRenderer>(ground, groundTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                       "Ground");
     scene.AssignParam<sm2d::Rigidbody>(ground, sm2d::BodyType::sm2d_Static,
-                                       scene.Get<Transform>(ground), 100.0f, false, 0.7f, 0.7f, 0.0f,
-                                       true, 1.5f);
+                                       scene.Get<Transform>(ground), 100.0f, false, 0.7f, 0.7f,
+                                       0.0f, true, 1.5f);
     scene.AssignParam<sm2d::Collider>(
         ground, sm2d::ColliderType::sm2d_Polygon,
         sm2d::ColPolygon({glm::vec2(-5.0f, -0.5f), glm::vec2(-5.0f, 0.5f), glm::vec2(5.0f, 0.5f),
@@ -130,6 +130,10 @@ int main(int argc, char** argv)
             col2->body->hasMoved = true;
             col2->body->awake = true;
             col2->body->force.y -= 20.0f;
+        }
+        if (Input::GetKey(Key::R))
+        {
+            col2->body->angularVelocity = 0.0f;
         }
 
         if (Input::GetKeyDown(Key::F))

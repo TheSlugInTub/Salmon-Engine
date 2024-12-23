@@ -16,10 +16,10 @@
 - [ ] UI
 - [X] 2D renderer
 - [ ] 2D physics
-- [ ] OBB colliders
 - [ ] Make the Particle rendering efficient by calculating 
       the stride and offset to not have to create a new vector for the colors
 - [X] Make the line rendering more efficient
 - [ ] Fix the GetCollisions function so it doesn't run the same test with the same collider as the
       two arguments
-- [ ] Figure out if collisions were carried over
+- [X] Figure out if collisions were carried over
+- [?] Fix the contact points shifting all over the place

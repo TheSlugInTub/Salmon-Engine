@@ -198,7 +198,7 @@ glm::mat4 MakeModelTransform(Transform* trans)
 }
 
 void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projection,
-                const glm::mat4& view)
+                const glm::mat4& view, const glm::vec4& color)
 {
     GLuint lVAO, lVBO;
     glGenVertexArrays(1, &lVAO);
@@ -219,6 +219,7 @@ void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projectio
 
     glm::mat4 model = glm::mat4(1.0f);
     lineShader.setMat4("model", model);
+    lineShader.setVec4("color", color);
 
     // Draw line
     glLineWidth(3.0f);

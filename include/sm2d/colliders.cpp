@@ -252,13 +252,11 @@ Manifold TestColPolygonPolygon(Collider& a, Collider& b)
         }
     }
 
-    if (intersections.size() == 2)
+    if (!intersections.empty())
     {
-        result.contactPoint = (intersections[0] + intersections[1]) * 0.5f;
-    }
-    else
-    {
-        result.contactPoint = intersections[0];
+        glm::vec2 centroid(0.0f);
+        for (const auto& point : intersections) { centroid += point; }
+        result.contactPoint = centroid / static_cast<float>(intersections.size());
     }
 
     // Ensure normal points from A to B
