@@ -33,7 +33,7 @@ void RigidbodySys()
         rigid->angularVelocity *= glm::pow(rigid->angularDamping, engineState.deltaTime);
         rigid->transform->rotation.z += rigid->angularVelocity * engineState.deltaTime;
 
-        if (rigid->angularVelocity > 0.1f || glm::length(rigid->linearVelocity) > 0.03f)
+        if (rigid->angularVelocity > 0.05f || glm::length(rigid->linearVelocity) > 0.01f)
         {
             rigid->hasMoved = true;
         }

@@ -553,7 +553,7 @@ void RemoveDeletedLeaves(Tree& tree)
     tree.nodes = std::move(newNodes);
 }
 
-void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collisionResults)
+void GetCollisionsInTree(const Tree& tree, std::vector<Manifold>& collisionResults)
 {
     // Recursive lambda function to traverse and check collisions
     std::function<void(int, int)> CheckCollisions = [&](int node1Index, int node2Index)
@@ -572,7 +572,7 @@ void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collision
         // If both are leaf nodes, perform collision test
         if (node1.leaf && node2.leaf)
         {
-            CollisionData data;
+            Manifold data;
             if (node1.collider->type == ColliderType::sm2d_AABB &&
                 node2.collider->type == ColliderType::sm2d_AABB)
             {
@@ -678,7 +678,7 @@ float CrossProduct(const glm::vec2& a, const glm::vec2& b)
     return a.x * b.y - a.y * b.x;
 }
 
-void ResolveCollisions(const Tree& tree, std::vector<CollisionData>& collisionResults)
+void ResolveCollisions(const Tree& tree, std::vector<Manifold>& collisionResults)
 {
     for (auto& colData : collisionResults)
     {

@@ -1,6 +1,4 @@
-#include <iostream>
 #include <salmon/salmon.h>
-#include <string>
 
 // settings
 const unsigned int SCR_WIDTH = 1920;
@@ -17,7 +15,6 @@ int main(int argc, char** argv)
 
     unsigned int groundTex = Utils::LoadTexture("res/textures/background.png");
     unsigned int slugariusTex = Utils::LoadTexture("res/textures/Slugarius.png");
-    unsigned int lineTex = Utils::LoadTexture("res/textures/Line.png");
     unsigned int triangleTex = Utils::LoadTexture("res/textures/SlugariusTriangle.png");
 
     Scene scene;
@@ -56,7 +53,7 @@ int main(int argc, char** argv)
                                       "Sprite");
     scene.AssignParam<sm2d::Rigidbody>(sprite, sm2d::BodyType::sm2d_Dynamic,
                                        scene.Get<Transform>(sprite), 2.0f, true, 0.56f, 0.56f, 0.0f,
-                                       false, 0.8f);
+                                       false, 0.4f);
     scene.AssignParam<sm2d::Collider>(
         sprite, sm2d::ColliderType::sm2d_Polygon,
         sm2d::ColPolygon({glm::vec2(-0.5f, -0.5f), glm::vec2(-0.5f, 0.5f), glm::vec2(0.5f, 0.5f),
@@ -96,12 +93,9 @@ int main(int argc, char** argv)
 
     ImGuiLayer::Init();
 
-    sm2d::Collider* col1 = engineState.scene.Get<sm2d::Collider>(ground);
     sm2d::Collider* col2 = engineState.scene.Get<sm2d::Collider>(sprite);
-    sm2d::Collider* col3 = engineState.scene.Get<sm2d::Collider>(ground2);
-    sm2d::Collider* col4 = engineState.scene.Get<sm2d::Collider>(box);
 
-    std::vector<sm2d::CollisionData> colResults;
+    std::vector<sm2d::Manifold> colResults;
 
     // Main loop
     // -----------

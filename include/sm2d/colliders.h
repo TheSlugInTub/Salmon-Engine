@@ -1,7 +1,6 @@
 #pragma once
 
 #include <sm2d/types.h>
-#include <algorithm>
 
 namespace sm2d
 {
@@ -58,7 +57,7 @@ struct Collider
     ~Collider() {} // This is just here so the compiler doesn't yell at me
 };
 
-struct CollisionData
+struct Manifold 
 {
     bool      colliding;        // Are they colliding?
     glm::vec2 collisionNormal;  // Direction of the collision used for impulse calculation
@@ -72,12 +71,12 @@ struct CollisionData
 
 // Intersection tests for the narrow phase
 
-CollisionData TestColAABBAABB(const Collider& a, const Collider& b);
-CollisionData TestColCircleCircle(const Collider& a, const Collider& b);
-CollisionData TestColPolygonPolygon(Collider& a, Collider& b);
+Manifold TestColAABBAABB(const Collider& a, const Collider& b);
+Manifold TestColCircleCircle(const Collider& a, const Collider& b);
+Manifold TestColPolygonPolygon(Collider& a, Collider& b);
 
-CollisionData TestColAABBCircle(const Collider& aabb, const Collider& circle);
-CollisionData TestColAABBPolygon(Collider& aabb, Collider& poly);
-CollisionData TestColCirclePolygon(const Collider& circle, const Collider& poly);
+Manifold TestColAABBCircle(const Collider& aabb, const Collider& circle);
+Manifold TestColAABBPolygon(Collider& aabb, Collider& poly);
+Manifold TestColCirclePolygon(const Collider& circle, const Collider& poly);
 
 } // namespace sm2d

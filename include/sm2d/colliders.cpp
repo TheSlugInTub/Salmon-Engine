@@ -2,7 +2,6 @@
 #include <sm2d/functions.h>
 #include <sm2d/colliders.h>
 #include <cmath>
-#include <array>
 #include <cassert>
 #include <glm/gtx/string_cast.hpp>
 #include <limits>
@@ -10,9 +9,9 @@
 namespace sm2d
 {
 
-CollisionData TestColAABBAABB(const Collider& a, const Collider& b)
+Manifold TestColAABBAABB(const Collider& a, const Collider& b)
 {
-    CollisionData result = {};
+    Manifold result = {};
     result.colliding = false;
 
     glm::vec2 diff = b.body->transform->position - a.body->transform->position;
@@ -51,9 +50,9 @@ CollisionData TestColAABBAABB(const Collider& a, const Collider& b)
     return result;
 }
 
-CollisionData TestColCircleCircle(const Collider& a, const Collider& b)
+Manifold TestColCircleCircle(const Collider& a, const Collider& b)
 {
-    CollisionData collisionData;
+    Manifold collisionData;
     collisionData.colliding = false;
 
     // Vector between the two circle centers
@@ -100,9 +99,9 @@ CollisionData TestColCircleCircle(const Collider& a, const Collider& b)
     return collisionData;
 }
 
-CollisionData TestColAABBCircle(const Collider& aabb, const Collider& circle)
+Manifold TestColAABBCircle(const Collider& aabb, const Collider& circle)
 {
-    CollisionData result;
+    Manifold result;
     result.colliding = false;
 
     glm::vec2 circleCenter = glm::vec2(circle.body->transform->position);
@@ -159,9 +158,9 @@ CollisionData TestColAABBCircle(const Collider& aabb, const Collider& circle)
     return result;
 }
 
-CollisionData TestColPolygonPolygon(Collider& a, Collider& b)
+Manifold TestColPolygonPolygon(Collider& a, Collider& b)
 {
-    CollisionData result = {};
+    Manifold result = {};
     result.colliding = false;
     Collider* col1 = &a;
     Collider* col2 = &b;
@@ -272,9 +271,9 @@ CollisionData TestColPolygonPolygon(Collider& a, Collider& b)
     return result;
 }
 
-CollisionData TestColAABBPolygon(Collider& aabb, Collider& poly)
+Manifold TestColAABBPolygon(Collider& aabb, Collider& poly)
 {
-    CollisionData result = {};
+    Manifold result = {};
     result.colliding = false;
 
     ColPolygon a;
@@ -387,10 +386,10 @@ CollisionData TestColAABBPolygon(Collider& aabb, Collider& poly)
     return result;
 }
 
-CollisionData TestColCirclePolygon(const Collider& circle, const Collider& poly)
+Manifold TestColCirclePolygon(const Collider& circle, const Collider& poly)
 {
     // FIXME
-    CollisionData result;
+    Manifold result;
     result.colliding = false;
 
     return result;
