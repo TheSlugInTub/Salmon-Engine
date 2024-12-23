@@ -80,26 +80,6 @@ void UpdatePolygon(Collider& poly)
     }
 }
 
-bool IsPointInPolygon(const glm::vec2& point, const std::vector<glm::vec2>& polygon)
-{
-    bool   inside = false;
-    size_t j = polygon.size() - 1;
-
-    for (size_t i = 0; i < polygon.size(); i++)
-    {
-        if ((polygon[i].y > point.y) != (polygon[j].y > point.y) &&
-            (point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y) /
-                               (polygon[j].y - polygon[i].y) +
-                           polygon[i].x))
-        {
-            inside = !inside;
-        }
-        j = i;
-    }
-
-    return inside;
-}
-
 glm::vec2 ComputePolygonCenter(ColPolygon& poly)
 {
     glm::vec2 center = glm::vec2(0.0f, 0.0f);
@@ -573,7 +553,7 @@ void RemoveDeletedLeaves(Tree& tree)
     tree.nodes = std::move(newNodes);
 }
 
-void GetCollisionsInTree(const Tree& tree, std::vector<Manifold>& collisionResults)
+void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collisionResults)
 {
     // Recursive lambda function to traverse and check collisions
     std::function<void(int, int)> CheckCollisions = [&](int node1Index, int node2Index)
@@ -592,11 +572,11 @@ void GetCollisionsInTree(const Tree& tree, std::vector<Manifold>& collisionResul
         // If both are leaf nodes, perform collision test
         if (node1.leaf && node2.leaf)
         {
-            Manifold data;
+            CollisionData data;
             if (node1.collider->type == ColliderType::sm2d_AABB &&
                 node2.collider->type == ColliderType::sm2d_AABB)
             {
-                // data = TestColAABBAABB(*node1.collider, *node2.collider);
+                data = TestColAABBAABB(*node1.collider, *node2.collider);
             }
             else if (node1.collider->type == ColliderType::sm2d_Polygon &&
                      node2.collider->type == ColliderType::sm2d_Polygon)
@@ -606,40 +586,40 @@ void GetCollisionsInTree(const Tree& tree, std::vector<Manifold>& collisionResul
             else if (node1.collider->type == ColliderType::sm2d_Polygon &&
                      node2.collider->type == ColliderType::sm2d_AABB)
             {
-                // data = TestColAABBPolygon(*node2.collider, *node1.collider);
+                data = TestColAABBPolygon(*node2.collider, *node1.collider);
             }
             else if (node1.collider->type == ColliderType::sm2d_AABB &&
                      node2.collider->type == ColliderType::sm2d_Polygon)
             {
-                // data = TestColAABBPolygon(*node1.collider, *node2.collider);
+                data = TestColAABBPolygon(*node1.collider, *node2.collider);
             }
             else if (node1.collider->type == ColliderType::sm2d_Polygon &&
                      node2.collider->type == ColliderType::sm2d_Circle)
             {
-                // data = TestColCirclePolygon(*node2.collider, *node1.collider);
+                data = TestColCirclePolygon(*node2.collider, *node1.collider);
             }
             else if (node1.collider->type == ColliderType::sm2d_Circle &&
                      node2.collider->type == ColliderType::sm2d_Polygon)
             {
-                // data = TestColCirclePolygon(*node1.collider, *node2.collider);
+                data = TestColCirclePolygon(*node1.collider, *node2.collider);
             }
             else if (node1.collider->type == ColliderType::sm2d_Circle &&
                      node2.collider->type == ColliderType::sm2d_Circle)
             {
-                // data = TestColCircleCircle(*node1.collider, *node2.collider);
+                data = TestColCircleCircle(*node1.collider, *node2.collider);
             }
             else if (node1.collider->type == ColliderType::sm2d_Circle &&
                      node2.collider->type == ColliderType::sm2d_AABB)
             {
-                // data = TestColAABBCircle(*node2.collider, *node1.collider);
+                data = TestColAABBCircle(*node2.collider, *node1.collider);
             }
             else if (node1.collider->type == ColliderType::sm2d_AABB &&
                      node2.collider->type == ColliderType::sm2d_Circle)
             {
-                // data = TestColAABBCircle(*node1.collider, *node2.collider);
+                data = TestColAABBCircle(*node1.collider, *node2.collider);
             }
 
-            if (data.pointCount != 0)
+            if (data)
             {
                 bool node1Moved = node1.collider->body->hasMoved &&
                                   !node1.collider->body->type == BodyType::sm2d_Static;
@@ -698,7 +678,7 @@ float CrossProduct(const glm::vec2& a, const glm::vec2& b)
     return a.x * b.y - a.y * b.x;
 }
 
-void ResolveCollisions(const Tree& tree, std::vector<Manifold>& collisionResults)
+void ResolveCollisions(const Tree& tree, std::vector<CollisionData>& collisionResults)
 {
     for (auto& colData : collisionResults)
     {
@@ -708,67 +688,56 @@ void ResolveCollisions(const Tree& tree, std::vector<Manifold>& collisionResults
         Rigidbody* rigid1 = objectA->body;
         Rigidbody* rigid2 = objectB->body;
 
-        // Process each contact point in the manifold
-        for (int i = 0; i < colData.pointCount; i++)
+        // Positional correction
+        float totalMass = rigid1->mass + rigid2->mass;
+        if (totalMass > 0.0f)
         {
-            ManifoldPoint& point = colData.points[i];
-            if (!point.colliding) continue;
+            // Position corrections based on how far they're penetrating multiplied by the
+            // collisionNormal
+            glm::vec2 correctionA =
+                -(colData.penetrationDepth / totalMass) * colData.collisionNormal * rigid2->mass;
+            glm::vec2 correctionB =
+                +(colData.penetrationDepth / totalMass) * colData.collisionNormal * rigid1->mass;
 
-            // Positional correction
-            float totalMass = rigid1->mass + rigid2->mass;
-            if (totalMass > 0.0f)
+            if (rigid1->type == BodyType::sm2d_Dynamic)
+                rigid1->transform->position += glm::vec3(correctionA, 0.0f);
+            if (rigid2->type == BodyType::sm2d_Dynamic)
+                rigid2->transform->position += glm::vec3(correctionB, 0.0f);
+        }
+
+        // Velocity adjustment
+        glm::vec2 relativeVelocity = rigid2->linearVelocity - rigid1->linearVelocity;
+        float     velocityAlongNormal = glm::dot(relativeVelocity, colData.collisionNormal);
+
+        if (velocityAlongNormal < 0)
+        {
+            float e = std::min(rigid1->restitution,
+                               rigid2->restitution); // Coefficient of restitution
+            float maxInertia = std::max(rigid1->momentOfInertia,
+                                        rigid2->momentOfInertia); // Max inertia
+            float impulseMagnitude =
+                -(1 + e) * velocityAlongNormal / (1.0f / rigid1->mass + 1.0f / rigid2->mass);
+
+            glm::vec2 impulse = impulseMagnitude * colData.collisionNormal;
+            if (rigid1->type == BodyType::sm2d_Dynamic)
+                rigid1->linearVelocity -= impulse / (rigid1->mass);
+            if (rigid2->type == BodyType::sm2d_Dynamic)
+                rigid2->linearVelocity += impulse / (rigid2->mass);
+
+            // Apply angular velocity changes
+            glm::vec2 rA = colData.contactPoint - glm::vec2(rigid1->transform->position);
+            glm::vec2 rB = colData.contactPoint - glm::vec2(rigid2->transform->position);
+
+            if (rigid1->type == BodyType::sm2d_Dynamic && !rigid1->fixedRotation)
             {
-                // Position corrections based on how far they're penetrating multiplied by the
-                // collisionNormal
-                glm::vec2 correctionA =
-                    -(point.penetrationDepth / totalMass) * colData.collisionNormal * rigid2->mass;
-                glm::vec2 correctionB =
-                    +(point.penetrationDepth / totalMass) * colData.collisionNormal * rigid1->mass;
-
-                if (rigid1->type == BodyType::sm2d_Dynamic)
-                    rigid1->transform->position += glm::vec3(correctionA, 0.0f);
-                if (rigid2->type == BodyType::sm2d_Dynamic)
-                    rigid2->transform->position += glm::vec3(correctionB, 0.0f);
+                float torqueA = CrossProduct(rA, -impulse); // Torque due to impulse on A
+                rigid1->angularVelocity += torqueA / maxInertia;
             }
 
-            // Velocity adjustment
-            glm::vec2 relativeVelocity = rigid2->linearVelocity - rigid1->linearVelocity;
-            float     velocityAlongNormal = glm::dot(relativeVelocity, colData.collisionNormal);
-
-            if (velocityAlongNormal < 0)
+            if (rigid2->type == BodyType::sm2d_Dynamic && !rigid2->fixedRotation)
             {
-                float e = std::min(rigid1->restitution,
-                                   rigid2->restitution); // Coefficient of restitution
-                float maxInertia = std::max(rigid1->momentOfInertia,
-                                            rigid2->momentOfInertia); // Max inertia
-                float impulseMagnitude =
-                    -(1 + e) * velocityAlongNormal / (1.0f / rigid1->mass + 1.0f / rigid2->mass);
-
-                glm::vec2 impulse = impulseMagnitude * colData.collisionNormal;
-                
-                // Store normal impulse in the manifold point
-                point.normalImpulse = impulseMagnitude;
-
-                if (rigid1->type == BodyType::sm2d_Dynamic)
-                    rigid1->linearVelocity -= impulse / (rigid1->mass);
-                if (rigid2->type == BodyType::sm2d_Dynamic)
-                    rigid2->linearVelocity += impulse / (rigid2->mass);
-
-                // Apply angular velocity changes using the contact point stored in the manifold
-                glm::vec2 rA = point.contactPoint - glm::vec2(rigid1->transform->position);
-                glm::vec2 rB = point.contactPoint - glm::vec2(rigid2->transform->position);
-
-                if (rigid1->type == BodyType::sm2d_Dynamic && !rigid1->fixedRotation)
-                {
-                    float torqueA = CrossProduct(rA, -impulse); // Torque due to impulse on A
-                    rigid1->angularVelocity += torqueA / maxInertia;
-                }
-
-                if (rigid2->type == BodyType::sm2d_Dynamic && !rigid2->fixedRotation)
-                {
-                    float torqueB = CrossProduct(rB, impulse); // Torque due to impulse on B
-                    rigid2->angularVelocity += torqueB / maxInertia;
-                }
+                float torqueB = CrossProduct(rB, impulse); // Torque due to impulse on B
+                rigid2->angularVelocity += torqueB / maxInertia;
             }
         }
     }

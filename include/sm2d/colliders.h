@@ -58,40 +58,26 @@ struct Collider
     ~Collider() {} // This is just here so the compiler doesn't yell at me
 };
 
-struct ManifoldPoint
+struct CollisionData
 {
-    bool colliding; // Are they colliding?
-
-    float penetrationDepth; // How far they're inside each other
-
-    glm::vec2 anchorA;      // Point of contact in A's local space
-    glm::vec2 anchorB;      // Point of contact in B's local space
-    glm::vec2 contactPoint; // Point of contact in world space
-
-    float normalImpulse; // The impulse along the collision normal
-    float frictionImpulse; // The friction impulse 
+    bool      colliding;        // Are they colliding?
+    glm::vec2 collisionNormal;  // Direction of the collision used for impulse calculation
+    float     penetrationDepth; // How far they're inside each other
+    glm::vec2 contactPoint;     // Point of contact
+    Collider* objectA;          // Pointer to the first object involved in the collision
+    Collider* objectB;          // Pointer to the second object involved in the collision
 
     operator bool() const { return colliding; }
 };
 
-struct Manifold
-{
-    ManifoldPoint points[2];
-    int           pointCount; // How many points
-
-    glm::vec2 collisionNormal; // Direction where the first object will go
-    Collider* objectA;         // Pointer to the first object involved in the collision
-    Collider* objectB;         // Pointer to the second object involved in the collision
-};
-
 // Intersection tests for the narrow phase
 
-Manifold TestColAABBAABB(const Collider& a, const Collider& b);
-Manifold TestColCircleCircle(const Collider& a, const Collider& b);
-Manifold TestColPolygonPolygon(Collider& a, Collider& b);
+CollisionData TestColAABBAABB(const Collider& a, const Collider& b);
+CollisionData TestColCircleCircle(const Collider& a, const Collider& b);
+CollisionData TestColPolygonPolygon(Collider& a, Collider& b);
 
-Manifold TestColAABBCircle(const Collider& aabb, const Collider& circle);
-Manifold TestColAABBPolygon(Collider& aabb, Collider& poly);
-Manifold TestColCirclePolygon(const Collider& circle, const Collider& poly);
+CollisionData TestColAABBCircle(const Collider& aabb, const Collider& circle);
+CollisionData TestColAABBPolygon(Collider& aabb, Collider& poly);
+CollisionData TestColCirclePolygon(const Collider& circle, const Collider& poly);
 
 } // namespace sm2d

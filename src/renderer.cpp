@@ -193,7 +193,6 @@ glm::mat4 MakeModelTransform(Transform* trans)
     transform = glm::rotate(transform, trans->rotation.z,
                             glm::vec3(0.0f, 0.0f, 1.0f)); // Rotation around Z-axis
     transform = glm::scale(transform, trans->scale);
-    trans->modelMat = transform;
 
     return transform;
 }

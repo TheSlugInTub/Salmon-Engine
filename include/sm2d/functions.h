@@ -21,9 +21,6 @@ glm::vec2 LocalToWorld(glm::vec2 point, const glm::vec2 pos, float cosine, float
 // Updates a polygon's vertices to match its world space position and rotation
 void UpdatePolygon(Collider& poly);
 
-// Checks if a point is inside a polygon
-bool IsPointInPolygon(const glm::vec2& point, const std::vector<glm::vec2>& polygon);
-
 // Computes the geometric center of a polygon
 glm::vec2 ComputePolygonCenter(ColPolygon& poly);
 
@@ -70,10 +67,10 @@ void RemoveLeaf(Tree& tree, int leafIndex);
 void RemoveDeletedLeaves(Tree& tree);
 
 // Traverses through a tree and detects all the collisions and puts them in collisionResults
-void GetCollisionsInTree(const Tree& tree, std::vector<Manifold>& collisionResults);
+void GetCollisionsInTree(const Tree& tree, std::vector<CollisionData>& collisionResults);
 
 // Resolves all collisions based on the given ColiisionData
-void ResolveCollisions(const Tree& tree, std::vector<Manifold>& collisionResults);
+void ResolveCollisions(const Tree& tree, std::vector<CollisionData>& collisionResults);
 
 // Returns the 2d cross product of two vectors
 float CrossProduct(const glm::vec2& a, const glm::vec2& b);
