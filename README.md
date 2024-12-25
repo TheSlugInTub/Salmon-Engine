@@ -18,6 +18,7 @@ cmake --build build --config Release
 ```
 
 Copy the 'res', 'shaders' folders and assimp DLL if you're on windows to the executable's directory.
+Replace the 'mkdir' command with 'md' if you're on windows.
 
 # Libraries Used
 

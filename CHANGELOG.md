@@ -1,3 +1,9 @@
+# Salmon Engine 0.8
+26/12/2024 - December
+
+The 2d physics engine (sm2d) is mostly finished, with the only remaining things
+that aren't really necessary to be honest being raycasting, circlecasting, and ropes.
+
 # Salmon Engine 0.7
 17/12/2024 - December
 

@@ -160,7 +160,7 @@ void ColliderSys()
 
 REGISTER_START_SYSTEM(ColliderStartSys);
 
-REGISTER_SYSTEM(DebugSys);
+// REGISTER_SYSTEM(DebugSys);
 REGISTER_SYSTEM(RigidbodySys);
 REGISTER_SYSTEM(ColliderSys);
 

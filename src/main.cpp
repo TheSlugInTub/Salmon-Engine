@@ -74,15 +74,16 @@ int main(int argc, char** argv)
 
     EntityID box = scene.AddEntity();
     scene.AssignParam<Transform>(box, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-                                 glm::vec3(1.0f, 1.0f, 1.0f));
-    scene.AssignParam<SpriteRenderer>(box, triangleTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+                                 glm::vec3(1.0f, 3.0f, 1.0f));
+    scene.AssignParam<SpriteRenderer>(box, slugariusTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                       "Circle");
     scene.AssignParam<sm2d::Rigidbody>(box, sm2d::BodyType::sm2d_Dynamic, scene.Get<Transform>(box),
                                        10.0f, true, 0.56f, 0.56f, 0.0f, false, 2.5f);
     scene.AssignParam<sm2d::Collider>(
         box, sm2d::ColliderType::sm2d_Polygon,
-        sm2d::ColPolygon({glm::vec2(-0.5f, 0.5f), glm::vec2(0.5f, 0.5f), glm::vec2(0.5f, -0.5f)}),
-        /*sm2d::ColAABB(glm::vec2(0.5f, 0.5f)),*/ scene.Get<sm2d::Rigidbody>(box));
+        sm2d::ColPolygon({glm::vec2(-0.5f, -1.5f), glm::vec2(-0.5f, 1.5f), glm::vec2(0.5f, 1.5f),
+                          glm::vec2(0.5f, -1.5f)}),
+        scene.Get<sm2d::Rigidbody>(box));
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
