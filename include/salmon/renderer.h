@@ -6,6 +6,7 @@
 #include <salmon/ecs.h>
 #include <salmon/shader.h>
 #include <vector>
+#include <salmon/ui.h>
 
 // Resolution of the shadowDepthMap (cubemap which stores shadows)
 // Increase if you want them to be higher quality
@@ -39,8 +40,8 @@ struct Light
 namespace Renderer
 {
 
-// Intializes OpenGL (only makes the shaders at the moment)
-void Init(bool depth = true);
+// Intializes OpenGL
+void Init(bool depth = true, bool ui = true);
 
 // Makes a 4x4 matrix from a transform component
 glm::mat4 MakeModelTransform(Transform* trans);
@@ -57,6 +58,11 @@ void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& vi
 // Renders all the particles of particle system instanced
 void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection,
                           const glm::mat4& view);
+// Renders text
+void RenderText(const Text& item, const glm::mat4& projection);
+
+void RenderQuad(glm::vec2 position, glm::vec2 scale, float rotation, const glm::mat4& projection,
+                unsigned int texture, const glm::vec4& color);
 
 // Default 3D shader
 inline Shader defaultShader;
@@ -68,12 +74,16 @@ inline Shader depthShader;
 inline Shader twoShader;
 // Particle shader for instancing particles
 inline Shader parShader;
+// Text shader for rendering text
+inline Shader textShader;
 
 // All the lights in the scene
 inline std::vector<Light> lights;
 
-// OpenGL buffer objects for 2D
+// OpenGL buffer objects for 2D rendering
 inline unsigned int VAO, VBO, EBO;
+// OpenGL buffer objects for text
+inline unsigned int textVAO, textVBO;
 
 // Max amount of particles the renderer can handle
 inline const int MAX_PARTICLES = 1000;

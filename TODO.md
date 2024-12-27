@@ -23,3 +23,4 @@
       two arguments
 - [X] Figure out if collisions were carried over
 - [?] Fix the contact points shifting all over the place
+- [ ] Make setting the projection matrix for the rendering a one time thing

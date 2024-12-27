@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 
     unsigned int groundTex = Utils::LoadTexture("res/textures/background.png");
     unsigned int slugariusTex = Utils::LoadTexture("res/textures/Slugarius.png");
-    unsigned int triangleTex = Utils::LoadTexture("res/textures/SlugariusTriangle.png");
+    unsigned int triangleTex = Utils::LoadTexture("res/textures/DefaultTexture.png");
 
     Scene scene;
 
@@ -85,10 +85,17 @@ int main(int argc, char** argv)
                           glm::vec2(0.5f, -1.5f)}),
         scene.Get<sm2d::Rigidbody>(box));
 
+    EntityID text = scene.AddEntity();
+    scene.AssignParam<Text>(text, "Hello", glm::vec2(960.0f, 740.0f), glm::vec2(0.5f, 0.5f), 0.0f,
+                            glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), "res/fonts/newfont.ttf", 80);
+    scene.AssignParam<Button>(text, glm::vec2(960, 755), glm::vec2(200.0f, 100.0f), 0.0f,
+                              glm::vec4(0.5f, 0.3f, 0.3f, 1.0f), glm::vec4(0.3f, 0.5f, 0.3f, 1.0f),
+                              glm::vec4(0.3f, 0.3f, 0.5f, 1.0f), 0.2f, triangleTex);
+
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
 
-    Renderer::Init(false);
+    Renderer::Init(false, true);
 
     StartStartSystems();
 

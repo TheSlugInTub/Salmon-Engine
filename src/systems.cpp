@@ -7,6 +7,7 @@
 #include <salmon/renderer.h>
 #include <GLFW/glfw3.h>
 #include <salmon/particle_system.h>
+#include <salmon/ui.h>
 
 void MeshRendererSys()
 {
@@ -322,3 +323,5 @@ REGISTER_SYSTEM(MeshRendererSys);
 REGISTER_SYSTEM(SpriteRendererSys);
 REGISTER_SYSTEM(RigidBody3DSys);
 REGISTER_SYSTEM(ParticleSystemSys);
+REGISTER_SYSTEM(ButtonSys);
+REGISTER_SYSTEM(TextSys);

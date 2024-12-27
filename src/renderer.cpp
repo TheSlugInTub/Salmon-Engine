@@ -1,3 +1,4 @@
+#include "salmon/shader.h"
 #include <salmon/renderer.h>
 #include <salmon/model.h>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -16,14 +17,15 @@ namespace Renderer
 {
 
 // This function is run at the very start of the program
-void Init(bool depth)
+void Init(bool depth, bool ui)
 {
-    defaultShader = Shader("shaders/vertex.shad", "shaders/fragment.shad");
-    lineShader = Shader("shaders/linevertex.shad", "shaders/linefragment.shad");
-    depthShader = Shader("shaders/shadowvertex.shad", "shaders/shadowfragment.shad",
-                         "shaders/shadowgeometry.shad");
-    twoShader = Shader("shaders/vertex2d.shad", "shaders/fragment2d.shad");
-    parShader = Shader("shaders/particlevertex.shad", "shaders/particlefragment.shad");
+    defaultShader = Shader("shaders/3d_vertex.shad", "shaders/3d_fragment.shad");
+    lineShader = Shader("shaders/line_vertex.shad", "shaders/line_fragment.shad");
+    depthShader = Shader("shaders/shadow_vertex.shad", "shaders/shadow_fragment.shad",
+                         "shaders/shadow_geometry.shad");
+    twoShader = Shader("shaders/2d_vertex.shad", "shaders/2d_fragment.shad");
+    parShader = Shader("shaders/particle_vertex.shad", "shaders/particle_fragment.shad");
+    textShader = Shader("shaders/text_vertex.shad", "shaders/text_fragment.shad");
     stbi_set_flip_vertically_on_load(true);
 
     /*
@@ -95,12 +97,32 @@ void Init(bool depth)
 
     glBindVertexArray(0);
 
+    // Font rendering
+    if (ui)
+    {
+        if (FT_Init_FreeType(&ft))
+        {
+            std::cerr << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+        }
+    }
+    glGenVertexArrays(1, &textVAO);
+    glGenBuffers(1, &textVBO);
+    glBindVertexArray(textVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
     // Enable the DEPTH_TEST, basically just so faces don't draw on top of eachother in weird ways
     if (depth)
+    {
         glEnable(GL_DEPTH_TEST);
+    }
     // Culls inside faces to save on performance
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    // glEnable(GL_CULL_FACE);
+    // glCullFace(GL_BACK);
     // Enables anti-aliasing
     glEnable(GL_MULTISAMPLE);
     // Enables transparency
@@ -332,6 +354,91 @@ void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection
     glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, par.particles.size());
 
     glEnable(GL_DEPTH_TEST);
+}
+
+void RenderText(const Text& item, const glm::mat4& projection)
+{
+    textShader.use();
+    glBindVertexArray(textVAO);
+
+    const std::string& text = item.text;
+    const std::string& fontPath = item.font;
+    float              x = item.position.x;
+    float              y = item.position.y;
+    glm::vec2          scale = item.scale; // Scaling factors for x and y
+
+    textShader.setVec4("textColor", item.color);
+    textShader.setMat4("projection", projection);
+
+    // Calculate the total width of the text
+    float totalWidth = 0.0f;
+    for (auto c = text.begin(); c != text.end(); ++c)
+    {
+        Character ch = fonts[fontPath][*c];
+        totalWidth += (ch.Advance >> 6) * scale.x; // Advance is in 1/64 pixels
+    }
+
+    // Adjust the starting x position to center the text
+    float startX = x - totalWidth / 2.0f;
+
+    for (auto c = text.begin(); c != text.end(); ++c)
+    {
+        Character ch = fonts[fontPath][*c];
+
+        float xpos = startX + ch.Bearing.x * scale.x;          // Apply x scaling
+        float ypos = y - (ch.Size.y - ch.Bearing.y) * scale.y; // Apply y scaling
+
+        float w = ch.Size.x * scale.x; // Apply x scaling
+        float h = ch.Size.y * scale.y; // Apply y scaling
+        float vertices[6][4] = {{xpos, ypos + h, 0.0f, 0.0f},    {xpos, ypos, 0.0f, 1.0f},
+                                {xpos + w, ypos, 1.0f, 1.0f},
+
+                                {xpos, ypos + h, 0.0f, 0.0f},    {xpos + w, ypos, 1.0f, 1.0f},
+                                {xpos + w, ypos + h, 1.0f, 0.0f}};
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+        glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        startX += (ch.Advance >> 6) * scale.x; // Move to the next character position
+    }
+    glBindVertexArray(0);
+}
+
+void RenderQuad(glm::vec2 position, glm::vec2 scale, float rotation, const glm::mat4& projection,
+                unsigned int texture, const glm::vec4& color)
+{
+    if (color.w == 0)
+    {
+        // If the alpha of the object is zero, then don't bother with rendering it.
+        return;
+    }
+
+    twoShader.use();
+    twoShader.setTexture2D("texture1", texture, 0);
+
+    glm::mat4 transform = glm::mat4(1.0f);
+
+    // Matrix multiplication to calculate the transform.
+    transform = glm::translate(transform, glm::vec3(position.x, position.y, 0.0));
+
+    transform = glm::rotate(transform, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
+
+    transform = glm::scale(transform, glm::vec3(scale.x, scale.y, 1.0f));
+
+    glm::mat4 view = glm::mat4(1.0f);
+
+    // Setting all the uniforms.
+    twoShader.setMat4("model", transform);
+    twoShader.setMat4("view", view);
+    twoShader.setMat4("projection", projection);
+    twoShader.setVec4("ourColor", color);
+
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 } // namespace Renderer
