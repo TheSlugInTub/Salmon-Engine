@@ -51,3 +51,4 @@
 #include <sm2d/functions.h>
 #include <sm2d/colliders.h>
 #include <salmon/clock.h>
+#include <salmon/sprite_animation.h>

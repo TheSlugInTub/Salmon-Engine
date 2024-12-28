@@ -11,8 +11,6 @@
 
 void MeshRendererSys()
 {
-    float aspectRatio = engineState.window->GetAspectRatio();
-
     for (auto& light : Renderer::lights)
     {
         if (!light.castShadows)
@@ -49,17 +47,15 @@ void MeshRendererSys()
 
     for (EntityID ent : SceneView<Transform, MeshRenderer>(engineState.scene))
     {
-        Renderer::RenderModel(ent, engineState.camera->GetProjMatrix(aspectRatio), engineState.camera->GetViewMatrix());
+        Renderer::RenderModel(ent, engineState.projMat, engineState.camera->GetViewMatrix());
     }
 }
 
 void SpriteRendererSys()
 {
-    float aspectRatio = engineState.window->GetAspectRatio();
-
     for (EntityID ent : SceneView<SpriteRenderer>(engineState.scene))
     {
-        Renderer::RenderSprite(ent, engineState.camera->GetProjMatrix(aspectRatio),
+        Renderer::RenderSprite(ent, engineState.projMat,
                                engineState.camera->GetViewMatrix());
     }
 }

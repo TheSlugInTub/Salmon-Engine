@@ -27,9 +27,10 @@ void ParticleSystemSys()
                 particle.size = par->startingSize;
                 particle.color = par->startingColor;
                 particle.force =
-                    (par->force + glm::vec3(glm::linearRand(-par->forceRandomness.x, par->forceRandomness.x),
-                                            glm::linearRand(-par->forceRandomness.y, par->forceRandomness.y),
-                                            glm::linearRand(-par->forceRandomness.z, par->forceRandomness.z))) *
+                    (par->force +
+                     glm::vec3(glm::linearRand(-par->forceRandomness.x, par->forceRandomness.x),
+                               glm::linearRand(-par->forceRandomness.y, par->forceRandomness.y),
+                               glm::linearRand(-par->forceRandomness.z, par->forceRandomness.z))) *
                     par->forceMagnitude;
                 particle.force = glm::normalize(particle.force);
                 particle.lifetime = 0.0f;
@@ -52,7 +53,8 @@ void ParticleSystemSys()
         for (Particle& particle : par->particles)
         {
             particle.forceMagnitude += par->forceOverTime;
-            particle.position += (glm::normalize(particle.force) * particle.forceMagnitude) * engineState.deltaTime;
+            particle.position +=
+                (glm::normalize(particle.force) * particle.forceMagnitude) * engineState.deltaTime;
             particle.rotation += par->rotationOverTime * engineState.deltaTime;
             particle.size += par->sizeOverTime * engineState.deltaTime;
             particle.color += par->colorOverTime * engineState.deltaTime;
@@ -61,12 +63,12 @@ void ParticleSystemSys()
             particle.forceMagnitude = par->forceMagnitude;
         }
 
-        par->particles.erase(std::remove_if(par->particles.begin(), par->particles.end(), [&](const Particle& particle)
+        par->particles.erase(std::remove_if(par->particles.begin(), par->particles.end(),
+                                            [&](const Particle& particle)
                                             { return particle.lifetime > par->particleLifetime; }),
                              par->particles.end());
 
-        float aspectRatio = engineState.window->GetAspectRatio();
-        Renderer::RenderParticleSystem(*par, engineState.camera->GetProjMatrix(aspectRatio),
+        Renderer::RenderParticleSystem(*par, engineState.projMat,
                                        engineState.camera->GetViewMatrix());
     }
 }

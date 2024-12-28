@@ -1,3 +1,4 @@
+#include "salmon/sprite_animation.h"
 #include <salmon/salmon.h>
 
 // settings
@@ -17,7 +18,34 @@ int main(int argc, char** argv)
     unsigned int slugariusTex = Utils::LoadTexture("res/textures/Slugarius.png");
     unsigned int triangleTex = Utils::LoadTexture("res/textures/DefaultTexture.png");
 
+    std::vector<unsigned int> walkFrames = {Utils::LoadTexture("res/textures/walk/1.png"),
+                                            Utils::LoadTexture("res/textures/walk/2.png"),
+                                            Utils::LoadTexture("res/textures/walk/3.png"),
+                                            Utils::LoadTexture("res/textures/walk/4.png"),
+                                            Utils::LoadTexture("res/textures/walk/5.png"),
+                                            Utils::LoadTexture("res/textures/walk/6.png"),
+                                            Utils::LoadTexture("res/textures/walk/7.png"),
+                                            Utils::LoadTexture("res/textures/walk/8.png"),
+                                            Utils::LoadTexture("res/textures/walk/9.png"),
+                                            Utils::LoadTexture("res/textures/walk/10.png"),
+                                            Utils::LoadTexture("res/textures/walk/11.png"),
+                                            Utils::LoadTexture("res/textures/walk/12.png"),
+                                            Utils::LoadTexture("res/textures/walk/13.png")};
+
     Scene scene;
+
+    EntityID ground2 = scene.AddEntity();
+    scene.AssignParam<Transform>(ground2, glm::vec3(5.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+                                 glm::vec3(2.0f, 1.0f, 1.0f));
+    scene.AssignParam<SpriteRenderer>(ground2, groundTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+                                      "Ground2");
+    scene.AssignParam<sm2d::Rigidbody>(ground2, sm2d::BodyType::sm2d_Static,
+                                       scene.Get<Transform>(ground2), 100.0f, false, 0.7f, 0.7f);
+    scene.AssignParam<sm2d::Collider>(
+        ground2, sm2d::ColliderType::sm2d_Polygon,
+        sm2d::ColPolygon({glm::vec2(-1.0f, -0.5f), glm::vec2(-1.0f, 0.5f), glm::vec2(1.0f, 0.5f),
+                          glm::vec2(1.0f, -0.5f)}),
+        scene.Get<sm2d::Rigidbody>(ground2));
 
     EntityID ground = scene.AddEntity();
     scene.AssignParam<Transform>(ground, glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
@@ -33,19 +61,6 @@ int main(int argc, char** argv)
                           glm::vec2(5.0f, -0.5f)}),
         scene.Get<sm2d::Rigidbody>(ground));
 
-    EntityID ground2 = scene.AddEntity();
-    scene.AssignParam<Transform>(ground2, glm::vec3(15.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-                                 glm::vec3(2.0f, 1.0f, 1.0f));
-    scene.AssignParam<SpriteRenderer>(ground2, groundTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-                                      "Ground2");
-    scene.AssignParam<sm2d::Rigidbody>(ground2, sm2d::BodyType::sm2d_Static,
-                                       scene.Get<Transform>(ground2), 50.0f, false, 0.7f, 0.7f);
-    scene.AssignParam<sm2d::Collider>(
-        ground2, sm2d::ColliderType::sm2d_Polygon,
-        sm2d::ColPolygon({glm::vec2(-1.0f, -0.5f), glm::vec2(-1.0f, 0.5f), glm::vec2(1.0f, 0.5f),
-                          glm::vec2(1.0f, -0.5f)}),
-        scene.Get<sm2d::Rigidbody>(ground2));
-
     EntityID sprite = scene.AddEntity();
     scene.AssignParam<Transform>(sprite, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
                                  glm::vec3(1.0f, 1.0f, 1.0f));
@@ -59,6 +74,7 @@ int main(int argc, char** argv)
         sm2d::ColPolygon({glm::vec2(-0.5f, -0.5f), glm::vec2(-0.5f, 0.5f), glm::vec2(0.5f, 0.5f),
                           glm::vec2(0.5f, -0.5f)}),
         scene.Get<sm2d::Rigidbody>(sprite));
+    scene.AssignParam<SpriteAnimation>(sprite, std::move(walkFrames), scene.Get<SpriteRenderer>(sprite), 0.05f, true);
 
     // EntityID circle = scene.AddEntity();
     // scene.AssignParam<Transform>(circle, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f,
@@ -84,13 +100,6 @@ int main(int argc, char** argv)
         sm2d::ColPolygon({glm::vec2(-0.5f, -1.5f), glm::vec2(-0.5f, 1.5f), glm::vec2(0.5f, 1.5f),
                           glm::vec2(0.5f, -1.5f)}),
         scene.Get<sm2d::Rigidbody>(box));
-
-    EntityID text = scene.AddEntity();
-    scene.AssignParam<Text>(text, "Hello", glm::vec2(960.0f, 740.0f), glm::vec2(0.5f, 0.5f), 0.0f,
-                            glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), "res/fonts/newfont.ttf", 80);
-    scene.AssignParam<Button>(text, glm::vec2(960, 755), glm::vec2(200.0f, 100.0f), 0.0f,
-                              glm::vec4(0.5f, 0.3f, 0.3f, 1.0f), glm::vec4(0.3f, 0.5f, 0.3f, 1.0f),
-                              glm::vec4(0.3f, 0.3f, 0.5f, 1.0f), 0.2f, triangleTex);
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
