@@ -74,7 +74,10 @@ int main(int argc, char** argv)
         sm2d::ColPolygon({glm::vec2(-0.5f, -0.5f), glm::vec2(-0.5f, 0.5f), glm::vec2(0.5f, 0.5f),
                           glm::vec2(0.5f, -0.5f)}),
         scene.Get<sm2d::Rigidbody>(sprite));
-    scene.AssignParam<SpriteAnimation>(sprite, std::move(walkFrames), scene.Get<SpriteRenderer>(sprite), 0.05f, true);
+    std::vector<SpriteAnimation> walkFramesAnim;
+    walkFramesAnim.push_back(SpriteAnimation {std::move(walkFrames), 0.1f, "Walk"});
+    scene.AssignParam<SpriteAnimator>(sprite, scene.Get<SpriteRenderer>(sprite),
+                                      std::move(walkFramesAnim), true);
 
     // EntityID circle = scene.AddEntity();
     // scene.AssignParam<Transform>(circle, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f,
@@ -111,6 +114,7 @@ int main(int argc, char** argv)
     ImGuiLayer::Init();
 
     sm2d::Collider* col2 = engineState.scene.Get<sm2d::Collider>(sprite);
+    SpriteAnimator* anim = engineState.scene.Get<SpriteAnimator>(sprite);
 
     std::vector<sm2d::Manifold> colResults;
 
@@ -129,6 +133,7 @@ int main(int argc, char** argv)
             col2->body->hasMoved = true;
             col2->body->awake = true;
             col2->body->force.x -= 20.0f;
+            PlaySpriteAnimation(anim, "Walk");
         }
         if (Input::GetKey(Key::Right))
         {
