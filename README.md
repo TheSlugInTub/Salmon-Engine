@@ -32,3 +32,4 @@ I have used these libraries in the engine:
 [GLM](https://github.com/g-truc/glm) - For math. \
 [assimp](https://github.com/assimp/assimp) - For model loading. \
 [imgui](https://github.com/ocornut/imgui) - Not neccessary in the engine but can be used for GUI. 
+[Freetype](https://github.com/freetype/freetype) - For text rendering.
