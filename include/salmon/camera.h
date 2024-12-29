@@ -40,7 +40,7 @@ class Camera
     // Gets the zoom level of the camera
     float GetZoom();
     // Converts screen coordinates to world coordinates
-    glm::vec3 ScreenToWorld(int windowWidth, int windowHeight, const glm::ivec2& pos);
+    glm::vec2 ScreenToWorld2D(const glm::vec2& pos);
 
     glm::vec3 Position;
     glm::vec3 Front;

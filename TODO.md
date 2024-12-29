@@ -24,4 +24,4 @@
 - [X] Figure out if collisions were carried over
 - [?] Fix the contact points shifting all over the place
 - [X] Make setting the projection matrix for the rendering a one time thing
-- [ ] Sprite animations
+- [X] Sprite animations

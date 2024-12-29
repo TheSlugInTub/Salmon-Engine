@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -9,7 +8,8 @@
 class Window
 {
   public:
-    Window(const char* title, int width, int height, bool fullscreen);
+    Window(const char* title, int width, int height, bool fullscreen = false,
+           bool maximize = false);
     ~Window();
 
     // The update function swaps buffers and polls events
@@ -21,7 +21,7 @@ class Window
     // Returns true if the window closes, used for the main loop
     bool ShouldClose();
 
-    GLFWwindow* window;
+    GLFWwindow*  window;
     unsigned int width, height;
-    const char* title;
+    const char*  title;
 };

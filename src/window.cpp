@@ -1,8 +1,9 @@
 #include <salmon/window.h>
 #include <salmon/engine.h>
+#include <iostream>
 
-Window::Window(const char* title, int width, int height, bool fullscreen) 
-    : title(title), width(width), height(height)
+Window::Window(const char* title, int width, int height, bool fullscreen, bool maximize)
+   : title(title), width(width), height(height)
 {
     // Glfw: Initialize and configure
     // ------------------------------
@@ -18,7 +19,8 @@ Window::Window(const char* title, int width, int height, bool fullscreen)
 
     // Glfw window creation
     // --------------------
-    window = glfwCreateWindow(width, height, title, fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
+    window =
+        glfwCreateWindow(width, height, title, fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -26,7 +28,8 @@ Window::Window(const char* title, int width, int height, bool fullscreen)
         exit(1);
     }
     glfwMakeContextCurrent(window);
-    glfwMaximizeWindow(window);
+    if (maximize)
+        glfwMaximizeWindow(window);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {

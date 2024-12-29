@@ -1,9 +1,9 @@
-#include "salmon/sprite_animation.h"
 #include <salmon/salmon.h>
+#include <glm/gtx/string_cast.hpp>
 
 // settings
-const unsigned int SCR_WIDTH = 1920;
-const unsigned int SCR_HEIGHT = 1080;
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 90.0f);
 
@@ -11,26 +11,12 @@ float physTimer = 0.3f;
 
 int main(int argc, char** argv)
 {
-    Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false);
+    Window window("Prism", SCR_WIDTH, SCR_HEIGHT);
     // glfwSwapInterval(1);
 
     unsigned int groundTex = Utils::LoadTexture("res/textures/background.png");
     unsigned int slugariusTex = Utils::LoadTexture("res/textures/Slugarius.png");
     unsigned int triangleTex = Utils::LoadTexture("res/textures/DefaultTexture.png");
-
-    std::vector<unsigned int> walkFrames = {Utils::LoadTexture("res/textures/walk/1.png"),
-                                            Utils::LoadTexture("res/textures/walk/2.png"),
-                                            Utils::LoadTexture("res/textures/walk/3.png"),
-                                            Utils::LoadTexture("res/textures/walk/4.png"),
-                                            Utils::LoadTexture("res/textures/walk/5.png"),
-                                            Utils::LoadTexture("res/textures/walk/6.png"),
-                                            Utils::LoadTexture("res/textures/walk/7.png"),
-                                            Utils::LoadTexture("res/textures/walk/8.png"),
-                                            Utils::LoadTexture("res/textures/walk/9.png"),
-                                            Utils::LoadTexture("res/textures/walk/10.png"),
-                                            Utils::LoadTexture("res/textures/walk/11.png"),
-                                            Utils::LoadTexture("res/textures/walk/12.png"),
-                                            Utils::LoadTexture("res/textures/walk/13.png")};
 
     Scene scene;
 
@@ -74,10 +60,6 @@ int main(int argc, char** argv)
         sm2d::ColPolygon({glm::vec2(-0.5f, -0.5f), glm::vec2(-0.5f, 0.5f), glm::vec2(0.5f, 0.5f),
                           glm::vec2(0.5f, -0.5f)}),
         scene.Get<sm2d::Rigidbody>(sprite));
-    std::vector<SpriteAnimation> walkFramesAnim;
-    walkFramesAnim.push_back(SpriteAnimation {std::move(walkFrames), 0.1f, "Walk"});
-    scene.AssignParam<SpriteAnimator>(sprite, scene.Get<SpriteRenderer>(sprite),
-                                      std::move(walkFramesAnim), true);
 
     // EntityID circle = scene.AddEntity();
     // scene.AssignParam<Transform>(circle, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f,
@@ -114,9 +96,10 @@ int main(int argc, char** argv)
     ImGuiLayer::Init();
 
     sm2d::Collider* col2 = engineState.scene.Get<sm2d::Collider>(sprite);
-    SpriteAnimator* anim = engineState.scene.Get<SpriteAnimator>(sprite);
 
     std::vector<sm2d::Manifold> colResults;
+
+    glm::vec2 worldPos;
 
     // Main loop
     // -----------
@@ -133,7 +116,6 @@ int main(int argc, char** argv)
             col2->body->hasMoved = true;
             col2->body->awake = true;
             col2->body->force.x -= 20.0f;
-            PlaySpriteAnimation(anim, "Walk");
         }
         if (Input::GetKey(Key::Right))
         {
@@ -153,15 +135,18 @@ int main(int argc, char** argv)
             col2->body->awake = true;
             col2->body->force.y -= 20.0f;
         }
-        if (Input::GetKey(Key::R))
+
+        if (Input::GetMouseButton(MouseKey::LeftClick))
         {
-            col2->body->angularVelocity = 0.0f;
+            glm::vec2 bruh =
+                glm::vec2(Input::GetMouseInputHorizontal(), Input::GetMouseInputVertical());
+            worldPos = engineState.camera->ScreenToWorld2D(bruh);
         }
 
-        if (Input::GetKeyDown(Key::F))
-        {
-            engineState.scene.Get<sm2d::Rigidbody>(box)->torque += 500.0f;
-        }
+        std::vector<glm::vec3> rays = {glm::vec3(worldPos, 0.0f)};
+
+        Renderer::RenderLine(rays, engineState.projMat, engineState.camera->GetViewMatrix(),
+                             glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
         for (auto& node : sm2d::bvh.nodes)
         {

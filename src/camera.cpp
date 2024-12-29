@@ -1,4 +1,5 @@
 #include <salmon/camera.h>
+#include <salmon/engine.h>
 #include <iostream>
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch, float fov)
@@ -92,35 +93,38 @@ void Camera::updateCameraVectors()
     Up = glm::normalize(glm::cross(Right, Front));
 }
 
-glm::vec3 Camera::ScreenToWorld(int windowWidth, int windowHeight, const glm::ivec2& pos)
+glm::vec2 Camera::ScreenToWorld2D(const glm::vec2& pos)
 {
-    float ar = (float)windowWidth / (float)windowHeight;
+    // Convert screen coordinates to Normalized Device Coordinates (NDC)
+    glm::vec4 rayStart_NDC(
+        ((float)pos.x / (float)engineState.window->width - 0.5f) * 2.0f,
+        ((float)pos.y / (float)engineState.window->height - 0.5f) * 2.0f,
+        -1.0f, // Near plane
+        1.0f);
+    glm::vec4 rayEnd_NDC(
+        ((float)pos.x / (float)engineState.window->width - 0.5f) * 2.0f,
+        ((float)pos.y / (float)engineState.window->height - 0.5f) * 2.0f,
+        0.0f, // Far plane
+        1.0f);
 
-    glm::vec2 viewportSize(windowHeight, windowHeight);
+    // Compute the inverse of the combined projection and view matrix
+    glm::mat4 invM = glm::inverse(engineState.projMat * GetViewMatrix());
 
-    float zDepth = Position.z * 1.87f;
+    // Transform NDC coordinates to world coordinates
+    glm::vec4 rayStart_world = invM * rayStart_NDC;
+    rayStart_world /= rayStart_world.w;
+    glm::vec4 rayEnd_world = invM * rayEnd_NDC;
+    rayEnd_world /= rayEnd_world.w;
 
-    glm::mat4 projection = glm::perspective(glm::radians(GetZoom()), ar, 0.1f, 100.0f);
-    glm::mat projInverse = glm::inverse(projection);
+    float planeZ = 0.0f;
 
-    float mouse_x = (float)pos.x;
-    float mouse_y = (float)pos.y;
+    // Compute the direction of the ray in world space
+    glm::vec3 rayDir = glm::normalize(glm::vec3(rayEnd_world - rayStart_world));
 
-    float ndc_x = (2.0f * mouse_x) / windowWidth - 1.0f;
-    float ndc_y = 1.0f - (2.0f * mouse_y) / windowHeight;
-
-    double focal_length = 1.0f / glm::tan(glm::radians(45.0f / 2.0f));
-    glm::vec3 ray_view(ndc_x / focal_length, (ndc_y * ar) / focal_length, 1.0f);
-
-    glm::vec4 ray_ndc_4d(ndc_x, ndc_y, 1.0f, 1.0f);
-    glm::vec4 ray_view_4d = projInverse * ray_ndc_4d;
-
-    glm::vec4 view_space_intersect = glm::vec4(ray_view * zDepth, 1.0f);
-
-    glm::mat4 view = GetViewMatrix();
-    glm::mat4 viewInverse = glm::inverse(view);
-
-    glm::vec4 point_world = viewInverse * view_space_intersect;
-
-    return glm::vec3(point_world);
+    // Calculate the intersection of the ray with the 2D plane
+    float t = (planeZ - rayStart_world.z) / rayDir.z;
+    glm::vec2 result = glm::vec2(glm::vec3(rayStart_world) + t * rayDir);
+    result = glm::vec2(result.x, -result.y);
+    result.y += Position.y * 2 ;
+    return result;
 }
