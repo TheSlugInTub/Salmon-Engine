@@ -2,8 +2,8 @@
 #include <glm/gtx/string_cast.hpp>
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1920;
+const unsigned int SCR_HEIGHT = 1080;
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 90.0f);
 
@@ -16,22 +16,8 @@ int main(int argc, char** argv)
 
     unsigned int groundTex = Utils::LoadTexture("res/textures/background.png");
     unsigned int slugariusTex = Utils::LoadTexture("res/textures/Slugarius.png");
-    unsigned int triangleTex = Utils::LoadTexture("res/textures/DefaultTexture.png");
 
     Scene scene;
-
-    EntityID ground2 = scene.AddEntity();
-    scene.AssignParam<Transform>(ground2, glm::vec3(5.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-                                 glm::vec3(2.0f, 1.0f, 1.0f));
-    scene.AssignParam<SpriteRenderer>(ground2, groundTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-                                      "Ground2");
-    scene.AssignParam<sm2d::Rigidbody>(ground2, sm2d::BodyType::sm2d_Static,
-                                       scene.Get<Transform>(ground2), 100.0f, false, 0.7f, 0.7f);
-    scene.AssignParam<sm2d::Collider>(
-        ground2, sm2d::ColliderType::sm2d_Polygon,
-        sm2d::ColPolygon({glm::vec2(-1.0f, -0.5f), glm::vec2(-1.0f, 0.5f), glm::vec2(1.0f, 0.5f),
-                          glm::vec2(1.0f, -0.5f)}),
-        scene.Get<sm2d::Rigidbody>(ground2));
 
     EntityID ground = scene.AddEntity();
     scene.AssignParam<Transform>(ground, glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
@@ -61,18 +47,6 @@ int main(int argc, char** argv)
                           glm::vec2(0.5f, -0.5f)}),
         scene.Get<sm2d::Rigidbody>(sprite));
 
-    // EntityID circle = scene.AddEntity();
-    // scene.AssignParam<Transform>(circle, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f,
-    // 0.0f),
-    //                              glm::vec3(1.0f, 1.0f, 1.0f));
-    // scene.AssignParam<SpriteRenderer>(circle, circleTex, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-    //                                   "Circle", false, false);
-    // scene.AssignParam<sm2d::Rigidbody>(circle, sm2d::BodyType::sm2d_Dynamic,
-    //                                    scene.Get<Transform>(circle), 2.0f, true, 0.56f,
-    //                                    0.9f, 1.0f, false, -0.001f);
-    // scene.AssignParam<sm2d::Collider>(circle, sm2d::ColliderType::sm2d_Circle,
-    //                                   sm2d::ColCircle(0.5f), scene.Get<sm2d::Rigidbody>(circle));
-
     EntityID box = scene.AddEntity();
     scene.AssignParam<Transform>(box, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
                                  glm::vec3(1.0f, 3.0f, 1.0f));
@@ -98,8 +72,6 @@ int main(int argc, char** argv)
     sm2d::Collider* col2 = engineState.scene.Get<sm2d::Collider>(sprite);
 
     std::vector<sm2d::Manifold> colResults;
-
-    glm::vec2 worldPos;
 
     // Main loop
     // -----------
@@ -134,33 +106,6 @@ int main(int argc, char** argv)
             col2->body->hasMoved = true;
             col2->body->awake = true;
             col2->body->force.y -= 20.0f;
-        }
-
-        if (Input::GetMouseButton(MouseKey::LeftClick))
-        {
-            glm::vec2 bruh =
-                glm::vec2(Input::GetMouseInputHorizontal(), Input::GetMouseInputVertical());
-            worldPos = engineState.camera->ScreenToWorld2D(bruh);
-        }
-
-        std::vector<glm::vec3> rays = {glm::vec3(worldPos, 0.0f)};
-
-        Renderer::RenderLine(rays, engineState.projMat, engineState.camera->GetViewMatrix(),
-                             glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-
-        for (auto& node : sm2d::bvh.nodes)
-        {
-            if (node.index == -1)
-                continue;
-
-            glm::vec3 topRight = glm::vec3(node.box.upperBound, 0.0f);
-            glm::vec3 bottomLeft = glm::vec3(node.box.lowerBound, 0.0f);
-            glm::vec3 bottomRight = glm::vec3(glm::vec2(topRight.x, bottomLeft.y), 0.0f);
-            glm::vec3 topLeft = glm::vec3(glm::vec2(bottomLeft.x, topRight.y), 0.0f);
-            std::vector<glm::vec3> points = {bottomLeft, topLeft, topRight, bottomRight};
-            Renderer::RenderLine(
-                points, engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
-                engineState.camera->GetViewMatrix());
         }
 
         colResults.clear();
