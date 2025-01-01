@@ -13,4 +13,14 @@ void TransformDraw(Transform* trans)
     }
 }
 
-REGISTER_DRAW(Transform, TransformDraw);
+nlohmann::json TransformSave(Transform* trans)
+{
+    return 
+    {
+        {"Position", {trans->position.x, trans->position.y, trans->position.z}},
+        {"Rotation", {trans->rotation.x, trans->rotation.y, trans->rotation.z}},
+        {"Scale", {trans->scale.x, trans->scale.y, trans->scale.z}}
+    };
+}
+
+REGISTER_COMPONENT(Transform, TransformDraw, TransformSave);

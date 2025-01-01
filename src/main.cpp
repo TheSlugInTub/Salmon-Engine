@@ -88,6 +88,7 @@ int main(int argc, char** argv)
 
         DrawHierarchy();
         DrawInspector();
+        DrawTray();
 
         colResults.clear();
         sm2d::GetCollisionsInTree(sm2d::bvh, colResults);

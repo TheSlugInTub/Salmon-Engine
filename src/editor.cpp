@@ -89,13 +89,22 @@ void DrawInspector()
     ImGui::End();
 }
 
-void SaveScene()
+void SaveScene(const std::string& filename)
 {
-    ;
-    ;
+    std::filesystem::path directory = "res/scenes";
+    // Ensure the directory exists
+    std::filesystem::create_directories(directory);
+
+    std::filesystem::path filePath = directory / filename;
+
+    nlohmann::json j;
+    ComponentRegistry::Instance().SaveAll(j);
+
+    std::ofstream file(filePath);
+    file << j.dump(4);
 }
 
-void LoadScene()
+void LoadScene(const std::string& filename)
 {
     ;
     ;
@@ -103,7 +112,13 @@ void LoadScene()
 
 void DrawTray()
 {
-    if (ImGui::Button("Save")) {}
+    ImGui::Begin("Tray");
+    if (ImGui::Button("Save"))
+    {
+        SaveScene("scene1.json");
+        ;
+    }
+    ImGui::End();
 }
 
 // void DrawInspector()
