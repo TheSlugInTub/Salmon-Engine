@@ -34,63 +34,73 @@ struct Transform
     glm::vec3 rotation = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
     glm::mat4 modelMat = glm::mat4(1.0f);
-    bool useMatrix = false;
+    bool      useMatrix = false;
 };
 
 // Component that describes how a mesh should be renderered at the transform of the entity
 struct MeshRenderer
 {
-    Model model;
-    glm::vec4 color = glm::vec4(1.0f);
+    Model        model;
+    glm::vec4    color = glm::vec4(1.0f);
     unsigned int texture;
-    std::string texturePath = "";
+    std::string  texturePath = "";
     unsigned int depthMapFBO = 0;
     unsigned int depthCubemap = 0;
+    std::string  modelPath;
+};
+
+struct Name
+{
+    std::string name;
 };
 
 // Component that describes how a sprite should be rendered at the trasform of an entity
 struct SpriteRenderer
 {
     unsigned int texture;
-    glm::vec4 color = glm::vec4(1.0f);
-    std::string texturePath = "";
-    bool billboard = false; // It's faster to leave this off
+    glm::vec4    color = glm::vec4(1.0f);
+    std::string  texturePath = "";
+    bool         billboard = false; // It's faster to leave this off
 };
 
 // Component that simulates physics on the entity's transform with Jolt Physics
 struct RigidBody3D
 {
     ColliderType colliderType;
-    BodyState state;
-    glm::vec3 boxSize;
-    float sphereRadius = 1.0f;
-    float capsuleRadius = 1.0f;
-    float capsuleHeight = 2.0f;
+    BodyState    state;
+    glm::vec3    boxSize;
+    float        sphereRadius = 1.0f;
+    float        capsuleRadius = 1.0f;
+    float        capsuleHeight = 2.0f;
 
-    glm::vec3 offset = glm::vec3(0.0f); // Offset to displace the render position and the physics position
+    glm::vec3 offset =
+        glm::vec3(0.0f); // Offset to displace the render position and the physics position
 
     JPH::Body* body = nullptr;
-    int groupID = 0;
+    int        groupID = 0;
 
-    RigidBody3D(ColliderType type, BodyState state, glm::vec3 size, int groupID = 0, glm::vec3 offset = glm::vec3(0.0f))
+    RigidBody3D(ColliderType type, BodyState state, glm::vec3 size, int groupID = 0,
+                glm::vec3 offset = glm::vec3(0.0f))
        : colliderType(type), boxSize(size), state(state), groupID(groupID), offset(offset)
     {
     }
 
     RigidBody3D(ColliderType type, BodyState state, float capRad, float capHeight, int groupID = 0,
                 glm::vec3 offset = glm::vec3(0.0f))
-       : colliderType(type), capsuleHeight(capHeight), capsuleRadius(capRad), state(state), groupID(groupID),
-         offset(offset)
+       : colliderType(type), capsuleHeight(capHeight), capsuleRadius(capRad), state(state),
+         groupID(groupID), offset(offset)
     {
     }
 
     RigidBody3D(ColliderType type, BodyState state, float sphereRadius, int groupID = 0,
                 glm::vec3 offset = glm::vec3(0.0f))
-       : colliderType(type), sphereRadius(sphereRadius), state(state), groupID(groupID), offset(offset)
+       : colliderType(type), sphereRadius(sphereRadius), state(state), groupID(groupID),
+         offset(offset)
     {
     }
 
-    RigidBody3D(ColliderType type, BodyState state, int groupID = 0, glm::vec3 offset = glm::vec3(0.0f))
+    RigidBody3D(ColliderType type, BodyState state, int groupID = 0,
+                glm::vec3 offset = glm::vec3(0.0f))
        : colliderType(type), state(state), groupID(groupID), offset(offset)
     {
     }
@@ -99,13 +109,14 @@ struct RigidBody3D
 // Component that takes in an animation and plays it every frame
 struct Animator
 {
-    bool playing = true;
+    bool                   playing = true;
     std::vector<glm::mat4> boneMatrices;
-    Animation* currentAnimation;
-    float currentTime;
-    float deltaTime;
-    bool looping = true;
-    float speed = 1.0f;
+    Animation*             currentAnimation;
+    float                  currentTime;
+    float                  deltaTime;
+    bool                   looping = true;
+    float                  speed = 1.0f;
+    std::string            animationPath;
 
     Animator(Animation* animation, bool playing = true, bool looping = true, float speed = 1.0f)
        : currentAnimation(animation), playing(playing), looping(looping), speed(speed)
@@ -119,10 +130,11 @@ void RigidBody3DStartSys();
 void RigidBody3DSys();
 void AnimatorStartSys();
 
-inline void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform, Animator* anim)
+inline void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform,
+                                   Animator* anim)
 {
     std::string nodeName = node->name;
-    glm::mat4 nodeTransform = node->transformation;
+    glm::mat4   nodeTransform = node->transformation;
 
     Bone* Bone = anim->currentAnimation->FindBone(nodeName);
 
@@ -137,7 +149,7 @@ inline void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentT
     auto boneInfoMap = anim->currentAnimation->GetBoneIDMap();
     if (boneInfoMap.find(nodeName) != boneInfoMap.end())
     {
-        int index = boneInfoMap[nodeName].id;
+        int       index = boneInfoMap[nodeName].id;
         glm::mat4 offset = boneInfoMap[nodeName].offset;
         anim->boneMatrices[index] = globalTransformation * offset;
     }
@@ -166,7 +178,7 @@ inline void UpdateAnimation(float dt, Animator* anim)
             {
                 anim->currentTime = anim->currentAnimation->GetDuration(); // Clamp to end
                 anim->playing = false; // Animation has finished playing
-                return; // Exit the function, no need to update bone transforms
+                return;                // Exit the function, no need to update bone transforms
             }
         }
 

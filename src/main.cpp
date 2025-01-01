@@ -1,3 +1,4 @@
+#include <salmon/editor.h>
 #include <salmon/salmon.h>
 #include <glm/gtx/string_cast.hpp>
 
@@ -6,8 +7,6 @@ const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 90.0f);
-
-float physTimer = 0.3f;
 
 int main(int argc, char** argv)
 {
@@ -32,6 +31,7 @@ int main(int argc, char** argv)
         sm2d::ColPolygon({glm::vec2(-5.0f, -0.5f), glm::vec2(-5.0f, 0.5f), glm::vec2(5.0f, 0.5f),
                           glm::vec2(5.0f, -0.5f)}),
         scene.Get<sm2d::Rigidbody>(ground));
+    scene.AssignParam<Name>(ground, "Ground");
 
     EntityID sprite = scene.AddEntity();
     scene.AssignParam<Transform>(sprite, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
@@ -46,6 +46,7 @@ int main(int argc, char** argv)
         sm2d::ColPolygon({glm::vec2(-0.5f, -0.5f), glm::vec2(-0.5f, 0.5f), glm::vec2(0.5f, 0.5f),
                           glm::vec2(0.5f, -0.5f)}),
         scene.Get<sm2d::Rigidbody>(sprite));
+    scene.AssignParam<Name>(sprite, "Sprite");
 
     EntityID box = scene.AddEntity();
     scene.AssignParam<Transform>(box, glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f),
@@ -59,6 +60,7 @@ int main(int argc, char** argv)
         sm2d::ColPolygon({glm::vec2(-0.5f, -1.5f), glm::vec2(-0.5f, 1.5f), glm::vec2(0.5f, 1.5f),
                           glm::vec2(0.5f, -1.5f)}),
         scene.Get<sm2d::Rigidbody>(box));
+    scene.AssignParam<Name>(box, "Box");
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
@@ -83,30 +85,9 @@ int main(int argc, char** argv)
 
         // Main loop logic
         // ---
-        if (Input::GetKey(Key::Left))
-        {
-            col2->body->hasMoved = true;
-            col2->body->awake = true;
-            col2->body->force.x -= 20.0f;
-        }
-        if (Input::GetKey(Key::Right))
-        {
-            col2->body->hasMoved = true;
-            col2->body->awake = true;
-            col2->body->force.x += 20.0f;
-        }
-        if (Input::GetKey(Key::Up))
-        {
-            col2->body->hasMoved = true;
-            col2->body->awake = true;
-            col2->body->force.y += 20.0f;
-        }
-        if (Input::GetKey(Key::Down))
-        {
-            col2->body->hasMoved = true;
-            col2->body->awake = true;
-            col2->body->force.y -= 20.0f;
-        }
+
+        DrawHierarchy();
+        DrawInspector();
 
         colResults.clear();
         sm2d::GetCollisionsInTree(sm2d::bvh, colResults);
