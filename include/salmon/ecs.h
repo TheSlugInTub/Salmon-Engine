@@ -1,10 +1,8 @@
 #pragma once
 
 #include <bitset>
-#include <unordered_map>
 #include <vector>
 #include <functional>
-#include <iostream>
 
 // This file implements a basic ECS which is the core of the engine
 
@@ -17,15 +15,9 @@ const int MAX_ENTITIES = 1000;
 
 // Typedefs to aid in reading
 typedef std::bitset<MAX_COMPONENTS> ComponentMask;
-typedef unsigned long long EntityID;
-typedef unsigned int EntityIndex;
-typedef unsigned int EntityVersion;
-
-// All the systems that are registered
-// Systems don't depend on scenes, that's probably bad but it was just easier this way
-inline std::vector<std::function<void()>> systems;
-// Start systems, meant to only be called at the start
-inline std::vector<std::function<void()>> startSystems;
+typedef unsigned long long          EntityID;
+typedef unsigned int                EntityIndex;
+typedef unsigned int                EntityVersion;
 
 // Functions for the validation of entities and entity versions, please don't use these in your code
 
@@ -78,7 +70,7 @@ struct ComponentPool
         return pData + index * elementSize;
     }
 
-    char* pData {nullptr};
+    char*  pData {nullptr};
     size_t elementSize {0};
 };
 
@@ -88,7 +80,7 @@ struct Scene
     // Struct to store all the information needed for an entity
     struct EntityDesc
     {
-        EntityID id;
+        EntityID      id;
         ComponentMask mask;
     };
 
@@ -130,7 +122,8 @@ struct Scene
         return pComponent;
     }
 
-    // Assigns a component to an entity ID with a list of parameters (a constructor). use: <ent, 1.0f, 2.0f...>
+    // Assigns a component to an entity ID with a list of parameters (a constructor). use:
+    // <ent, 1.0f, 2.0f...>
     template<typename T, typename... Args> T* AssignParam(EntityID id, Args&&... args)
     {
         int componentId = GetId<T>();
@@ -144,8 +137,10 @@ struct Scene
             componentPools[componentId] = new ComponentPool(sizeof(T));
         }
 
-        // Look up the component in the pool, and use placement new to initialize it with the provided arguments
-        T* pComponent = new (componentPools[componentId]->get(GetEntityIndex(id))) T(std::forward<Args>(args)...);
+        // Look up the component in the pool, and use placement new to initialize it with the
+        // provided arguments
+        T* pComponent = new (componentPools[componentId]->get(GetEntityIndex(id)))
+            T(std::forward<Args>(args)...);
 
         // Set the bit for this component to true and return the created component
         entities[GetEntityIndex(id)].mask.set(componentId);
@@ -174,7 +169,8 @@ struct Scene
         entities[GetEntityIndex(id)].mask.reset(componentId);
     }
 
-    // Destroys an entity, resets its mask, adds the given entity's index to the list of free entities
+    // Destroys an entity, resets its mask, adds the given entity's index to the list of free
+    // entities
     void DestroyEntity(EntityID id)
     {
         EntityID newID = CreateEntityId(EntityIndex(-1), GetEntityVersion(id) + 1);
@@ -183,24 +179,42 @@ struct Scene
         freeEntities.push_back(GetEntityIndex(id));
     }
 
-    std::vector<EntityDesc> entities;
-    std::vector<EntityIndex> freeEntities;
+    std::vector<EntityDesc>     entities;
+    std::vector<EntityIndex>    freeEntities;
     std::vector<ComponentPool*> componentPools;
 };
 
+using SysFunc = void (*)();
+
+// All the systems that are registered
+inline std::vector<SysFunc> systems;
+inline std::vector<SysFunc> startSystems;
+inline std::vector<SysFunc> editorSystems;
+inline std::vector<SysFunc> editorStartSystems;
+
 // Adds a system to the list of systems
-inline void AddSystem(std::function<void()> sys)
+inline void AddSystem(SysFunc sys, bool editorSys, bool startSys)
 {
-    systems.push_back(sys);
+    if (editorSys && startSys)
+    {
+        editorStartSystems.push_back(sys);
+    }
+    else if (!editorSys && startSys)
+    {
+        startSystems.push_back(sys);
+    }
+    else if (editorSys && !startSys)
+    {
+        editorSystems.push_back(sys);
+    }
+    else
+    {
+        systems.push_back(sys);
+    }
 }
 
-// Adds a system to the list of start systems
-inline void AddStartSystem(std::function<void()> sys)
-{
-    startSystems.push_back(sys);
-}
-
-// Updates all the systems by calling them, call this function every frame to update all the systems each frame
+// Updates all the systems by calling them, call this function every frame to update all the systems
+// each frame
 inline void UpdateSystems()
 {
     for (auto system : systems) { system(); }
@@ -212,9 +226,19 @@ inline void StartStartSystems()
     for (auto system : startSystems) { system(); }
 }
 
+inline void UpdateEditorSystems()
+{
+    for (auto system : editorSystems) { system(); }
+}
+
+inline void StartEditorStartSystems()
+{
+    for (auto system : editorStartSystems) { system(); }
+}
+
 /*
-This struct is used to make it easier to iterate through a list of entities with the components that you specify
-It looks like this ' SceneView<Transform, Info>(scene) '
+This struct is used to make it easier to iterate through a list of entities with the components that
+you specify It looks like this ' SceneView<Transform, Info>(scene) '
 */
 
 template<typename... ComponentTypes> struct SceneView
@@ -230,7 +254,8 @@ template<typename... ComponentTypes> struct SceneView
             // Unpack the template parameters into an initializer list
             int componentIds[] = {0, GetId<ComponentTypes>()...};
 
-            for (int i = 1; i < (sizeof...(ComponentTypes) + 1); i++) componentMask.set(componentIds[i]);
+            for (int i = 1; i < (sizeof...(ComponentTypes) + 1); i++)
+                componentMask.set(componentIds[i]);
         }
     }
 
@@ -270,10 +295,10 @@ template<typename... ComponentTypes> struct SceneView
             return *this;
         }
 
-        EntityIndex index;
-        Scene* pScene;
+        EntityIndex   index;
+        Scene*        pScene;
         ComponentMask mask;
-        bool all {false};
+        bool          all {false};
     };
 
     const Iterator begin() const
@@ -288,18 +313,21 @@ template<typename... ComponentTypes> struct SceneView
         return Iterator(pScene, firstIndex, componentMask, all);
     }
 
-    const Iterator end() const { return Iterator(pScene, EntityIndex(pScene->entities.size()), componentMask, all); }
+    const Iterator end() const
+    {
+        return Iterator(pScene, EntityIndex(pScene->entities.size()), componentMask, all);
+    }
 
-    Scene* pScene {nullptr};
+    Scene*        pScene {nullptr};
     ComponentMask componentMask;
-    bool all {false};
+    bool          all {false};
 };
 
 // Macro for registering systems outside the main function
 #define REGISTER_SYSTEM(scriptClass)            \
     static bool scriptClass##_registered = []() \
     {                                           \
-        AddSystem(scriptClass);                 \
+        AddSystem(scriptClass, false, false);   \
         return true;                            \
     }();
 
@@ -307,6 +335,20 @@ template<typename... ComponentTypes> struct SceneView
 #define REGISTER_START_SYSTEM(scriptClass)      \
     static bool scriptClass##_registered = []() \
     {                                           \
-        AddStartSystem(scriptClass);            \
+        AddSystem(scriptClass, false, true);    \
         return true;                            \
+    }();
+
+#define REGISTER_EDITOR_SYSTEM(scriptClass)     \
+    static bool scriptClass##_registered = []() \
+    {                                           \
+        AddSystem(scriptClass, true, false);    \
+        return true;                            \
+    }();
+
+#define REGISTER_EDITOR_START_SYSTEM(scriptClass) \
+    static bool scriptClass##_registered = []()   \
+    {                                             \
+        AddSystem(scriptClass, true, true);       \
+        return true;                              \
     }();

@@ -74,6 +74,10 @@ void UpdatePolygon(Collider& poly)
 
     glm::vec2 pos = glm::vec2(poly.body->transform->position);
 
+    if (poly.polygon.worldPoints.size() != poly.polygon.points.size())
+    {
+        poly.polygon.worldPoints.resize(poly.polygon.points.size());
+    }
     for (int i = 0; i < poly.polygon.points.size(); ++i)
     {
         poly.polygon.worldPoints[i] = LocalToWorld(poly.polygon.points[i], pos, cosine, sine);
@@ -555,6 +559,8 @@ void RemoveDeletedLeaves(Tree& tree)
 
 void GetCollisionsInTree(const Tree& tree, std::vector<Manifold>& collisionResults)
 {
+    if (bvh.nodes.empty())
+        return;
     // Recursive lambda function to traverse and check collisions
     std::function<void(int, int)> CheckCollisions = [&](int node1Index, int node2Index)
     {

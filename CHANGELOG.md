@@ -1,3 +1,9 @@
+# Salmon Engine 0.9
+3/1/2025 - January 
+
+New editor. You have to register components now with serialization, deserialization, and rendering functions now.
+But it's optional, you don't have to use it, if you don't want to.
+
 # Salmon Engine 0.8
 26/12/2024 - December
 

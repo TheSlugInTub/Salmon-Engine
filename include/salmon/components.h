@@ -40,13 +40,13 @@ struct Transform
 // Component that describes how a mesh should be renderered at the transform of the entity
 struct MeshRenderer
 {
-    Model        model;
+    Model        model = Model("res/models/Box.obj");
     glm::vec4    color = glm::vec4(1.0f);
     unsigned int texture;
     std::string  texturePath = "";
     unsigned int depthMapFBO = 0;
     unsigned int depthCubemap = 0;
-    std::string  modelPath;
+    std::string  modelPath = "";
 };
 
 struct Name
@@ -104,6 +104,8 @@ struct RigidBody3D
        : colliderType(type), state(state), groupID(groupID), offset(offset)
     {
     }
+
+    RigidBody3D() {}
 };
 
 // Component that takes in an animation and plays it every frame
@@ -111,17 +113,20 @@ struct Animator
 {
     bool                   playing = true;
     std::vector<glm::mat4> boneMatrices;
-    Animation*             currentAnimation;
-    float                  currentTime;
-    float                  deltaTime;
+    Animation*             currentAnimation = nullptr;
+    Model*                 model = nullptr;
+    float                  currentTime = 0.0f;
+    float                  deltaTime = 0.016f;
     bool                   looping = true;
     float                  speed = 1.0f;
-    std::string            animationPath;
+    std::string            animationPath = "";
 
     Animator(Animation* animation, bool playing = true, bool looping = true, float speed = 1.0f)
        : currentAnimation(animation), playing(playing), looping(looping), speed(speed)
     {
     }
+
+    Animator() {}
 };
 
 // Forward declarations of systems just to make it so you can run them anytime which can be useful

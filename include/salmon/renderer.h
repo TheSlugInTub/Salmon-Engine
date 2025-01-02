@@ -23,10 +23,10 @@ struct Light
     float                  radius = 1.0f;
     float                  innerRadius = 0.1f;
     float                  intensity = 1.0f;
+    bool                   castShadows = true;
     std::vector<glm::mat4> shadowTransforms;
     unsigned int           depthMapFBO;
     unsigned int           depthCubemap;
-    bool                   castShadows = true;
 
     Light(glm::vec3 position, float radius, float innerRadius, float intensity, glm::vec4 color,
           bool castShadows = true)
@@ -34,6 +34,8 @@ struct Light
          color(color), castShadows(castShadows)
     {
     }
+
+    Light() {}
 };
 
 // 3D renderer for the engine

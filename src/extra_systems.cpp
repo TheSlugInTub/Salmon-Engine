@@ -51,5 +51,5 @@ void CameraLookSys()
     }
 }
 
-REGISTER_SYSTEM(CameraMoveSys);
-REGISTER_SYSTEM(CameraLookSys);
+REGISTER_EDITOR_SYSTEM(CameraMoveSys);
+REGISTER_EDITOR_SYSTEM(CameraLookSys);

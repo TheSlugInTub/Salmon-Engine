@@ -19,7 +19,8 @@ struct SpriteAnimator
 
     bool playing = false;
 
-    float            timer;
+    float timer; // When this reaches zero, it's time for the next frame and gets reset to the
+                 // current frame's speed
     int              currentSprite = 0; // Index into textures
     SpriteAnimation* currentAnim = nullptr;
 };

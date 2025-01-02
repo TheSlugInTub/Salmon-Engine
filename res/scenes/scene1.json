@@ -1,12 +1,13 @@
 [
     [
         {
-            "EntityID": 0
+            "EntName": "Ground",
+            "type": "Name"
         },
         {
             "Position": [
                 0.0,
-                -1.0,
+                -2.0,
                 0.0
             ],
             "Rotation": [
@@ -15,21 +16,77 @@
                 0.0
             ],
             "Scale": [
-                10.0,
+                8.0,
                 1.0,
                 1.0
             ],
             "type": "Transform"
+        },
+        {
+            "Billboard": false,
+            "Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "TexturePath": "res/textures/Slugarius.png",
+            "type": "SpriteRenderer"
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "AngularDamping": 0.9800000190734863,
+            "AngularVelocity": 0.0,
+            "Awake": false,
+            "FixedRotation": true,
+            "Force": [
+                0.0,
+                0.0
+            ],
+            "LinearDamping": 0.9800000190734863,
+            "LinearVelocity": [
+                0.0,
+                0.0
+            ],
+            "Mass": 1.0,
+            "MomentOfInertia": 0.5,
+            "Restitution": 0.10000000149011612,
+            "Torque": 0.0,
+            "Type": 0,
+            "type": "Rigidbody"
+        },
+        {
+            "type": ""
+        },
+        {
+            "HalfWidths": [
+                4.0,
+                0.5
+            ],
+            "Type": 0,
+            "type": "Collider"
+        },
+        {
+            "type": ""
         }
     ],
     [
         {
-            "EntityID": 1
+            "EntName": "Box",
+            "type": "Name"
         },
         {
             "Position": [
                 0.0,
-                -0.0053054699674248695,
+                0.0,
                 0.0
             ],
             "Rotation": [
@@ -43,29 +100,79 @@
                 1.0
             ],
             "type": "Transform"
-        }
-    ],
-    [
-        {
-            "EntityID": 2
         },
         {
-            "Position": [
-                2.0,
-                0.9925940632820129,
-                0.0
-            ],
-            "Rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "Scale": [
+            "Billboard": false,
+            "Color": [
                 1.0,
-                3.0,
+                1.0,
+                1.0,
                 1.0
             ],
-            "type": "Transform"
+            "TexturePath": "res/textures/Slugarius.png",
+            "type": "SpriteRenderer"
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "AngularDamping": 0.9800000190734863,
+            "AngularVelocity": 0.0,
+            "Awake": true,
+            "FixedRotation": false,
+            "Force": [
+                0.0,
+                0.0
+            ],
+            "LinearDamping": 0.9800000190734863,
+            "LinearVelocity": [
+                0.0,
+                0.0
+            ],
+            "Mass": 1.0,
+            "MomentOfInertia": 0.5,
+            "Restitution": 0.10000000149011612,
+            "Torque": 0.0,
+            "Type": 1,
+            "type": "Rigidbody"
+        },
+        {
+            "type": ""
+        },
+        {
+            "Center": [
+                0.0,
+                7.536254543083487e-06
+            ],
+            "Points": [
+                [
+                    0.49900001287460327,
+                    0.5
+                ],
+                [
+                    0.5019999742507935,
+                    -0.49900001287460327
+                ],
+                [
+                    -0.49799999594688416,
+                    -0.5070000290870667
+                ],
+                [
+                    -0.5019999742507935,
+                    0.5
+                ]
+            ],
+            "Type": 2,
+            "type": "Collider"
+        },
+        {
+            "type": ""
         }
     ]
 ]
