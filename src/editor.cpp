@@ -128,11 +128,6 @@ void LoadScene(const std::string& filename)
     nlohmann::json j;
     file >> j;
 
-    // for (Scene::EntityDesc ent : engineState.scene.entities)
-    // {
-    //     engineState.scene.DestroyEntity(ent.id);
-    // }
-
     engineState.scene.entities.clear();
     engineState.scene.freeEntities.clear();
     engineState.scene.componentPools.clear();
@@ -143,19 +138,28 @@ void LoadScene(const std::string& filename)
 void DrawTray()
 {
     ImGui::Begin("Tray");
+
+    char sceneBuffer[128];
+    strncpy_s(sceneBuffer, sceneName.c_str(), sizeof(sceneBuffer));
+    if (ImGui::InputText("SceneName", sceneBuffer, sizeof(sceneBuffer),
+                         ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+        sceneName = std::string(sceneBuffer);
+    }
+
     if (ImGui::Button("Save"))
     {
-        SaveScene("scene1.json");
+        SaveScene(sceneName);
     }
     if (ImGui::Button("Load"))
     {
-        LoadScene("scene1.json");
+        LoadScene(sceneName);
     }
     if (!playing)
     {
         if (ImGui::Button("Play"))
         {
-            SaveScene("scene1.json");
+            SaveScene(sceneName);
             playing = true;
             StartStartSystems();
         }
@@ -164,7 +168,7 @@ void DrawTray()
     {
         if (ImGui::Button("Stop"))
         {
-            LoadScene("scene1.json");
+            LoadScene(sceneName);
             playing = false;
         }
     }

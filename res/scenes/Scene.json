@@ -1,0 +1,58 @@
+[
+    [
+        {
+            "EntName": "Bruh",
+            "type": "Name"
+        },
+        {
+            "Position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.2699999809265137,
+                1.0
+            ],
+            "type": "Transform"
+        },
+        {
+            "Billboard": false,
+            "Color": [
+                2.0,
+                -3.0,
+                1.0,
+                1.0
+            ],
+            "TexturePath": "res/textures/walk/1.png",
+            "type": "SpriteRenderer"
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        }
+    ]
+]
