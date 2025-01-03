@@ -1,6 +1,4 @@
-#include <salmon/editor.h>
 #include <salmon/salmon.h>
-#include <glm/gtx/string_cast.hpp>
 
 // settings
 const unsigned int SCR_WIDTH = 1920;
