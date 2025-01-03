@@ -9,7 +9,7 @@ inline EntityID selectedEntity;
 
 inline bool playing = false;
 
-inline std::string sceneName = "Scene.json";
+inline std::string sceneName = "scene1.json";
 
 void DrawHierarchy();
 void DrawInspector();

@@ -110,6 +110,7 @@ void DebugSys()
         else if (collider->type == ColliderType::sm2d_Polygon)
         {
             UpdatePolygon(*collider);
+            collider->polygon.center = ComputePolygonCenter(collider->polygon);
             std::vector<glm::vec3> threedpoints;
             for (auto& point : collider->polygon.worldPoints)
             {

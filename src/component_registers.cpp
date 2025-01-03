@@ -56,7 +56,7 @@ void SpriteRendererDraw(SpriteRenderer* sprite)
     if (ImGui::CollapsingHeader("SpriteRenderer"))
     {
         char texBuffer[128];
-        std::strncpy(texBuffer, sprite->texturePath.c_str(), sizeof(texBuffer));
+        strncpy_s(texBuffer, sprite->texturePath.c_str(), sizeof(texBuffer));
         if (ImGui::InputText("TexturePath", texBuffer, sizeof(texBuffer),
                              ImGuiInputTextFlags_EnterReturnsTrue))
         {
@@ -91,7 +91,7 @@ void MeshRendererDraw(MeshRenderer* mesh)
     if (ImGui::CollapsingHeader("MeshRenderer"))
     {
         char texBuffer[128];
-        std::strncpy(texBuffer, mesh->texturePath.c_str(), sizeof(texBuffer));
+        strncpy_s(texBuffer, mesh->texturePath.c_str(), sizeof(texBuffer));
         if (ImGui::InputText("TexturePath", texBuffer, sizeof(texBuffer),
                              ImGuiInputTextFlags_EnterReturnsTrue))
         {
@@ -100,7 +100,7 @@ void MeshRendererDraw(MeshRenderer* mesh)
         }
 
         char modelBuffer[128];
-        std::strncpy(modelBuffer, mesh->modelPath.c_str(), sizeof(modelBuffer));
+        strncpy_s(modelBuffer, mesh->modelPath.c_str(), sizeof(modelBuffer));
         if (ImGui::InputText("ModelPath", modelBuffer, sizeof(modelBuffer),
                              ImGuiInputTextFlags_EnterReturnsTrue))
         {
@@ -192,7 +192,7 @@ void AnimatorDraw(Animator* anim)
         ImGui::DragFloat("Current Time", &anim->currentTime);
 
         char animBuffer[128];
-        std::strncpy(animBuffer, anim->animationPath.c_str(), sizeof(animBuffer));
+        strncpy_s(animBuffer, anim->animationPath.c_str(), sizeof(animBuffer));
         if (ImGui::InputText("AnimationPath", animBuffer, sizeof(animBuffer),
                              ImGuiInputTextFlags_EnterReturnsTrue))
         {
@@ -231,7 +231,7 @@ void ParticleSystemDraw(ParticleSystem* ps)
     if (ImGui::CollapsingHeader("Particle System"))
     {
         char texBuffer[128];
-        std::strncpy(texBuffer, ps->texturePath.c_str(), sizeof(texBuffer));
+        strncpy_s(texBuffer, ps->texturePath.c_str(), sizeof(texBuffer));
         if (ImGui::InputText("ParticleTexturePath", texBuffer, sizeof(texBuffer),
                              ImGuiInputTextFlags_EnterReturnsTrue))
         {
@@ -424,6 +424,9 @@ void RigidbodyLoad(sm2d::Rigidbody* rb, const nlohmann::json& j)
 
 // -------------------
 
+float dragThreshold = 2.0f; // Distance threshold for dragging a point
+int   dragIndex = -1;
+
 void ColliderDraw(sm2d::Collider* col)
 {
     if (ImGui::CollapsingHeader("Collider"))
@@ -446,12 +449,39 @@ void ColliderDraw(sm2d::Collider* col)
                 break;
 
             case sm2d::sm2d_Polygon:
-                ImGui::DragFloat2("Center", glm::value_ptr(col->polygon.center), 0.1f);
+                ImGui::DragFloat("Threshold", &dragThreshold);
+                glm::vec2 mousePos = engineState.camera->ScreenToWorld2D(
+                    glm::vec2(Input::GetMouseInputHorizontal(), Input::GetMouseInputVertical()));
+                Renderer::RenderLine({glm::vec3(mousePos, 0.0f)}, engineState.projMat,
+                                     engineState.camera->GetViewMatrix(),
+                                     glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+
+                bool mouse = Input::GetMouseButton(MouseKey::LeftClick);
+                bool hovering = false;
 
                 for (size_t i = 0; i < col->polygon.points.size(); i++)
                 {
                     std::string label = "Point " + std::to_string(i);
                     ImGui::DragFloat2(label.c_str(), glm::value_ptr(col->polygon.points[i]), 0.1f);
+                    float distance =
+                        glm::distance(mousePos, col->polygon.points[i] +
+                                                    glm::vec2(col->body->transform->position));
+                    if (distance <= dragThreshold && !mouse)
+                    {
+                        dragIndex = i;
+                        hovering = true;
+                    }
+                }
+
+                if (!mouse && !hovering)
+                {
+                    dragIndex = -1;
+                }
+
+                if (mouse && dragIndex != -1)
+                {
+                    col->polygon.points[dragIndex] =
+                        mousePos - glm::vec2(col->body->transform->position);
                 }
 
                 if (ImGui::Button("Add Point"))

@@ -293,7 +293,7 @@ Manifold TestColAABBPolygon(Collider& aabb, Collider& poly)
     glm::vec2 bottomLeft = glm::vec2(aabb.body->transform->position) +
                            glm::vec2(-aabb.aabb.halfwidths.x, -aabb.aabb.halfwidths.y);
 
-    if (aabb.polygon.worldPoints.size() != 0)
+    if (aabb.polygon.worldPoints.size() == 0)
     {
         aabb.polygon.worldPoints.resize(4);
     }
