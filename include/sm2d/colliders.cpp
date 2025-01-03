@@ -273,12 +273,8 @@ Manifold TestColAABBPolygon(Collider& aabb, Collider& poly)
 {
     Manifold result = {};
     result.colliding = false;
-
-    ColPolygon a;
-    a.center = glm::vec2(aabb.body->transform->position);
-    ComputeAABBPoints(aabb, a.worldPoints);
-    ColPolygon* col1 = &a;
-    ColPolygon* col2 = &poly.polygon;
+    Collider* col1 = &aabb;
+    Collider* col2 = &poly;
 
     float     minOverlap = std::numeric_limits<float>::max();
     glm::vec2 minAxis;
@@ -288,35 +284,56 @@ Manifold TestColAABBPolygon(Collider& aabb, Collider& poly)
         return result;
     }
 
+    glm::vec2 topLeft = glm::vec2(aabb.body->transform->position) +
+                        glm::vec2(-aabb.aabb.halfwidths.x, aabb.aabb.halfwidths.y);
+    glm::vec2 topRight = glm::vec2(aabb.body->transform->position) +
+                         glm::vec2(aabb.aabb.halfwidths.x, aabb.aabb.halfwidths.y);
+    glm::vec2 bottomRight = glm::vec2(aabb.body->transform->position) +
+                            glm::vec2(aabb.aabb.halfwidths.x, -aabb.aabb.halfwidths.y);
+    glm::vec2 bottomLeft = glm::vec2(aabb.body->transform->position) +
+                           glm::vec2(-aabb.aabb.halfwidths.x, -aabb.aabb.halfwidths.y);
+
+    if (aabb.polygon.worldPoints.size() != 0)
+    {
+        aabb.polygon.worldPoints.resize(4);
+    }
+
+    aabb.polygon.worldPoints[0] = topRight;
+    aabb.polygon.worldPoints[1] = topLeft;
+    aabb.polygon.worldPoints[2] = bottomLeft;
+    aabb.polygon.worldPoints[3] = bottomRight;
+
     for (int shape = 0; shape < 2; ++shape)
     {
         if (shape == 1)
         {
-            col1 = &poly.polygon;
-            col2 = &a;
+            col1 = &poly;
+            col2 = &aabb;
         }
 
-        for (int a2 = 0; a2 < col1->worldPoints.size(); a2++)
+        for (int a2 = 0; a2 < col1->polygon.worldPoints.size(); a2++)
         {
-            int b = (a2 + 1) % col1->worldPoints.size();
+            int b = (a2 + 1) % col1->polygon.worldPoints.size();
 
-            glm::vec2 axisProj = {-(col1->worldPoints[b].y - col1->worldPoints[a2].y),
-                                  col1->worldPoints[b].x - col1->worldPoints[a2].x};
+            glm::vec2 axisProj = {
+                -(col1->polygon.worldPoints[b].y - col1->polygon.worldPoints[a2].y),
+                col1->polygon.worldPoints[b].x - col1->polygon.worldPoints[a2].x};
+            axisProj = glm::normalize(axisProj);
 
             float min1 = INFINITY;
             float max1 = -INFINITY;
-            for (int p = 0; p < col1->worldPoints.size(); ++p)
+            for (int p = 0; p < col1->polygon.worldPoints.size(); ++p)
             {
-                float q = glm::dot(col1->worldPoints[p], axisProj);
+                float q = glm::dot(col1->polygon.worldPoints[p], axisProj);
                 min1 = std::min(min1, q);
                 max1 = std::max(max1, q);
             }
 
             float min2 = INFINITY;
             float max2 = -INFINITY;
-            for (int p = 0; p < col2->worldPoints.size(); ++p)
+            for (int p = 0; p < col2->polygon.worldPoints.size(); ++p)
             {
-                float q = glm::dot(col2->worldPoints[p], axisProj);
+                float q = glm::dot(col2->polygon.worldPoints[p], axisProj);
                 min2 = std::min(min2, q);
                 max2 = std::max(max2, q);
             }
@@ -344,18 +361,18 @@ Manifold TestColAABBPolygon(Collider& aabb, Collider& poly)
     // Contact point detection here
     std::vector<glm::vec2> intersections;
 
-    size_t col1Size = col1->worldPoints.size();
-    size_t col2Size = col2->worldPoints.size();
+    size_t col1Size = col1->polygon.worldPoints.size();
+    size_t col2Size = col2->polygon.worldPoints.size();
 
     for (size_t i = 0; i < col1Size; ++i)
     {
-        glm::vec2 p0 = col1->worldPoints[i];
-        glm::vec2 p1 = col1->worldPoints[(i + 1) % col1Size];
+        glm::vec2 p0 = col1->polygon.worldPoints[i];
+        glm::vec2 p1 = col1->polygon.worldPoints[(i + 1) % col1Size];
 
         for (size_t j = 0; j < col2Size; ++j)
         {
-            glm::vec2 q0 = col2->worldPoints[j];
-            glm::vec2 q1 = col2->worldPoints[(j + 1) % col2Size];
+            glm::vec2 q0 = col2->polygon.worldPoints[j];
+            glm::vec2 q1 = col2->polygon.worldPoints[(j + 1) % col2Size];
 
             auto intersection = GetLineIntersection(p0, p1, q0, q1);
             if (intersection)
@@ -365,18 +382,16 @@ Manifold TestColAABBPolygon(Collider& aabb, Collider& poly)
         }
     }
 
-    if (intersections.size() == 2)
+    if (!intersections.empty())
     {
-        result.contactPoint = (intersections[0] + intersections[1]) * 0.5f;
-    }
-    else
-    {
-        result.contactPoint = intersections[0];
+        glm::vec2 centroid(0.0f);
+        for (const auto& point : intersections) { centroid += point; }
+        result.contactPoint = centroid / static_cast<float>(intersections.size());
     }
 
     // Ensure normal points from A to B
     result.collisionNormal = minAxis;
-    if (glm::dot(result.collisionNormal, poly.polygon.center - a.center) < 0)
+    if (glm::dot(result.collisionNormal, poly.polygon.center - aabb.polygon.center) < 0)
     {
         result.collisionNormal = -result.collisionNormal;
     }
