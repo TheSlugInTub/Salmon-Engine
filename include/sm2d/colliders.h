@@ -24,6 +24,7 @@ struct ColCircle
 
 enum ColliderType
 {
+    sm2d_None = 0,
     sm2d_AABB,
     sm2d_Circle,
     sm2d_Polygon
@@ -31,7 +32,7 @@ enum ColliderType
 
 struct Collider
 {
-    ColliderType type;
+    ColliderType type = ColliderType::sm2d_None;
     ColAABB      aabb;
     ColCircle    circle;
     ColPolygon   polygon;

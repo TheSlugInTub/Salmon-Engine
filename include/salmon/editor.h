@@ -113,7 +113,7 @@ class ComponentRegistry
                 std::string    type;
                 nlohmann::json compData = func(ent, type);
                 compData["type"] = type;
-                entityData.push_back(compData);
+                if (!type.empty()) { entityData.push_back(compData); }
             }
             jsonObj.push_back(entityData);
         }

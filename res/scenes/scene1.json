@@ -1,14 +1,14 @@
 [
     [
         {
-            "EntName": "Mesh",
+            "EntName": "Capsule",
             "type": "Name"
         },
         {
             "Position": [
-                13.119999885559082,
-                0.0,
-                0.0
+                0.23000000417232513,
+                -0.4099999964237213,
+                2.859999895095825
             ],
             "Rotation": [
                 0.0,
@@ -21,9 +21,6 @@
                 1.0
             ],
             "type": "Transform"
-        },
-        {
-            "type": ""
         },
         {
             "Color": [
@@ -35,24 +32,6 @@
             "ModelPath": "res/models/Capsule.obj",
             "TexturePath": "res/textures/Slugarius.png",
             "type": "MeshRenderer"
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
         }
     ],
     [
@@ -62,8 +41,8 @@
         },
         {
             "Position": [
-                -1.1299999952316284,
-                -3.9000000953674316,
+                0.0,
+                -3.549999952316284,
                 0.0
             ],
             "Rotation": [
@@ -72,14 +51,11 @@
                 0.0
             ],
             "Scale": [
-                18.0,
+                9.0,
                 1.0,
-                15.0
+                8.0
             ],
             "type": "Transform"
-        },
-        {
-            "type": ""
         },
         {
             "Color": [
@@ -91,24 +67,6 @@
             "ModelPath": "res/models/Box.obj",
             "TexturePath": "res/textures/Background.png",
             "type": "MeshRenderer"
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
         }
     ],
     [
@@ -135,21 +93,6 @@
             "type": "Transform"
         },
         {
-            "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
             "CastShadows": true,
             "Color": [
                 1.0,
@@ -166,12 +109,6 @@
             ],
             "Radius": 40.0,
             "type": "Light"
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
         }
     ]
 ]

@@ -434,11 +434,10 @@ void ColliderDraw(sm2d::Collider* col)
 {
     if (ImGui::CollapsingHeader("Collider"))
     {
-        const char* types[] = {"AABB", "Circle", "Polygon"};
-        int         currentType = static_cast<int>(col->type);
-        if (ImGui::Combo("Collider Type", &currentType, types, 3))
+        int colTypeValue = static_cast<int>(col->type);
+        if (ImGui::SliderInt("ColliderType2D", &colTypeValue, 0, static_cast<int>(3)))
         {
-            col->type = static_cast<sm2d::ColliderType>(currentType);
+            col->type = static_cast<sm2d::ColliderType>(colTypeValue);
         }
 
         switch (col->type)
@@ -455,9 +454,6 @@ void ColliderDraw(sm2d::Collider* col)
                 ImGui::DragFloat("Threshold", &dragThreshold);
                 glm::vec2 mousePos = engineState.camera->ScreenToWorld2D(
                     glm::vec2(Input::GetMouseInputHorizontal(), Input::GetMouseInputVertical()));
-                Renderer::RenderLine({glm::vec3(mousePos, 0.0f)}, engineState.projMat,
-                                     engineState.camera->GetViewMatrix(),
-                                     glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
                 bool mouse = Input::GetMouseButton(MouseKey::LeftClick);
                 bool hovering = false;
