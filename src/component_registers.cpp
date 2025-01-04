@@ -1,3 +1,4 @@
+#include "salmon/utils.h"
 #include <sm2d/functions.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui/imgui.h>
@@ -110,7 +111,7 @@ void MeshRendererDraw(MeshRenderer* mesh)
         }
         ImGui::Checkbox("GammaCorrection", &mesh->model.gammaCorrection);
         ImGui::Checkbox("ExtractTexture", &mesh->model.extractTexture);
-        ImGui::DragFloat4("ModelColor", glm::value_ptr(mesh->color));
+        // ImGui::DragFloat4("ModelColor", glm::value_ptr(mesh->color));
     }
 }
 
@@ -128,6 +129,8 @@ void MeshRendererLoad(MeshRenderer* mesh, const nlohmann::json& j)
     mesh->modelPath = j["ModelPath"];
     mesh->texturePath = j["TexturePath"];
     mesh->color = {j["Color"][0], j["Color"][1], j["Color"][2], j["Color"][3]};
+    mesh->texture = Utils::LoadTexture(mesh->texturePath.c_str());
+    mesh->model = Model(mesh->modelPath, mesh->model.gammaCorrection, mesh->model.extractTexture);
 }
 
 // -------------------
@@ -424,7 +427,7 @@ void RigidbodyLoad(sm2d::Rigidbody* rb, const nlohmann::json& j)
 
 // -------------------
 
-float dragThreshold = 2.0f; // Distance threshold for dragging a point
+float dragThreshold = 0.3f; // Distance threshold for dragging a point
 int   dragIndex = -1;
 
 void ColliderDraw(sm2d::Collider* col)

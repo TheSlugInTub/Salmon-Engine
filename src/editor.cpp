@@ -132,6 +132,7 @@ void LoadScene(const std::string& filename)
     engineState.scene.freeEntities.clear();
     engineState.scene.componentPools.clear();
     sm2d::bvh.nodes.clear();
+    Renderer::lights.clear();
 
     ComponentRegistry::Instance().LoadAll(j);
 }

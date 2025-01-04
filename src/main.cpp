@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
 
-    Renderer::Init(false, true);
+    Renderer::Init(true, false);
 
     StartEditorStartSystems();
 

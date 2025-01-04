@@ -1,13 +1,69 @@
 [
     [
         {
+            "EntName": "Mesh",
+            "type": "Name"
+        },
+        {
+            "Position": [
+                13.119999885559082,
+                0.0,
+                0.0
+            ],
+            "Rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "type": "Transform"
+        },
+        {
+            "type": ""
+        },
+        {
+            "Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "ModelPath": "res/models/Capsule.obj",
+            "TexturePath": "res/textures/Slugarius.png",
+            "type": "MeshRenderer"
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        }
+    ],
+    [
+        {
             "EntName": "Ground",
             "type": "Name"
         },
         {
             "Position": [
-                0.0,
-                -2.0,
+                -1.1299999952316284,
+                -3.9000000953674316,
                 0.0
             ],
             "Rotation": [
@@ -16,22 +72,25 @@
                 0.0
             ],
             "Scale": [
-                8.0,
+                18.0,
                 1.0,
-                1.0
+                15.0
             ],
             "type": "Transform"
         },
         {
-            "Billboard": false,
+            "type": ""
+        },
+        {
             "Color": [
                 1.0,
                 1.0,
                 1.0,
                 1.0
             ],
-            "TexturePath": "res/textures/Slugarius.png",
-            "type": "SpriteRenderer"
+            "ModelPath": "res/models/Box.obj",
+            "TexturePath": "res/textures/Background.png",
+            "type": "MeshRenderer"
         },
         {
             "type": ""
@@ -43,234 +102,73 @@
             "type": ""
         },
         {
-            "AngularDamping": 0.9800000190734863,
-            "AngularVelocity": 0.0,
-            "Awake": false,
-            "FixedRotation": true,
-            "Force": [
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        }
+    ],
+    [
+        {
+            "EntName": "Light",
+            "type": "Name"
+        },
+        {
+            "Position": [
+                0.0,
                 0.0,
                 0.0
             ],
-            "LinearDamping": 0.9800000190734863,
-            "LinearVelocity": [
+            "Rotation": [
+                0.0,
                 0.0,
                 0.0
             ],
-            "Mass": 1.0,
-            "MomentOfInertia": 0.5,
-            "Restitution": 0.10000000149011612,
-            "Torque": 0.0,
-            "Type": 0,
-            "type": "Rigidbody"
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "type": "Transform"
         },
         {
             "type": ""
         },
         {
-            "HalfWidths": [
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "type": ""
+        },
+        {
+            "CastShadows": true,
+            "Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "InnerRadius": 0.10000000149011612,
+            "Intensity": 1.0,
+            "Position": [
+                0.0,
                 4.0,
-                0.5
-            ],
-            "Type": 0,
-            "type": "Collider"
-        },
-        {
-            "type": ""
-        }
-    ],
-    [
-        {
-            "EntName": "Box",
-            "type": "Name"
-        },
-        {
-            "Position": [
-                2.390000104904175,
-                -0.7860000133514404,
                 0.0
             ],
-            "Rotation": [
-                0.0,
-                0.0,
-                -0.021221859380602837
-            ],
-            "Scale": [
-                1.0,
-                1.0,
-                1.0
-            ],
-            "type": "Transform"
-        },
-        {
-            "Billboard": false,
-            "Color": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ],
-            "TexturePath": "res/textures/Slugarius.png",
-            "type": "SpriteRenderer"
+            "Radius": 40.0,
+            "type": "Light"
         },
         {
             "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
-            "AngularDamping": 0.9800000190734863,
-            "AngularVelocity": -0.10898590832948685,
-            "Awake": false,
-            "FixedRotation": false,
-            "Force": [
-                0.0,
-                0.0
-            ],
-            "LinearDamping": 0.9800000190734863,
-            "LinearVelocity": [
-                0.0,
-                -0.0056624989956617355
-            ],
-            "Mass": 1.0,
-            "MomentOfInertia": 1.0,
-            "Restitution": 0.10000000149011612,
-            "Torque": 0.0,
-            "Type": 1,
-            "type": "Rigidbody"
-        },
-        {
-            "type": ""
-        },
-        {
-            "Center": [
-                2.389554500579834,
-                -0.7874124050140381
-            ],
-            "Points": [
-                [
-                    0.49900001287460327,
-                    0.5
-                ],
-                [
-                    0.5019999742507935,
-                    -0.49900001287460327
-                ],
-                [
-                    -0.49799999594688416,
-                    -0.5070000290870667
-                ],
-                [
-                    -0.5019999742507935,
-                    0.5
-                ]
-            ],
-            "Type": 2,
-            "type": "Collider"
-        },
-        {
-            "type": ""
-        }
-    ],
-    [
-        {
-            "EntName": "BRUH",
-            "type": "Name"
-        },
-        {
-            "Position": [
-                1.590000033378601,
-                0.6800000071525574,
-                0.0
-            ],
-            "Rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "Scale": [
-                1.0,
-                1.0,
-                1.0
-            ],
-            "type": "Transform"
-        },
-        {
-            "Billboard": false,
-            "Color": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ],
-            "TexturePath": "res/textures/Slugarius.png",
-            "type": "SpriteRenderer"
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
-            "type": ""
-        },
-        {
-            "AngularDamping": 0.9800000190734863,
-            "AngularVelocity": 0.0,
-            "Awake": true,
-            "FixedRotation": false,
-            "Force": [
-                0.0,
-                0.0
-            ],
-            "LinearDamping": 0.9800000190734863,
-            "LinearVelocity": [
-                0.0,
-                0.0
-            ],
-            "Mass": 2.0,
-            "MomentOfInertia": 2.874000072479248,
-            "Restitution": 0.10000000149011612,
-            "Torque": 0.0,
-            "Type": 1,
-            "type": "Rigidbody"
-        },
-        {
-            "type": ""
-        },
-        {
-            "Center": [
-                1.443047046661377,
-                0.844554603099823
-            ],
-            "Points": [
-                [
-                    -0.015607714653015137,
-                    1.0973803997039795
-                ],
-                [
-                    0.505470871925354,
-                    0.4978734850883484
-                ],
-                [
-                    0.5094956159591675,
-                    -0.5021960139274597
-                ],
-                [
-                    -0.5032066106796265,
-                    -0.4940583109855652
-                ],
-                [
-                    -1.0855872631072998,
-                    0.15079224109649658
-                ]
-            ],
-            "Type": 2,
-            "type": "Collider"
         },
         {
             "type": ""

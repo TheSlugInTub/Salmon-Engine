@@ -40,7 +40,7 @@ struct Transform
 // Component that describes how a mesh should be renderered at the transform of the entity
 struct MeshRenderer
 {
-    Model        model = Model("res/models/Box.obj");
+    Model        model;
     glm::vec4    color = glm::vec4(1.0f);
     unsigned int texture;
     std::string  texturePath = "";
