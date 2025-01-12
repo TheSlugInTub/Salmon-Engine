@@ -223,37 +223,36 @@ class MyDebugRenderer final : public JPH::DebugRenderer
         points.emplace_back(inTo.GetX(), inTo.GetY(), inTo.GetZ());
     }
 
-    inline void DrawTriangle(JPH::RVec3Arg inV1, JPH::RVec3Arg inV2, JPH::RVec3Arg inV3,
-                             JPH::ColorArg inColor,
-                             ECastShadow   inCastShadow = ECastShadow::Off) override
+    void DrawTriangle(JPH::RVec3Arg inV1, JPH::RVec3Arg inV2, JPH::RVec3Arg inV3,
+                      JPH::ColorArg inColor, ECastShadow inCastShadow = ECastShadow::Off) override
     {
         std::cout << "Triangle has been drawn!";
     }
 
-    inline virtual Batch CreateTriangleBatch(const Triangle* inTriangles, int inTriangleCount)
+    virtual Batch CreateTriangleBatch(const Triangle* inTriangles, int inTriangleCount) override
     {
         return Batch {};
     }
 
-    inline virtual Batch CreateTriangleBatch(const Vertex* inVertices, int inVertexCount,
-                                             const JPH::uint32* inIndices, int inIndexCount)
+    virtual Batch CreateTriangleBatch(const Vertex* inVertices, int inVertexCount,
+                                      const JPH::uint32* inIndices, int inIndexCount) override
     {
         return Batch {};
     }
 
-    inline virtual void DrawGeometry(JPH::RMat44Arg    inModelMatrix,
-                                     const JPH::AABox& inWorldSpaceBounds, float inLODScaleSq,
-                                     JPH::ColorArg inModelColor, const GeometryRef& inGeometry,
-                                     ECullMode   inCullMode = ECullMode::CullBackFace,
-                                     ECastShadow inCastShadow = ECastShadow::On,
-                                     EDrawMode   inDrawMode = EDrawMode::Solid)
+    virtual void DrawGeometry(JPH::RMat44Arg inModelMatrix, const JPH::AABox& inWorldSpaceBounds,
+                              float inLODScaleSq, JPH::ColorArg inModelColor,
+                              const GeometryRef& inGeometry,
+                              ECullMode          inCullMode = ECullMode::CullBackFace,
+                              ECastShadow        inCastShadow = ECastShadow::On,
+                              EDrawMode          inDrawMode = EDrawMode::Solid) override
     {
         std::cout << "Geometry has been drawn!";
     }
 
-    inline virtual void DrawText3D(JPH::RVec3Arg inPosition, const JPH::string_view& inString,
-                                   JPH::ColorArg inColor = JPH::Color::sWhite,
-                                   float         inHeight = 0.5f)
+    virtual void DrawText3D(JPH::RVec3Arg inPosition, const JPH::string_view& inString,
+                            JPH::ColorArg inColor = JPH::Color::sWhite,
+                            float         inHeight = 0.5f) override
     {
     }
 

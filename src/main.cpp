@@ -21,6 +21,7 @@ int main(int argc, char** argv)
     StartEditorStartSystems();
 
     ImGuiLayer::Init();
+    ImGuiLayer::EmbraceTheDarkness();
 
     std::vector<sm2d::Manifold> colResults;
 
