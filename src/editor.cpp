@@ -174,5 +174,14 @@ void DrawTray()
             playing = false;
         }
     }
+
+    char editorBuffer[128];
+    strncpy_s(editorBuffer, editorPath.c_str(), sizeof(editorBuffer));
+    if (ImGui::InputText("EditorPath", editorBuffer, sizeof(editorBuffer),
+                         ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+        editorPath = std::string(editorBuffer);
+    }
+
     ImGui::End();
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <salmon/utils.h>
 #include <imgui/imgui.h>
 #include <salmon/engine.h>
 #include <salmon/json.hpp>
@@ -10,10 +11,14 @@ inline EntityID selectedEntity;
 inline bool playing = false;
 
 inline std::string sceneName = "scene1.json";
+inline std::string editorPath = "C:/Windows/System32/notepad";
+
+inline unsigned int scriptIcon = Utils::LoadTexture("res/internal/script.png");
 
 void DrawHierarchy();
 void DrawInspector();
 void DrawTray();
+void LoadScripts();
 
 void SaveScene(const std::string& filename);
 void LoadScene(const std::string& filename);
