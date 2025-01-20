@@ -18,6 +18,7 @@ void DrawHierarchy()
 
         auto name = engineState.scene.Get<Name>(engineState.scene.entities[i].id);
         bool selected = selectedEntityIndex == static_cast<int>(i);
+        assert(name != nullptr);
         if (ImGui::Selectable(name->name.c_str(), selected))
         {
             selectedEntityIndex = static_cast<int>(i);

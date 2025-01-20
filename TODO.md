@@ -23,5 +23,7 @@
       two arguments
 - [X] Figure out if collisions were carried over
 - [X] Fix the contact points shifting all over the place
-- [X] Make setting the projection matrix for the rendering a one time thing
+- [ ] Make setting the projection matrix for the rendering a one time thing
 - [X] Sprite animations
+- [X] Split renderer Init function
+- [ ] Fix the tilemaps bugging out when initializing particles

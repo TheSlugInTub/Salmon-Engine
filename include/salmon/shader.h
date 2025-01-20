@@ -20,9 +20,9 @@ class Shader
     Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr)
     {
         // 1. retrieve the vertex/fragment source code from filePath
-        std::string vertexCode;
-        std::string fragmentCode;
-        std::string geometryCode;
+        std::string   vertexCode;
+        std::string   fragmentCode;
+        std::string   geometryCode;
         std::ifstream vShaderFile;
         std::ifstream fShaderFile;
         std::ifstream gShaderFile;
@@ -165,8 +165,9 @@ class Shader
     void setTexture2D(const std::string& name, GLuint textureID, GLenum textureUnit) const
     {
         glActiveTexture(GL_TEXTURE0 + textureUnit); // Activate texture unit
-        glBindTexture(GL_TEXTURE_2D, textureID); // Bind the texture to the specified unit
-        glUniform1i(glGetUniformLocation(ID, name.c_str()), textureUnit); // Set the sampler to use the texture unit
+        glBindTexture(GL_TEXTURE_2D, textureID);    // Bind the texture to the specified unit
+        glUniform1i(glGetUniformLocation(ID, name.c_str()),
+                    textureUnit); // Set the sampler to use the texture unit
     }
 
   private:
@@ -174,7 +175,7 @@ class Shader
     // ------------------------------------------------------------------------
     void checkCompileErrors(GLuint shader, std::string type)
     {
-        GLint success;
+        GLint  success;
         GLchar infoLog[1024];
         if (type != "PROGRAM")
         {
@@ -183,7 +184,9 @@ class Shader
             {
                 glGetShaderInfoLog(shader, 1024, NULL, infoLog);
                 std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n"
-                          << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+                          << infoLog
+                          << "\n -- --------------------------------------------------- -- "
+                          << std::endl;
             }
         }
         else
@@ -193,7 +196,9 @@ class Shader
             {
                 glGetProgramInfoLog(shader, 1024, NULL, infoLog);
                 std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n"
-                          << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+                          << infoLog
+                          << "\n -- --------------------------------------------------- -- "
+                          << std::endl;
             }
         }
     }

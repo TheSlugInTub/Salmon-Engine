@@ -7,6 +7,8 @@
 #include <sm2d/types.h>
 #include <salmon/particle_system.h>
 #include <salmon/sprite_animation.h>
+#include <salmon/tilemap.h>
+#include <winsock.h>
 
 // -------------------
 
@@ -568,6 +570,128 @@ void SpriteAnimatorLoad(SpriteAnimator* sprite, nlohmann::json j)
 
 // -------------------
 
+// Buffer used to input a tile texture to add to the list of tiles
+char tileBuffer[128];
+int  selectedTileIndex = -1;
+
+void TilemapDraw(Tilemap* tilemap)
+{
+    if (ImGui::CollapsingHeader("Tilemap"))
+    {
+        if (ImGui::InputText("New tile texture", tileBuffer, sizeof(tileBuffer),
+                             ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            tilemap->editorTiles.push_back(Utils::LoadTexture(tileBuffer));
+            tilemap->editorTilePaths.push_back(tileBuffer);
+            strcpy(tileBuffer, "");
+        }
+
+        for (size_t i = 0; i < tilemap->editorTiles.size(); ++i)
+        {
+            if (ImGui::ImageButton((ImTextureID)(intptr_t)tilemap->editorTiles[i],
+                                   ImVec2(64, 64)))
+            {
+                selectedTileIndex = (int)i;
+            }
+        }
+
+        glm::ivec2 mousePos = (glm::ivec2)engineState.camera->ScreenToWorld2D(
+            glm::vec2(Input::GetMouseInputHorizontal(), Input::GetMouseInputVertical()));
+        bool mouse = Input::GetMouseButtonDown(MouseKey::LeftClick);
+
+        if (mouse && selectedTileIndex < tilemap->editorTiles.size())
+        {
+            tilemap->tileTransforms.push_back(Utils::Make2DTransform(glm::vec3(mousePos, 0.0f), 0.0f, tilemap->scale));
+            tilemap->tileTextureIndices.push_back((float)selectedTileIndex);
+        }
+    }
+}
+
+nlohmann::json SerializeMat4(const glm::mat4& matrix)
+{
+    // Flatten the matrix into a 16-element array
+    std::array<float, 16> elements = {matrix[0][0], matrix[0][1], matrix[0][2], matrix[0][3],
+                                      matrix[1][0], matrix[1][1], matrix[1][2], matrix[1][3],
+                                      matrix[2][0], matrix[2][1], matrix[2][2], matrix[2][3],
+                                      matrix[3][0], matrix[3][1], matrix[3][2], matrix[3][3]};
+    // Serialize the array to JSON
+    return nlohmann::json(elements);
+}
+
+// Function to deserialize JSON to glm::mat4
+glm::mat4 DeserializeMat4(const nlohmann::json& js)
+{
+    // Ensure the JSON contains an array with 16 elements
+    if (!js.is_array() || js.size() != 16)
+    {
+        throw std::invalid_argument("Invalid JSON format for glm::mat4");
+    }
+    // Extract elements and reconstruct the matrix
+    glm::mat4 matrix;
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j) { matrix[i][j] = js[i * 4 + j].get<float>(); }
+    }
+    return matrix;
+}
+
+nlohmann::json TilemapSave(Tilemap* tilemap)
+{
+    nlohmann::json j = {};
+
+    nlohmann::json tilesJ = nlohmann::json::array();
+    for (int i = 0; i < tilemap->tileTransforms.size(); ++i)
+    {
+        nlohmann::json tileJson;
+        tileJson["Transform"] = SerializeMat4(tilemap->tileTransforms[i]);
+        tileJson["Texture"] = tilemap->tileTextureIndices[i];
+        tilesJ.push_back(tileJson);
+    }
+
+    nlohmann::json editTilesJ = nlohmann::json::array();
+    for (int i = 0; i < tilemap->editorTiles.size(); ++i)
+    {
+        nlohmann::json tileJson;
+        tileJson["TexturePath"] = tilemap->editorTilePaths[i];
+        editTilesJ.push_back(tileJson);
+    }
+
+    j["tiles"] = tilesJ;
+    j["editorTiles"] = editTilesJ;
+
+    return j;
+}
+
+void TilemapLoad(Tilemap* tilemap, const nlohmann::json& j)
+{
+    // Deserialize tiles
+    if (j.contains("tiles") && j["tiles"].is_array())
+    {
+        for (const auto& tileJson : j["tiles"])
+        {
+            tilemap->tileTextureIndices.push_back(tileJson["Texture"]);
+            tilemap->tileTransforms.push_back(DeserializeMat4(tileJson["Transform"]));
+        }
+    }
+
+    // Deserialize editorTiles
+    if (j.contains("editorTiles") && j["editorTiles"].is_array())
+    {
+        for (const auto& editTileJson : j["editorTiles"])
+        {
+            std::string  texturePath;
+            if (editTileJson.contains("TexturePath") && editTileJson["TexturePath"].is_string())
+            {
+                texturePath = editTileJson["TexturePath"].get<std::string>();
+            }
+            tilemap->editorTiles.emplace_back(Utils::LoadTexture(texturePath.c_str()));
+            tilemap->editorTilePaths.emplace_back(texturePath);
+        }
+    }
+}
+
+// -------------------
+
 using namespace sm2d;
 REGISTER_COMPONENT(Name, NameDraw, NameSave, NameLoad);
 REGISTER_COMPONENT(Transform, TransformDraw, TransformSave, TransformLoad);
@@ -579,3 +703,4 @@ REGISTER_COMPONENT(Rigidbody, RigidbodyDraw, RigidbodySave, RigidbodyLoad);
 REGISTER_COMPONENT(Light, LightDraw, LightSave, LightLoad);
 REGISTER_COMPONENT(Collider, ColliderDraw, ColliderSave, ColliderLoad);
 REGISTER_COMPONENT(RigidBody3D, RigidBody3DDraw, RigidBody3DSave, RigidBody3DLoad);
+REGISTER_COMPONENT(Tilemap, TilemapDraw, TilemapSave, TilemapLoad);

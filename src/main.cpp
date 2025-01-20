@@ -1,4 +1,5 @@
 #include <salmon/salmon.h>
+#include <salmon/tilemap.h>
 
 // settings
 const unsigned int SCR_WIDTH = 1920;
@@ -11,12 +12,22 @@ int main(int argc, char** argv)
     Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false, true);
     // glfwSwapInterval(1);
 
+    unsigned int lineTex = Utils::LoadTexture("res/textures/Line.png");
+    unsigned int slugTex = Utils::LoadTexture("res/textures/Slugarius.png");
+
     Scene scene;
+
+    EntityID tilemap = scene.AddEntity();
+    scene.AssignParam<Tilemap>(tilemap, glm::vec2(1.0f, 1.0f));
+    scene.AssignParam<Name>(tilemap, "Tilemap");
 
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
 
-    Renderer::Init(true, false);
+    Renderer::Init(true);
+    Renderer::InitShaders();
+    Renderer::Init2D();
+    Renderer::InitTilemaps();
 
     StartEditorStartSystems();
 

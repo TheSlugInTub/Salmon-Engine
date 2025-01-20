@@ -1,0 +1,20 @@
+#version 330 core
+out vec4 FragColor;
+
+in vec2 TexCoord;
+in vec3 FragPos;
+in float TextureIndex;
+
+const int MAX_UNIQUE_TILE_TEXTURES = 20;
+
+uniform sampler2D textures[MAX_UNIQUE_TILE_TEXTURES];
+
+void main()
+{
+    int index = int(TextureIndex);
+    vec4 texColor = texture(textures[index], TexCoord);
+
+
+    // Output the final color
+    FragColor = texColor;
+}

@@ -3,11 +3,11 @@
 #include <salmon/engine.h>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/ext.hpp>
-#include <iostream>
 #include <salmon/renderer.h>
 #include <GLFW/glfw3.h>
 #include <salmon/particle_system.h>
 #include <salmon/ui.h>
+#include <salmon/tilemap.h>
 
 void MeshRendererSys()
 {
@@ -322,6 +322,8 @@ void DeltaTimeSystem()
     lastFrame = currplayerFrame;
 }
 
+// DO NOT LET CLANG FORMAT ANYWHERE NEAR THIS BEAUTY 
+
 // Start systems
 REGISTER_START_SYSTEM        (RigidBody3DStartSys);
 REGISTER_START_SYSTEM        (LightStartSys);
@@ -336,3 +338,4 @@ REGISTER_SYSTEM        (RigidBody3DSys);
 REGISTER_EDITOR_SYSTEM (ParticleSystemSys);
 REGISTER_EDITOR_SYSTEM (ButtonSys);
 REGISTER_EDITOR_SYSTEM (TextSys);
+REGISTER_EDITOR_SYSTEM (TilemapSys);

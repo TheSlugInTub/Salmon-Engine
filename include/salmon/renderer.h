@@ -7,10 +7,16 @@
 #include <salmon/shader.h>
 #include <vector>
 #include <salmon/ui.h>
+#include <salmon/tilemap.h>
 
 // Resolution of the shadowDepthMap (cubemap which stores shadows)
 // Increase if you want them to be higher quality
 inline unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+// Amount of particles the renderer initiates in the OpenGL buffer
+inline const int MAX_PARTICLES = 1000;
+// Amount of tiles the renderer initiates in the OpenGL buffer
+inline const int MAX_TILES = 1000;
+inline const int MAX_UNIQUE_TILE_TEXTURES = 1000;
 
 struct Transform;
 struct ParticleSystem;
@@ -42,8 +48,13 @@ struct Light
 namespace Renderer
 {
 
-// Intializes OpenGL
-void Init(bool depth = true, bool ui = true);
+// OpenGL initialization functions
+void Init(bool depth = true);
+void InitShaders();
+void Init2D();
+void InitParticles();
+void InitTilemaps();
+void InitText();
 
 // Makes a 4x4 matrix from a transform component
 glm::mat4 MakeModelTransform(Transform* trans);
@@ -62,9 +73,11 @@ void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection
                           const glm::mat4& view);
 // Renders text
 void RenderText(const Text& item, const glm::mat4& projection);
-
+// Renders an orthographic quad
 void RenderQuad(glm::vec2 position, glm::vec2 scale, float rotation, const glm::mat4& projection,
                 unsigned int texture, const glm::vec4& color);
+// Renders a tilemap
+void RenderTilemap(const Tilemap& tilemap, const glm::mat4& projection, const glm::mat4& view);
 
 // Default 3D shader
 inline Shader defaultShader;
@@ -78,6 +91,8 @@ inline Shader twoShader;
 inline Shader parShader;
 // Text shader for rendering text
 inline Shader textShader;
+// Tilemap shader for instancing particles
+inline Shader tileShader;
 
 // All the lights in the scene
 inline std::vector<Light> lights;
@@ -87,10 +102,12 @@ inline unsigned int VAO, VBO, EBO;
 // OpenGL buffer objects for text
 inline unsigned int textVAO, textVBO;
 
-// Max amount of particles the renderer can handle
-inline const int MAX_PARTICLES = 1000;
+// OpenGL buffer objects for 2d instanced tiles
+inline unsigned int tileVBO, tileIndexVBO; // Can someone please find a better way of
+                                           // rendering instanced tiles than having
+                                           // two vbos for tile rendering
 // OpenGL buffer objects for 2d instanced particles
-inline unsigned int instancedVBO, instancedColorVBO, instancedVAO;
+inline unsigned int instancedVBO, instancedColorVBO; // Particles too
 // Vector of matrices for the particles
 inline std::vector<glm::mat4> particleMatrices;
 

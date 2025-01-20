@@ -3,13 +3,15 @@
 #include <glad/glad.h>
 #include <iostream>
 #include <random>
+#include <glm/gtc/quaternion.hpp>
+#include <iostream>
 
 namespace Utils
 {
 
-unsigned int LoadTexture(const char* path)
+unsigned int LoadTexture(const char* path, bool flip)
 {
-    stbi_set_flip_vertically_on_load(true);
+    stbi_set_flip_vertically_on_load(flip);
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
@@ -43,7 +45,7 @@ unsigned int LoadTexture(const char* path)
     {
         std::cout << "Texture failed to load at path: " << path << '\n';
         stbi_image_free(data);
-        return LoadTexture("res/textures/MissingTexture.png");
+        return LoadTexture("res/textures/MissingTexture.png", flip);
     }
 
     return textureID;
@@ -66,6 +68,17 @@ float GenerateRandomNumber(float min, float max)
     std::uniform_real_distribution<float> dist(min, max); // Distribution in range [min, max]
 
     return dist(gen);
+}
+
+glm::mat4 Make2DTransform(const glm::vec3& position, float rotation,
+                        const glm::vec2& scale)
+{
+
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::translate(transform, position);
+    transform = glm::scale(transform, glm::vec3(scale.x, scale.y, 1.0f));
+    transform = glm::rotate(transform, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
+    return transform;
 }
 
 } // namespace Utils
