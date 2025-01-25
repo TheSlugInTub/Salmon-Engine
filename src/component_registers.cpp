@@ -1,3 +1,4 @@
+#include "salmon/renderer.h"
 #include "salmon/utils.h"
 #include <sm2d/functions.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -588,21 +589,38 @@ void TilemapDraw(Tilemap* tilemap)
 
         for (size_t i = 0; i < tilemap->editorTiles.size(); ++i)
         {
-            if (ImGui::ImageButton((ImTextureID)(intptr_t)tilemap->editorTiles[i],
-                                   ImVec2(64, 64)))
+            if (ImGui::ImageButton((ImTextureID)(intptr_t)tilemap->editorTiles[i], ImVec2(64, 64)))
             {
                 selectedTileIndex = (int)i;
             }
         }
 
-        glm::ivec2 mousePos = (glm::ivec2)engineState.camera->ScreenToWorld2D(
+        glm::vec2 mousePos = engineState.camera->ScreenToWorld2D(
             glm::vec2(Input::GetMouseInputHorizontal(), Input::GetMouseInputVertical()));
         bool mouse = Input::GetMouseButtonDown(MouseKey::LeftClick);
+        bool rightMouse = Input::GetMouseButtonDown(MouseKey::RightClick);
+
+        glm::vec3              roundedPos = glm::vec3(glm::round(mousePos), 0.0f);
+        std::vector<glm::vec3> mousePosVec = {glm::vec3(mousePos, 0.0f)};
+        Renderer::RenderLine(mousePosVec, engineState.projMat, engineState.camera->GetViewMatrix(),
+                             glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
         if (mouse && selectedTileIndex < tilemap->editorTiles.size())
         {
-            tilemap->tileTransforms.push_back(Utils::Make2DTransform(glm::vec3(mousePos, 0.0f), 0.0f, tilemap->scale));
+            tilemap->tileTransforms.push_back(
+                Utils::Make2DTransform(roundedPos, 0.0f, tilemap->scale));
             tilemap->tileTextureIndices.push_back((float)selectedTileIndex);
+        }
+        if (rightMouse)
+        {
+            for (int i = 0; i < tilemap->tileTransforms.size(); i++)
+            {
+                if (Utils::GetPositionOfMat4(tilemap->tileTransforms[i]) == roundedPos) 
+                {
+                    tilemap->tileTransforms.erase(tilemap->tileTransforms.begin() + i);
+                    tilemap->tileTextureIndices.erase(tilemap->tileTextureIndices.begin() + i);
+                }
+            }
         }
     }
 }
@@ -679,7 +697,7 @@ void TilemapLoad(Tilemap* tilemap, const nlohmann::json& j)
     {
         for (const auto& editTileJson : j["editorTiles"])
         {
-            std::string  texturePath;
+            std::string texturePath;
             if (editTileJson.contains("TexturePath") && editTileJson["TexturePath"].is_string())
             {
                 texturePath = editTileJson["TexturePath"].get<std::string>();

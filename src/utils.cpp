@@ -4,6 +4,8 @@
 #include <iostream>
 #include <random>
 #include <glm/gtc/quaternion.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 #include <iostream>
 
 namespace Utils
@@ -79,6 +81,11 @@ glm::mat4 Make2DTransform(const glm::vec3& position, float rotation,
     transform = glm::scale(transform, glm::vec3(scale.x, scale.y, 1.0f));
     transform = glm::rotate(transform, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
     return transform;
+}
+
+glm::vec3 GetPositionOfMat4(const glm::mat4& mat)
+{
+    return glm::vec3(mat[0][3], mat[1][3], mat[2][3]);
 }
 
 } // namespace Utils

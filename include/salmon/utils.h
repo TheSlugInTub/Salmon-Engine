@@ -30,4 +30,7 @@ template<typename T> int IndexInVec(std::vector<T>& v, T& K);
 glm::mat4 Make2DTransform(const glm::vec3& position, float rotation,
                         const glm::vec2& scale);
 
+// Gets the position part of a matrix4x4
+glm::vec3 GetPositionOfMat4(const glm::mat4& mat);
+
 } // namespace Utils
