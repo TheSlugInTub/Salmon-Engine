@@ -40,11 +40,13 @@ void RigidbodySys()
 
         rigid->linearVelocity += rigid->force / rigid->mass * engineState.deltaTime;
         rigid->linearVelocity *= glm::pow(rigid->linearDamping, engineState.deltaTime);
+
         rigid->transform->position.x += rigid->linearVelocity.x * engineState.deltaTime;
         rigid->transform->position.y += rigid->linearVelocity.y * engineState.deltaTime;
 
         rigid->angularVelocity += rigid->torque / rigid->mass * engineState.deltaTime;
         rigid->angularVelocity *= glm::pow(rigid->angularDamping, engineState.deltaTime);
+        
         rigid->transform->rotation.z += rigid->angularVelocity * engineState.deltaTime;
 
         if (rigid->angularVelocity > 0.05f || glm::length(rigid->linearVelocity) > 0.01f)
