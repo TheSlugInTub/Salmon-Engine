@@ -632,6 +632,16 @@ void GetCollisionsInTree(const Tree& tree, std::vector<Manifold>& collisionResul
                 bool node2Moved = node2.collider->body->hasMoved &&
                                   !node2.collider->body->type == BodyType::sm2d_Static;
 
+                if (node1.collider->sensor)
+                {
+                    node1.collider->sensorCollider = &node2.collider;
+                }
+
+                if (node2.collider->sensor)
+                {
+                    node2.collider->sensorCollider = &node1.collider;
+                }
+
                 if (node1Moved && !node2Moved)
                 {
                     node2.collider->body->awake = true;

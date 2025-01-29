@@ -38,6 +38,8 @@ struct Collider
     ColPolygon   polygon;
     Rigidbody*   body = nullptr;
     int          treeIndex = -1; // Index in the AABB tree
+    bool         sensor; // Flag: put colliding collider in sensorCollider
+    Collider*    sensorCollider;
 
     int bodyIndex = 0; // Ignore this, it's only for the editor
 
