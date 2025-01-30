@@ -557,7 +557,7 @@ void RemoveDeletedLeaves(Tree& tree)
     tree.nodes = std::move(newNodes);
 }
 
-void GetCollisionsInTree(const Tree& tree, std::vector<Manifold>& collisionResults)
+void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
 {
     if (bvh.nodes.empty())
         return;
@@ -568,8 +568,8 @@ void GetCollisionsInTree(const Tree& tree, std::vector<Manifold>& collisionResul
         if (node1Index == -1 || node2Index == -1)
             return;
 
-        const Node& node1 = tree.nodes[node1Index];
-        const Node& node2 = tree.nodes[node2Index];
+        Node& node1 = tree.nodes[node1Index];
+        Node& node2 = tree.nodes[node2Index];
 
         // First, check if the bounding boxes of the nodes overlap
         if (!AABBTest(node1.box, node2.box))
@@ -634,12 +634,12 @@ void GetCollisionsInTree(const Tree& tree, std::vector<Manifold>& collisionResul
 
                 if (node1.collider->sensor)
                 {
-                    node1.collider->sensorCollider = &node2.collider;
+                    node1.collider->sensorCollider = node2.collider;
                 }
 
                 if (node2.collider->sensor)
                 {
-                    node2.collider->sensorCollider = &node1.collider;
+                    node2.collider->sensorCollider = node1.collider;
                 }
 
                 if (node1Moved && !node2Moved)
@@ -657,8 +657,12 @@ void GetCollisionsInTree(const Tree& tree, std::vector<Manifold>& collisionResul
                     node2.collider->body->awake = false;
                     return;
                 }
-
-                collisionResults.push_back(data);
+    
+                // if both aren't sensors
+                if (!(node1.collider->sensor || node2.collider->sensor))
+                {
+                    collisionResults.push_back(data);
+                }
             }
             return;
         }

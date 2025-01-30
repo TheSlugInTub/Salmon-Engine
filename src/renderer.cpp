@@ -295,6 +295,40 @@ void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projectio
     glDeleteVertexArrays(1, &lVAO);
 }
 
+void RenderPoint(const glm::vec3& point, const glm::mat4& projection,
+                const glm::mat4& view, const glm::vec4& color)
+{
+    GLuint lVAO, lVBO;
+    glGenVertexArrays(1, &lVAO);
+    glGenBuffers(1, &lVBO);
+
+    glBindVertexArray(lVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, lVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3), &point, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    lineShader.use();
+
+    lineShader.setMat4("view", view);
+    lineShader.setMat4("projection", projection);
+
+    glm::mat4 model = glm::mat4(1.0f);
+    lineShader.setMat4("model", model);
+    lineShader.setVec4("color", color);
+
+    // Draw point
+    glPointSize(10.0f);
+    glDrawArrays(GL_POINTS, 0, (GLsizei)1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glDeleteBuffers(1, &lVBO);
+    glDeleteVertexArrays(1, &lVAO);
+}
+
 void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& view)
 {
     auto sprite = engineState.scene.Get<SpriteRenderer>(ent);

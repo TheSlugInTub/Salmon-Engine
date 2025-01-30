@@ -38,21 +38,21 @@ struct Collider
     ColPolygon   polygon;
     Rigidbody*   body = nullptr;
     int          treeIndex = -1; // Index in the AABB tree
-    bool         sensor; // Flag: put colliding collider in sensorCollider
+    bool         sensor;         // Flag: put colliding collider in sensorCollider
     Collider*    sensorCollider;
 
     int bodyIndex = 0; // Ignore this, it's only for the editor
 
-    Collider(ColliderType type, const ColAABB& aabb, Rigidbody* body)
-       : type(type), aabb(aabb), body(body)
+    Collider(ColliderType type, const ColAABB& aabb, Rigidbody* body, bool sensor)
+       : type(type), aabb(aabb), body(body), sensor(sensor)
     {
     }
-    Collider(ColliderType type, const ColCircle& circle, Rigidbody* body)
-       : type(type), circle(circle), body(body)
+    Collider(ColliderType type, const ColCircle& circle, Rigidbody* body, bool sensor)
+       : type(type), circle(circle), body(body), sensor(sensor)
     {
     }
-    Collider(ColliderType type, const ColPolygon& poly, Rigidbody* body)
-       : type(type), polygon(poly), body(body)
+    Collider(ColliderType type, const ColPolygon& poly, Rigidbody* body, bool sensor)
+       : type(type), polygon(poly), body(body), sensor(sensor)
     {
     }
 

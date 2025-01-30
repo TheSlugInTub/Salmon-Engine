@@ -67,7 +67,7 @@ void RemoveLeaf(Tree& tree, int leafIndex);
 void RemoveDeletedLeaves(Tree& tree);
 
 // Traverses through a tree and detects all the collisions and puts them in collisionResults
-void GetCollisionsInTree(const Tree& tree, std::vector<Manifold>& collisionResults);
+void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults);
 
 // Resolves all collisions based on the given ColiisionData
 void ResolveCollisions(const Tree& tree, std::vector<Manifold>& collisionResults);
