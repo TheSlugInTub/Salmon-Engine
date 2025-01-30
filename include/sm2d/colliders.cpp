@@ -403,7 +403,7 @@ Manifold TestColCirclePolygon(const Collider& circle, const Collider& poly)
 {
     // FIXME
     Manifold result;
-    result.colliding = false;
+    result.colliding = true;
 
     return result;
 }

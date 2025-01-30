@@ -46,7 +46,7 @@ void RigidbodySys()
 
         rigid->angularVelocity += rigid->torque / rigid->mass * engineState.deltaTime;
         rigid->angularVelocity *= glm::pow(rigid->angularDamping, engineState.deltaTime);
-        
+
         rigid->transform->rotation.z += rigid->angularVelocity * engineState.deltaTime;
 
         if (rigid->angularVelocity > 0.05f || glm::length(rigid->linearVelocity) > 0.01f)
@@ -111,22 +111,18 @@ void DebugSys()
         }
         else if (collider->type == ColliderType::sm2d_Circle)
         {
-            glm::vec2 topLeft =
-                glm::vec2(collider->body->transform->position) -
-                glm::vec2(collider->circle.radius, collider->circle.radius);
-            glm::vec2 topRight =
-                glm::vec2(collider->body->transform->position) +
-                glm::vec2(collider->circle.radius, -collider->circle.radius);
-            glm::vec2 bottomRight =
-                glm::vec2(collider->body->transform->position) +
-                glm::vec2(-collider->circle.radius, collider->circle.radius);
-            glm::vec2 bottomLeft =
-                glm::vec2(collider->body->transform->position) +
-                glm::vec2(collider->circle.radius, collider->circle.radius);
+            glm::vec2 topLeft = glm::vec2(collider->body->transform->position) -
+                                glm::vec2(collider->circle.radius, collider->circle.radius);
+            glm::vec2 topRight = glm::vec2(collider->body->transform->position) +
+                                 glm::vec2(collider->circle.radius, -collider->circle.radius);
+            glm::vec2 bottomRight = glm::vec2(collider->body->transform->position) +
+                                    glm::vec2(-collider->circle.radius, collider->circle.radius);
+            glm::vec2 bottomLeft = glm::vec2(collider->body->transform->position) +
+                                   glm::vec2(collider->circle.radius, collider->circle.radius);
 
-            std::vector<glm::vec3> points = {glm::vec3(bottomLeft, 0.0f), glm::vec3(topLeft, 0.0f),
-                                             glm::vec3(topRight, 0.0f),
-                                             glm::vec3(bottomRight, 0.0f)};
+            std::vector<glm::vec3> points = {glm::vec3(topLeft, 0.0f), glm::vec3(bottomRight, 0.0f),
+                                             glm::vec3(bottomLeft, 0.0f),
+                                             glm::vec3(topRight, 0.0f)};
 
             Renderer::RenderLine(
                 points, engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
@@ -137,7 +133,7 @@ void DebugSys()
             UpdatePolygon(*collider);
             if (collider->polygon.worldPoints.size() != 0)
             {
-                collider->polygon.center = ComputePolygonCenter(collider->polygon); 
+                collider->polygon.center = ComputePolygonCenter(collider->polygon);
             }
             std::vector<glm::vec3> threedpoints;
             for (auto& point : collider->polygon.worldPoints)

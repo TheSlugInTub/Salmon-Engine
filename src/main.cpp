@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     engineState.SetScene(scene);
     engineState.SetCamera(camera);
 
-    Renderer::Init(true);
+    Renderer::Init(false);
     Renderer::InitShaders();
     Renderer::Init2D();
     Renderer::InitTilemaps();

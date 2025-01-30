@@ -48,10 +48,7 @@ void PlayerIKSys()
             if (ik->groundSensor[0]->sensorCollider != nullptr)
             {
                 ik->legPos[0] = sm2d::FindClosestPointOnPolygon(
-                    ik->groundSensor[0]->sensorCollider->polygon, ik->legRoot[0]);
-                
-                std::cout << glm::to_string(sm2d::FindClosestPointOnPolygon(
-                    ik->groundSensor[0]->sensorCollider->polygon, ik->legRoot[0])) << '\n';
+                    ik->groundSensor[0]->sensorCollider->polygon, ik->legRoot[0] + ik->bodyPos);
             }
         }
 
@@ -59,13 +56,15 @@ void PlayerIKSys()
         {
             if (ik->groundSensor[1]->sensorCollider != nullptr)
             {
-                std::cout << glm::to_string(ik->groundSensor[1]->sensorCollider->polygon.center) << '\n';
-                std::cout << ik->groundSensor[1]->sensorCollider->type << '\n';
-
                 ik->legPos[1] = sm2d::FindClosestPointOnPolygon(
-                    ik->groundSensor[1]->sensorCollider->polygon, ik->legRoot[1]);
+                    ik->groundSensor[1]->sensorCollider->polygon, ik->legRoot[1] + ik->bodyPos);
             }
         }
+
+        ik->groundSensor[0]->body->transform->position =
+            glm::vec3(ik->legRoot[0] + ik->bodyPos, 0.0f);
+        ik->groundSensor[1]->body->transform->position =
+            glm::vec3(ik->legRoot[1] + ik->bodyPos, 0.0f);
     }
 }
 
@@ -91,14 +90,14 @@ void PlayerIKDraw(PlayerIK* ik)
         ImGui::DragFloat("CircleCastRadius", &ik->circleCastRadius);
         ImGui::DragFloat("LegThreshold", &ik->legThreshold);
 
-        Renderer::RenderLine({glm::vec3(ik->legRoot[0] + ik->bodyPos, 0.0f),
-                              glm::vec3(ik->legPos[0], 0.0f)},
-                             engineState.projMat, engineState.camera->GetViewMatrix(),
-                             glm::vec4(1.0f, 0.0f, 0.0f, 1.0));
-        Renderer::RenderLine({glm::vec3(ik->legRoot[1] + ik->bodyPos, 0.0f),
-                              glm::vec3(ik->legPos[1], 0.0f)},
-                             engineState.projMat, engineState.camera->GetViewMatrix(),
-                             glm::vec4(1.0f, 0.0f, 0.0f, 1.0));
+        Renderer::RenderLine(
+            {glm::vec3(ik->legRoot[0] + ik->bodyPos, 0.0f), glm::vec3(ik->legPos[0], 0.0f)},
+            engineState.projMat, engineState.camera->GetViewMatrix(),
+            glm::vec4(1.0f, 0.0f, 0.0f, 1.0));
+        Renderer::RenderLine(
+            {glm::vec3(ik->legRoot[1] + ik->bodyPos, 0.0f), glm::vec3(ik->legPos[1], 0.0f)},
+            engineState.projMat, engineState.camera->GetViewMatrix(),
+            glm::vec4(1.0f, 0.0f, 0.0f, 1.0));
 
         Renderer::RenderPoint(glm::vec3(ik->bodyPos, 0.0f), engineState.projMat,
                               engineState.camera->GetViewMatrix(),
@@ -108,20 +107,18 @@ void PlayerIKDraw(PlayerIK* ik)
 
 nlohmann::json PlayerIKSave(PlayerIK* ik)
 {
-    nlohmann::json j = {
-        {"CircleCastRadius", ik->circleCastRadius},
-        {"LegThreshold", ik->legThreshold},
-        {"FacePos", {ik->facePos.x, ik->facePos.y}},
-        {"BodyPos", {ik->bodyPos.x, ik->bodyPos.y}},
-        {"LegPos1", {ik->legPos[0].x, ik->legPos[0].y}},
-        {"LegPos2", {ik->legPos[1].x, ik->legPos[1].y}},
-        {"HandPos1", {ik->handPos[0].x, ik->handPos[0].y}},
-        {"HandPos2", {ik->handPos[1].x, ik->handPos[1].y}},
-        {"LegRoot1", {ik->legRoot[0].x, ik->legRoot[0].y}},
-        {"LegRoot2", {ik->legRoot[1].x, ik->legRoot[1].y}},
-        {"HandRoot1", {ik->handRoot[0].x, ik->handRoot[0].y}},
-        {"HandRoot2", {ik->handRoot[1].x, ik->handRoot[1].y}} 
-    };
+    nlohmann::json j = {{"CircleCastRadius", ik->circleCastRadius},
+                        {"LegThreshold", ik->legThreshold},
+                        {"FacePos", {ik->facePos.x, ik->facePos.y}},
+                        {"BodyPos", {ik->bodyPos.x, ik->bodyPos.y}},
+                        {"LegPos1", {ik->legPos[0].x, ik->legPos[0].y}},
+                        {"LegPos2", {ik->legPos[1].x, ik->legPos[1].y}},
+                        {"HandPos1", {ik->handPos[0].x, ik->handPos[0].y}},
+                        {"HandPos2", {ik->handPos[1].x, ik->handPos[1].y}},
+                        {"LegRoot1", {ik->legRoot[0].x, ik->legRoot[0].y}},
+                        {"LegRoot2", {ik->legRoot[1].x, ik->legRoot[1].y}},
+                        {"HandRoot1", {ik->handRoot[0].x, ik->handRoot[0].y}},
+                        {"HandRoot2", {ik->handRoot[1].x, ik->handRoot[1].y}}};
 
     return j;
 }
