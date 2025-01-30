@@ -107,7 +107,7 @@ glm::vec2 ComputePolygonCenter(ColPolygon& poly)
         area += a;
     }
 
-    //assert(area < FLT_EPSILON);
+    // assert(area < FLT_EPSILON);
     float invArea = 1.0f / area;
     center.x *= invArea;
     center.y *= invArea;
@@ -634,12 +634,13 @@ void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
 
                 if (node1.collider->sensor)
                 {
-                    node1.collider->sensorCollider = node2.collider;
+
+                    node1.collider->sensorCollider = &(*node2.collider);
                 }
 
                 if (node2.collider->sensor)
                 {
-                    node2.collider->sensorCollider = node1.collider;
+                    node2.collider->sensorCollider = &(*node1.collider);
                 }
 
                 if (node1Moved && !node2Moved)
@@ -657,7 +658,7 @@ void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
                     node2.collider->body->awake = false;
                     return;
                 }
-    
+
                 // if both aren't sensors
                 if (!(node1.collider->sensor || node2.collider->sensor))
                 {
@@ -781,6 +782,50 @@ void ResolveCollisions(const Tree& tree, std::vector<Manifold>& collisionResults
             }
         }
     }
+}
+
+glm::vec2 FindClosestPointOnPolygon(const ColPolygon& polygon, const glm::vec2& point)
+{
+    if (polygon.worldPoints.size() < 2)
+    {
+        return polygon.center; // Return center if polygon is degenerate
+    }
+
+    float     minDistance = std::numeric_limits<float>::max();
+    glm::vec2 closestPoint;
+
+    // Check each edge of the polygon
+    for (size_t i = 0; i < polygon.worldPoints.size(); ++i)
+    {
+        // Get current edge vertices
+        const glm::vec2& start = polygon.worldPoints[i];
+        const glm::vec2& end = polygon.worldPoints[(i + 1) % polygon.worldPoints.size()];
+
+        // Vector from start to end of edge
+        glm::vec2 edge = end - start;
+        // Vector from start to point
+        glm::vec2 pointVector = point - start;
+
+        // Calculate projection length
+        float edgeLength = glm::dot(edge, edge);
+        float t = glm::dot(pointVector, edge) / edgeLength;
+
+        // Clamp t to [0,1] to keep point on the line segment
+        t = glm::clamp(t, 0.0f, 1.0f);
+
+        // Calculate closest point on this edge
+        glm::vec2 projection = start + t * edge;
+
+        // Check if this is the closest point so far
+        float distance = glm::length(point - projection);
+        if (distance < minDistance)
+        {
+            minDistance = distance;
+            closestPoint = projection;
+        }
+    }
+
+    return closestPoint;
 }
 
 void UpdateCollider(Collider* collider)

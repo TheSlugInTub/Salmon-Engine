@@ -15,16 +15,14 @@
 
 struct PlayerIK
 {
-    glm::vec2 faceTarget = {};
-    glm::vec2 bodyTarget = {};
-
-    glm::vec2 legTarget[2] = {};
-    glm::vec2 handTarget[2] = {};
-    
+    glm::vec2 facePos = {};
+    glm::vec2 bodyPos = {};
+ 
     glm::vec2 legPos[2] = {};
     glm::vec2 handPos[2] = {};
     
     float circleCastRadius = 1.0f;
+    float legThreshold = 1.0f; // How far the leg can get away from the base
     
     // In local space
     glm::vec2 legRoot[2] = {glm::vec2(-0.3f, -0.4f), glm::vec2(0.3f, -0.4f)};

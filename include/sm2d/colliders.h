@@ -25,9 +25,9 @@ struct ColCircle
 enum ColliderType
 {
     sm2d_None = 0,
-    sm2d_AABB,
-    sm2d_Circle,
-    sm2d_Polygon
+    sm2d_AABB = 1,
+    sm2d_Circle = 2,
+    sm2d_Polygon = 3
 };
 
 struct Collider
@@ -39,7 +39,7 @@ struct Collider
     Rigidbody*   body = nullptr;
     int          treeIndex = -1; // Index in the AABB tree
     bool         sensor;         // Flag: put colliding collider in sensorCollider
-    Collider*    sensorCollider;
+    Collider*    sensorCollider = nullptr;
 
     int bodyIndex = 0; // Ignore this, it's only for the editor
 

@@ -75,6 +75,9 @@ void ResolveCollisions(const Tree& tree, std::vector<Manifold>& collisionResults
 // Returns the 2d cross product of two vectors
 float CrossProduct(const glm::vec2& a, const glm::vec2& b);
 
+// Finds the closest point on the surface of a polygon to another point
+glm::vec2 FindClosestPointOnPolygon(const ColPolygon& polygon, const glm::vec2& point);
+
 // Update a collider, does the same as the ColliderSys
 void UpdateCollider(Collider* collider);
 

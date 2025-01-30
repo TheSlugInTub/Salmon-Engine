@@ -109,6 +109,29 @@ void DebugSys()
                 points, engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
                 engineState.camera->GetViewMatrix());
         }
+        else if (collider->type == ColliderType::sm2d_Circle)
+        {
+            glm::vec2 topLeft =
+                glm::vec2(collider->body->transform->position) -
+                glm::vec2(collider->circle.radius, collider->circle.radius);
+            glm::vec2 topRight =
+                glm::vec2(collider->body->transform->position) +
+                glm::vec2(collider->circle.radius, -collider->circle.radius);
+            glm::vec2 bottomRight =
+                glm::vec2(collider->body->transform->position) +
+                glm::vec2(-collider->circle.radius, collider->circle.radius);
+            glm::vec2 bottomLeft =
+                glm::vec2(collider->body->transform->position) +
+                glm::vec2(collider->circle.radius, collider->circle.radius);
+
+            std::vector<glm::vec3> points = {glm::vec3(bottomLeft, 0.0f), glm::vec3(topLeft, 0.0f),
+                                             glm::vec3(topRight, 0.0f),
+                                             glm::vec3(bottomRight, 0.0f)};
+
+            Renderer::RenderLine(
+                points, engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
+                engineState.camera->GetViewMatrix());
+        }
         else if (collider->type == ColliderType::sm2d_Polygon)
         {
             UpdatePolygon(*collider);
