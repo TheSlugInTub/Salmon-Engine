@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cmath>
 #include <algorithm>
+#include <glm/gtx/string_cast.hpp>
 
 namespace sm2d
 {
@@ -632,14 +633,21 @@ void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
                 bool node2Moved = node2.collider->body->hasMoved &&
                                   !node2.collider->body->type == BodyType::sm2d_Static;
 
+                if (node1.collider == node2.collider)
+                {
+                    return;
+                }
+
                 if (node1.collider->sensor && !node2.collider->sensor)
                 {
                     node1.collider->sensorCollider = &(*node2.collider);
+                    node1.collider->colliding = true;
                 }
 
                 if (node2.collider->sensor && !node1.collider->sensor)
                 {
                     node2.collider->sensorCollider = &(*node1.collider);
+                    node2.collider->colliding = true;
                 }
 
                 if (node1Moved && !node2Moved)
@@ -662,6 +670,17 @@ void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
                 if (!(node1.collider->sensor || node2.collider->sensor))
                 {
                     collisionResults.push_back(data);
+                }
+            }else
+            {
+                if (node1.collider->sensor && !node2.collider->sensor)
+                {
+                    node1.collider->colliding = false;
+                }
+
+                if (node2.collider->sensor && !node1.collider->sensor)
+                {
+                    node2.collider->colliding = false;
                 }
             }
             return;

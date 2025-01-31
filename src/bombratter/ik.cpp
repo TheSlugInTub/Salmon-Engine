@@ -20,8 +20,7 @@ void PlayerIKStartSys()
         auto rigid = engineState.scene.AssignParam<sm2d::Rigidbody>(
             sen1, sm2d::BodyType::sm2d_Static, trans1);
         ik->groundSensor[0] = engineState.scene.AssignParam<sm2d::Collider>(
-            sen1, sm2d::ColliderType::sm2d_Circle, sm2d::ColCircle(ik->circleCastRadius), rigid,
-            true);
+            sen1, sm2d::ColliderType::sm2d_AABB, sm2d::ColAABB(glm::vec2(0.5f, 0.5f)), rigid, true);
 
         EntityID sen2 = engineState.scene.AddEntity();
         engineState.scene.AssignParam<Name>(sen2, "Sen2");
@@ -30,7 +29,7 @@ void PlayerIKStartSys()
         auto rigid2 = engineState.scene.AssignParam<sm2d::Rigidbody>(
             sen2, sm2d::BodyType::sm2d_Static, trans2);
         ik->groundSensor[1] = engineState.scene.AssignParam<sm2d::Collider>(
-            sen2, sm2d::ColliderType::sm2d_Circle, sm2d::ColCircle(ik->circleCastRadius), rigid2,
+            sen2, sm2d::ColliderType::sm2d_AABB, sm2d::ColAABB(glm::vec2(0.5f, 0.5f)), rigid2,
             true);
     }
 }
@@ -45,7 +44,7 @@ void PlayerIKSys()
 
         if (glm::fastDistance(ik->legPos[0], ik->bodyPos) > ik->legThreshold)
         {
-            if (ik->groundSensor[0]->sensorCollider != nullptr)
+            if (ik->groundSensor[0]->colliding)
             {
                 ik->legPos[0] = sm2d::FindClosestPointOnPolygon(
                     ik->groundSensor[0]->sensorCollider->polygon, ik->legRoot[0] + ik->bodyPos);
@@ -54,11 +53,17 @@ void PlayerIKSys()
 
         if (glm::fastDistance(ik->legPos[1], ik->bodyPos) > ik->legThreshold)
         {
-            if (ik->groundSensor[1]->sensorCollider != nullptr)
+            if (ik->groundSensor[1]->colliding)
             {
                 ik->legPos[1] = sm2d::FindClosestPointOnPolygon(
                     ik->groundSensor[1]->sensorCollider->polygon, ik->legRoot[1] + ik->bodyPos);
             }
+        }
+
+        if (!ik->groundSensor[0]->colliding && !ik->groundSensor[1]->colliding)
+        {
+            ik->legPos[0] = ik->legRoot[0] + glm::vec2(0.0f, -0.3f) + ik->bodyPos;
+            ik->legPos[1] = ik->legRoot[1] + glm::vec2(0.0f, -0.3f) + ik->bodyPos;
         }
 
         ik->groundSensor[0]->body->transform->position =
