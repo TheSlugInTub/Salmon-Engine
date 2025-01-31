@@ -1,3 +1,4 @@
+#include "salmon/utils.h"
 #include "sm2d/functions.h"
 #include <salmon/editor.h>
 #include <imgui/imgui.h>
@@ -31,6 +32,24 @@ void PlayerIKStartSys()
         ik->groundSensor[1] = engineState.scene.AssignParam<sm2d::Collider>(
             sen2, sm2d::ColliderType::sm2d_AABB, sm2d::ColAABB(glm::vec2(0.5f, 0.5f)), rigid2,
             true);
+
+        EntityID face = engineState.scene.AddEntity();
+        engineState.scene.AssignParam<Name>(face, "FaceSprite");
+        engineState.scene.AssignParam<SpriteRenderer>(
+            face, Utils::LoadTexture("res/textures/slug/face.png"));
+        ik->faceTransform = engineState.scene.AssignParam<Transform>(
+            face, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.3f, 0.3f, 0.0f));
+        
+        EntityID body = engineState.scene.AddEntity();
+        engineState.scene.AssignParam<Name>(body, "BodySprite");
+        engineState.scene.AssignParam<SpriteRenderer>(
+            body, Utils::LoadTexture("res/textures/slug/body.png"));
+        ik->bodyTransform = engineState.scene.AssignParam<Transform>(
+            body, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.3f, 0.3f, 0.0f));
+
+        ik->rigidbody = engineState.scene.Get<sm2d::Rigidbody>(ent);
+
+        ik->transform = engineState.scene.Get<Transform>(ent);
     }
 }
 
@@ -40,36 +59,59 @@ void PlayerIKSys()
 {
     for (EntityID ent : SceneView<PlayerIK>(engineState.scene))
     {
-        auto ik = engineState.scene.Get<PlayerIK>(ent);
+        auto      ik = engineState.scene.Get<PlayerIK>(ent);
+        glm::vec2 bodyPos = glm::vec2(ik->transform->position);
+        glm::vec2 worldSpaceLegRoot[2] = {ik->legRoot[0] + bodyPos, ik->legRoot[1] + bodyPos};
 
-        if (glm::fastDistance(ik->legPos[0], ik->bodyPos) > ik->legThreshold)
-        {
-            if (ik->groundSensor[0]->colliding)
-            {
-                ik->legPos[0] = sm2d::FindClosestPointOnPolygon(
-                    ik->groundSensor[0]->sensorCollider->polygon, ik->legRoot[0] + ik->bodyPos);
-            }
-        }
-
-        if (glm::fastDistance(ik->legPos[1], ik->bodyPos) > ik->legThreshold)
-        {
-            if (ik->groundSensor[1]->colliding)
-            {
-                ik->legPos[1] = sm2d::FindClosestPointOnPolygon(
-                    ik->groundSensor[1]->sensorCollider->polygon, ik->legRoot[1] + ik->bodyPos);
-            }
-        }
+        // unsigned chars to save on memory
+        unsigned char leg1Moved = glm::fastDistance(ik->legPos[0], bodyPos) > ik->legThreshold;
+        unsigned char leg2Moved = glm::fastDistance(ik->legPos[1], bodyPos) > ik->legThreshold;
 
         if (!ik->groundSensor[0]->colliding && !ik->groundSensor[1]->colliding)
         {
-            ik->legPos[0] = ik->legRoot[0] + glm::vec2(0.0f, -0.3f) + ik->bodyPos;
-            ik->legPos[1] = ik->legRoot[1] + glm::vec2(0.0f, -0.3f) + ik->bodyPos;
+            ik->legPos[0] = worldSpaceLegRoot[0] + glm::vec2(0.0f, -0.2f);
+            ik->legPos[1] = worldSpaceLegRoot[1] + glm::vec2(0.0f, -0.2f);
+        }
+        else
+        {
+            if (ik->groundSensor[0]->colliding && leg1Moved)
+            {
+                ik->legPos[0] = sm2d::FindClosestPointOnPolygon(
+                    ik->groundSensor[0]->sensorCollider->polygon, worldSpaceLegRoot[0]);
+            }
+
+            if (ik->groundSensor[1]->colliding && leg2Moved)
+            {
+                ik->legPos[1] = sm2d::FindClosestPointOnPolygon(
+                    ik->groundSensor[1]->sensorCollider->polygon, worldSpaceLegRoot[1]);
+            }
         }
 
-        ik->groundSensor[0]->body->transform->position =
-            glm::vec3(ik->legRoot[0] + ik->bodyPos, 0.0f);
-        ik->groundSensor[1]->body->transform->position =
-            glm::vec3(ik->legRoot[1] + ik->bodyPos, 0.0f);
+        ik->groundSensor[0]->body->transform->position = glm::vec3(worldSpaceLegRoot[0], 0.0f);
+        ik->groundSensor[1]->body->transform->position = glm::vec3(worldSpaceLegRoot[1], 0.0f);
+
+        ik->faceTransform->position = glm::vec3(bodyPos + glm::vec2(0.0f, 0.2f), 0.0f);
+        ik->bodyTransform->position = glm::vec3(bodyPos + glm::vec2(0.0f, -0.07f), 0.0f);
+
+        if (Input::GetKey(Key::Left))
+        {
+            ik->rigidbody->awake = true;
+            ik->rigidbody->hasMoved = true;
+            ik->rigidbody->linearVelocity.x -= 0.05f;
+        }
+        else if (Input::GetKey(Key::Right))
+        {
+            ik->rigidbody->awake = true;
+            ik->rigidbody->hasMoved = true;
+            ik->rigidbody->linearVelocity.x += 0.05f;
+        }
+
+        if (Input::GetKeyDown(Key::Up))
+        {
+            ik->rigidbody->awake = true;
+            ik->rigidbody->hasMoved = true;
+            ik->rigidbody->force.y += 1400.0f;
+        }
     }
 }
 
@@ -79,9 +121,6 @@ void PlayerIKDraw(PlayerIK* ik)
 {
     if (ImGui::CollapsingHeader("PlayerIK"))
     {
-        ImGui::DragFloat2("facePos", glm::value_ptr(ik->facePos));
-        ImGui::DragFloat2("bodyPos", glm::value_ptr(ik->bodyPos));
-
         ImGui::DragFloat2("legPos1", glm::value_ptr(ik->legPos[0]));
         ImGui::DragFloat2("legPos2", glm::value_ptr(ik->legPos[1]));
         ImGui::DragFloat2("handPos1", glm::value_ptr(ik->handPos[0]));
@@ -95,16 +134,23 @@ void PlayerIKDraw(PlayerIK* ik)
         ImGui::DragFloat("CircleCastRadius", &ik->circleCastRadius);
         ImGui::DragFloat("LegThreshold", &ik->legThreshold);
 
-        Renderer::RenderLine(
-            {glm::vec3(ik->legRoot[0] + ik->bodyPos, 0.0f), glm::vec3(ik->legPos[0], 0.0f)},
-            engineState.projMat, engineState.camera->GetViewMatrix(),
-            glm::vec4(1.0f, 0.0f, 0.0f, 1.0));
-        Renderer::RenderLine(
-            {glm::vec3(ik->legRoot[1] + ik->bodyPos, 0.0f), glm::vec3(ik->legPos[1], 0.0f)},
-            engineState.projMat, engineState.camera->GetViewMatrix(),
-            glm::vec4(1.0f, 0.0f, 0.0f, 1.0));
+        if (ik->transform == nullptr)
+        {
+            return;
+        }
 
-        Renderer::RenderPoint(glm::vec3(ik->bodyPos, 0.0f), engineState.projMat,
+        glm::vec2 bodyPos = glm::vec2(ik->transform->position);
+
+        Renderer::RenderLine(
+            {glm::vec3(ik->legRoot[0] + bodyPos, 0.0f), glm::vec3(ik->legPos[0], 0.0f)},
+            engineState.projMat, engineState.camera->GetViewMatrix(),
+            glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0), 3.0f, 20.0f);
+        Renderer::RenderLine(
+            {glm::vec3(ik->legRoot[1] + bodyPos, 0.0f), glm::vec3(ik->legPos[1], 0.0f)},
+            engineState.projMat, engineState.camera->GetViewMatrix(),
+            glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0), 3.0f, 20.0f);
+
+        Renderer::RenderPoint(glm::vec3(bodyPos, 0.0f), engineState.projMat,
                               engineState.camera->GetViewMatrix(),
                               glm::vec4(1.0f, 0.0f, 0.0f, 1.0));
     }
@@ -114,8 +160,6 @@ nlohmann::json PlayerIKSave(PlayerIK* ik)
 {
     nlohmann::json j = {{"CircleCastRadius", ik->circleCastRadius},
                         {"LegThreshold", ik->legThreshold},
-                        {"FacePos", {ik->facePos.x, ik->facePos.y}},
-                        {"BodyPos", {ik->bodyPos.x, ik->bodyPos.y}},
                         {"LegPos1", {ik->legPos[0].x, ik->legPos[0].y}},
                         {"LegPos2", {ik->legPos[1].x, ik->legPos[1].y}},
                         {"HandPos1", {ik->handPos[0].x, ik->handPos[0].y}},
@@ -137,14 +181,6 @@ void PlayerIKLoad(PlayerIK* ik, const nlohmann::json& j)
     if (j.contains("LegThreshold"))
     {
         ik->legThreshold = j["LegThreshold"];
-    }
-    if (j.contains("FacePos"))
-    {
-        ik->facePos = {j["FacePos"][0], j["FacePos"][1]};
-    }
-    if (j.contains("BodyPos"))
-    {
-        ik->bodyPos = {j["BodyPos"][0], j["BodyPos"][1]};
     }
     if (j.contains("LegPos1"))
     {

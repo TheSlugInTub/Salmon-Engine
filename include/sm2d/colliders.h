@@ -37,8 +37,8 @@ struct Collider
     ColCircle    circle;
     ColPolygon   polygon;
     Rigidbody*   body = nullptr;
-    int          treeIndex = -1; // Index in the AABB tree
-    bool         sensor = false; // Flag: put colliding collider in sensorCollider
+    int          treeIndex = -1;    // Index in the AABB tree
+    bool         sensor = false;    // Flag: put colliding collider in sensorCollider
     bool         colliding = false; // Flag: is this body colliding with another?
     Collider*    sensorCollider = nullptr;
 

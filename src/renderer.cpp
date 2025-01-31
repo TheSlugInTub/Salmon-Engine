@@ -258,7 +258,7 @@ glm::mat4 MakeModelTransform(Transform* trans)
 }
 
 void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projection,
-                const glm::mat4& view, const glm::vec4& color)
+                const glm::mat4& view, const glm::vec4& color, float pointSize, float lineSize)
 {
     GLuint lVAO, lVBO;
     glGenVertexArrays(1, &lVAO);
@@ -282,11 +282,11 @@ void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projectio
     lineShader.setVec4("color", color);
 
     // Draw line
-    glLineWidth(3.0f);
+    glLineWidth(lineSize);
     glDrawArrays(GL_LINE_LOOP, 0, (GLsizei)points.size());
 
     // Draw points
-    glPointSize(10.0f);
+    glPointSize(pointSize);
     glDrawArrays(GL_POINTS, 0, (GLsizei)points.size());
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -295,8 +295,8 @@ void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projectio
     glDeleteVertexArrays(1, &lVAO);
 }
 
-void RenderPoint(const glm::vec3& point, const glm::mat4& projection,
-                const glm::mat4& view, const glm::vec4& color)
+void RenderPoint(const glm::vec3& point, const glm::mat4& projection, const glm::mat4& view,
+                 const glm::vec4& color)
 {
     GLuint lVAO, lVBO;
     glGenVertexArrays(1, &lVAO);

@@ -15,9 +15,6 @@
 
 struct PlayerIK
 {
-    glm::vec2 facePos = {};
-    glm::vec2 bodyPos = {};
- 
     glm::vec2 legPos[2] = {};
     glm::vec2 handPos[2] = {};
     
@@ -29,4 +26,10 @@ struct PlayerIK
     glm::vec2 handRoot[2] = {glm::vec2(0.2f, 0.2f), glm::vec2(-0.2f, 0.2f)};
 
     sm2d::Collider* groundSensor[2];
+
+    sm2d::Rigidbody* rigidbody = nullptr; // just so I don't have to get it every frame
+    Transform* transform = nullptr; // just so I don't have to get it every frame
+    
+    Transform* faceTransform; // Face transform
+    Transform* bodyTransform; // Body transform
 };
