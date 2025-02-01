@@ -39,7 +39,7 @@ void PlayerIKStartSys()
             face, Utils::LoadTexture("res/textures/slug/face.png"));
         ik->faceTransform = engineState.scene.AssignParam<Transform>(
             face, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.3f, 0.3f, 0.0f));
-        
+
         EntityID body = engineState.scene.AddEntity();
         engineState.scene.AssignParam<Name>(body, "BodySprite");
         engineState.scene.AssignParam<SpriteRenderer>(
@@ -50,6 +50,11 @@ void PlayerIKStartSys()
         ik->rigidbody = engineState.scene.Get<sm2d::Rigidbody>(ent);
 
         ik->transform = engineState.scene.Get<Transform>(ent);
+
+        ik->handRopeSim[0] = RopeSim(ik->handRoot[0], ik->handNumPoints, ik->handElasticity,
+                                     ik->handPointDistance, ik->handDamping);
+        ik->handRopeSim[1] = RopeSim(ik->handRoot[1], ik->handNumPoints, ik->handElasticity,
+                                     ik->handPointDistance, ik->handDamping);
     }
 }
 
@@ -93,6 +98,9 @@ void PlayerIKSys()
         ik->faceTransform->position = glm::vec3(bodyPos + glm::vec2(0.0f, 0.2f), 0.0f);
         ik->bodyTransform->position = glm::vec3(bodyPos + glm::vec2(0.0f, -0.07f), 0.0f);
 
+        SimulateRope(ik->handRopeSim[0]);
+        SimulateRope(ik->handRopeSim[1]);
+
         if (Input::GetKey(Key::Left))
         {
             ik->rigidbody->awake = true;
@@ -123,8 +131,8 @@ void PlayerIKDraw(PlayerIK* ik)
     {
         ImGui::DragFloat2("legPos1", glm::value_ptr(ik->legPos[0]));
         ImGui::DragFloat2("legPos2", glm::value_ptr(ik->legPos[1]));
-        ImGui::DragFloat2("handPos1", glm::value_ptr(ik->handPos[0]));
-        ImGui::DragFloat2("handPos2", glm::value_ptr(ik->handPos[1]));
+        ImGui::DragFloat2("handTarget1", glm::value_ptr(ik->handTarget[0]));
+        ImGui::DragFloat2("handTarget2", glm::value_ptr(ik->handTarget[1]));
 
         ImGui::DragFloat2("legRoot1", glm::value_ptr(ik->legRoot[0]));
         ImGui::DragFloat2("legRoot2", glm::value_ptr(ik->legRoot[1]));
@@ -141,18 +149,26 @@ void PlayerIKDraw(PlayerIK* ik)
 
         glm::vec2 bodyPos = glm::vec2(ik->transform->position);
 
-        Renderer::RenderLine(
-            {glm::vec3(ik->legRoot[0] + bodyPos, 0.0f), glm::vec3(ik->legPos[0], 0.0f)},
+        Renderer::RenderLine2D(
+            {ik->legRoot[0] + bodyPos, ik->legPos[0]},
             engineState.projMat, engineState.camera->GetViewMatrix(),
-            glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0), 3.0f, 20.0f);
-        Renderer::RenderLine(
-            {glm::vec3(ik->legRoot[1] + bodyPos, 0.0f), glm::vec3(ik->legPos[1], 0.0f)},
+            glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0f), 10.0f, 50.0f);
+        Renderer::RenderLine2D(
+            {ik->legRoot[1] + bodyPos, ik->legPos[1]},
             engineState.projMat, engineState.camera->GetViewMatrix(),
-            glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0), 3.0f, 20.0f);
+            glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0f), 10.0f, 50.0f);
 
         Renderer::RenderPoint(glm::vec3(bodyPos, 0.0f), engineState.projMat,
                               engineState.camera->GetViewMatrix(),
                               glm::vec4(1.0f, 0.0f, 0.0f, 1.0));
+
+        Renderer::RenderLine2D(
+            ik->handRopeSim[0].points, engineState.projMat, engineState.camera->GetViewMatrix(),
+            glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0f), 10.0f, 50.0f);
+        
+        Renderer::RenderLine2D(
+            ik->handRopeSim[1].points, engineState.projMat, engineState.camera->GetViewMatrix(),
+            glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0f), 10.0f, 50.0f);
     }
 }
 
@@ -162,9 +178,14 @@ nlohmann::json PlayerIKSave(PlayerIK* ik)
                         {"LegThreshold", ik->legThreshold},
                         {"LegPos1", {ik->legPos[0].x, ik->legPos[0].y}},
                         {"LegPos2", {ik->legPos[1].x, ik->legPos[1].y}},
-                        {"HandPos1", {ik->handPos[0].x, ik->handPos[0].y}},
-                        {"HandPos2", {ik->handPos[1].x, ik->handPos[1].y}},
+                        {"HandPos1", {ik->handTarget[0].x, ik->handTarget[0].y}},
+                        {"HandPos2", {ik->handTarget[1].x, ik->handTarget[1].y}},
                         {"LegRoot1", {ik->legRoot[0].x, ik->legRoot[0].y}},
+                        {"LegRoot2", {ik->legRoot[1].x, ik->legRoot[1].y}},
+                        {"HandElasticity", ik->handElasticity},
+                        {"HandPointDistance", ik->handPointDistance},
+                        {"HandDamping", ik->handDamping},
+                        {"HandNumPoints", ik->handNumPoints},
                         {"LegRoot2", {ik->legRoot[1].x, ik->legRoot[1].y}},
                         {"HandRoot1", {ik->handRoot[0].x, ik->handRoot[0].y}},
                         {"HandRoot2", {ik->handRoot[1].x, ik->handRoot[1].y}}};
@@ -192,11 +213,11 @@ void PlayerIKLoad(PlayerIK* ik, const nlohmann::json& j)
     }
     if (j.contains("HandPos1"))
     {
-        ik->handPos[0] = {j["HandPos1"][0], j["HandPos1"][1]};
+        ik->handTarget[0] = {j["HandPos1"][0], j["HandPos1"][1]};
     }
     if (j.contains("HandPos2"))
     {
-        ik->handPos[1] = {j["HandPos2"][0], j["HandPos2"][1]};
+        ik->handTarget[1] = {j["HandPos2"][0], j["HandPos2"][1]};
     }
     if (j.contains("LegRoot1"))
     {
@@ -213,6 +234,22 @@ void PlayerIKLoad(PlayerIK* ik, const nlohmann::json& j)
     if (j.contains("HandRoot2"))
     {
         ik->handRoot[1] = {j["HandRoot2"][0], j["HandRoot2"][1]};
+    }
+    if (j.contains("HandElasticity"))
+    {
+        ik->handElasticity = j["HandElasticity"];
+    }
+    if (j.contains("HandPointDistance"))
+    {
+        ik->handPointDistance = j["HandPointDistance"];
+    }
+    if (j.contains("HandDamping"))
+    {
+        ik->handDamping = j["HandDamping"];
+    }
+    if (j.contains("HandNumPoints"))
+    {
+        ik->handNumPoints = j["HandNumPoints"];
     }
 }
 

@@ -66,6 +66,10 @@ void RenderModel(EntityID ent, const glm::mat4& projection, const glm::mat4& vie
 void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projection,
                 const glm::mat4& view, const glm::vec4& color = glm::vec4(0.0, 1.0f, 0.0f, 1.0f),
                 float pointSize = 10.0f, float lineSize = 3.0f);
+// Renders a line from one vec2 to another vec2, uses the line shader
+void RenderLine2D(const std::vector<glm::vec2>& points, const glm::mat4& projection,
+                const glm::mat4& view, const glm::vec4& color = glm::vec4(0.0, 1.0f, 0.0f, 1.0f),
+                float pointSize = 10.0f, float lineSize = 3.0f);
 // Renders a single dot
 void RenderPoint(const glm::vec3& point, const glm::mat4& projection, const glm::mat4& view,
                  const glm::vec4& color = glm::vec4(0.0, 1.0f, 0.0f, 1.0f));
@@ -87,6 +91,8 @@ void RenderTilemap(const Tilemap& tilemap, const glm::mat4& projection, const gl
 inline Shader defaultShader;
 // Line shader, used for drawing 3d lines
 inline Shader lineShader;
+// Line shader, used for drawing 2d lines
+inline Shader lineShader2d;
 // Depth shader used for shadows and shadow mapping
 inline Shader depthShader;
 // Default 2D shader
@@ -105,6 +111,8 @@ inline std::vector<Light> lights;
 inline unsigned int VAO, VBO, EBO;
 // OpenGL buffer objects for text
 inline unsigned int textVAO, textVBO;
+// OpenGL buffer objects for line rendering   
+inline GLuint lVAO, lVBO;
 
 // OpenGL buffer objects for 2d instanced tiles
 inline unsigned int tileVBO, tileIndexVBO; // Can someone please find a better way of

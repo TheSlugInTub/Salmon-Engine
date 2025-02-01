@@ -20,6 +20,7 @@ void InitShaders()
 {
     defaultShader = Shader("shaders/3d_vertex.shad", "shaders/3d_fragment.shad");
     lineShader = Shader("shaders/line_vertex.shad", "shaders/line_fragment.shad");
+    lineShader2d = Shader("shaders/2d_line_vertex.shad", "shaders/2d_line_fragment.shad");
     depthShader = Shader("shaders/shadow_vertex.shad", "shaders/shadow_fragment.shad",
                          "shaders/shadow_geometry.shad");
     twoShader = Shader("shaders/2d_vertex.shad", "shaders/2d_fragment.shad");
@@ -67,6 +68,9 @@ void Init2D()
     // texture attribute
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    glGenVertexArrays(1, &lVAO);
+    glGenBuffers(1, &lVBO);
 }
 
 void InitParticles()
@@ -260,10 +264,6 @@ glm::mat4 MakeModelTransform(Transform* trans)
 void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projection,
                 const glm::mat4& view, const glm::vec4& color, float pointSize, float lineSize)
 {
-    GLuint lVAO, lVBO;
-    glGenVertexArrays(1, &lVAO);
-    glGenBuffers(1, &lVBO);
-
     glBindVertexArray(lVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, lVBO);
@@ -280,6 +280,40 @@ void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projectio
     glm::mat4 model = glm::mat4(1.0f);
     lineShader.setMat4("model", model);
     lineShader.setVec4("color", color);
+
+    // Draw line
+    glLineWidth(lineSize);
+    glDrawArrays(GL_LINE_LOOP, 0, (GLsizei)points.size());
+
+    // Draw points
+    glPointSize(pointSize);
+    glDrawArrays(GL_POINTS, 0, (GLsizei)points.size());
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glDeleteBuffers(1, &lVBO);
+    glDeleteVertexArrays(1, &lVAO);
+}
+
+void RenderLine2D(const std::vector<glm::vec2>& points, const glm::mat4& projection,
+                const glm::mat4& view, const glm::vec4& color, float pointSize, float lineSize)
+{
+    glBindVertexArray(lVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, lVBO);
+    glBufferData(GL_ARRAY_BUFFER, points.size() * sizeof(glm::vec2), points.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    lineShader2d.use();
+
+    lineShader2d.setMat4("view", view);
+    lineShader2d.setMat4("projection", projection);
+
+    glm::mat4 model = glm::mat4(1.0f);
+    lineShader2d.setMat4("model", model);
+    lineShader2d.setVec4("color", color);
 
     // Draw line
     glLineWidth(lineSize);

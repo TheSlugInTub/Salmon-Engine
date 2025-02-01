@@ -2,6 +2,10 @@
     [
         {
             "CircleCastRadius": 0.800000011920929,
+            "HandDamping": 0.9800000190734863,
+            "HandElasticity": 1.0,
+            "HandNumPoints": 5,
+            "HandPointDistance": 1.0,
             "HandPos1": [
                 0.17000000178813934,
                 0.0
