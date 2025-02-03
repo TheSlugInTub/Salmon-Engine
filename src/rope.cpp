@@ -35,7 +35,7 @@ void SimulateRope(RopeSim& rope)
         // Constrain point to be within the rope's length from the previous point
         glm::vec2& previPoint = rope.points[i - 1];
 
-        glm::vec2 direction = point - prevPoint;
+        glm::vec2 direction = point - previPoint;
         float     distance = glm::length(direction);
 
         if (distance > rope.pointDistance)

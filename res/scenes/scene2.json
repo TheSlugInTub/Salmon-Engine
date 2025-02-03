@@ -1,0 +1,58 @@
+[
+    [
+        {
+            "EntName": "Rigidbody",
+            "type": "Name"
+        },
+        {
+            "Position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "type": "Transform"
+        },
+        {
+            "Billboard": false,
+            "Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "TexturePath": "res/textures/Slugarius.png",
+            "type": "SpriteRenderer"
+        },
+        {
+            "AngularDamping": 0.9800000190734863,
+            "AngularVelocity": 0.0,
+            "Awake": true,
+            "FixedRotation": false,
+            "Force": [
+                0.0,
+                3.0
+            ],
+            "LinearDamping": 0.9800000190734863,
+            "LinearVelocity": [
+                0.0,
+                0.0
+            ],
+            "Mass": 1.0,
+            "MomentOfInertia": 0.5,
+            "Restitution": 0.10000000149011612,
+            "Torque": 0.0,
+            "Type": 1,
+            "type": "Rigidbody"
+        }
+    ]
+]

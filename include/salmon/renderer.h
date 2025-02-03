@@ -69,7 +69,7 @@ void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projectio
 // Renders a line from one vec2 to another vec2, uses the line shader
 void RenderLine2D(const std::vector<glm::vec2>& points, const glm::mat4& projection,
                 const glm::mat4& view, const glm::vec4& color = glm::vec4(0.0, 1.0f, 0.0f, 1.0f),
-                float pointSize = 10.0f, float lineSize = 3.0f);
+                float pointSize = 10.0f, float lineSize = 3.0f, bool looping = true);
 // Renders a single dot
 void RenderPoint(const glm::vec3& point, const glm::mat4& projection, const glm::mat4& view,
                  const glm::vec4& color = glm::vec4(0.0, 1.0f, 0.0f, 1.0f));
@@ -112,7 +112,9 @@ inline unsigned int VAO, VBO, EBO;
 // OpenGL buffer objects for text
 inline unsigned int textVAO, textVBO;
 // OpenGL buffer objects for line rendering   
-inline GLuint lVAO, lVBO;
+inline GLuint lineVAO, lineVBO;
+// OpenGL buffer objects for line rendering   
+inline GLuint lineVAO2D, lineVBO2D;
 
 // OpenGL buffer objects for 2d instanced tiles
 inline unsigned int tileVBO, tileIndexVBO; // Can someone please find a better way of

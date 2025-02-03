@@ -1,5 +1,6 @@
 #include "salmon/utils.h"
 #include "sm2d/functions.h"
+#include <chrono>
 #include <salmon/editor.h>
 #include <imgui/imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -60,6 +61,11 @@ void PlayerIKStartSys()
 
 REGISTER_START_SYSTEM(PlayerIKStartSys);
 
+std::string FPS;
+auto        lastTime = std::chrono::high_resolution_clock::now();
+int         frameCount = 0;
+float       fps = 0.0f;
+
 void PlayerIKSys()
 {
     for (EntityID ent : SceneView<PlayerIK>(engineState.scene))
@@ -97,6 +103,13 @@ void PlayerIKSys()
 
         ik->faceTransform->position = glm::vec3(bodyPos + glm::vec2(0.0f, 0.2f), 0.0f);
         ik->bodyTransform->position = glm::vec3(bodyPos + glm::vec2(0.0f, -0.07f), 0.0f);
+
+        ik->handRopeSim[0].basePosition = ik->handRoot[0] + bodyPos;
+        ik->handRopeSim[0].points[0] = ik->handRoot[0] + bodyPos;
+        ik->handRopeSim[0].prevPoints[0] = ik->handRoot[0] + bodyPos;
+        ik->handRopeSim[1].basePosition = ik->handRoot[1] + bodyPos;
+        ik->handRopeSim[1].points[0] = ik->handRoot[1] + bodyPos;
+        ik->handRopeSim[1].prevPoints[0] = ik->handRoot[1] + bodyPos;
 
         SimulateRope(ik->handRopeSim[0]);
         SimulateRope(ik->handRopeSim[1]);
@@ -142,6 +155,30 @@ void PlayerIKDraw(PlayerIK* ik)
         ImGui::DragFloat("CircleCastRadius", &ik->circleCastRadius);
         ImGui::DragFloat("LegThreshold", &ik->legThreshold);
 
+        if (ImGui::DragFloat("HandElasticity", &ik->handElasticity))
+        {
+            ik->handRopeSim[0].elasticity = ik->handElasticity;
+            ik->handRopeSim[1].elasticity = ik->handElasticity;
+        }
+
+        if (ImGui::DragFloat("HandPointDistance", &ik->handPointDistance))
+        {
+            ik->handRopeSim[0].pointDistance = ik->handPointDistance;
+            ik->handRopeSim[1].pointDistance = ik->handPointDistance;
+        }
+
+        if (ImGui::DragInt("HandNumPoints", &ik->handNumPoints))
+        {
+            ik->handRopeSim[0].numPoints = ik->handNumPoints;
+            ik->handRopeSim[1].numPoints = ik->handNumPoints;
+        }
+
+        if (ImGui::DragFloat("HandDamping", &ik->handDamping))
+        {
+            ik->handRopeSim[0].damping = ik->handDamping;
+            ik->handRopeSim[1].damping = ik->handDamping;
+        }
+
         if (ik->transform == nullptr)
         {
             return;
@@ -149,14 +186,14 @@ void PlayerIKDraw(PlayerIK* ik)
 
         glm::vec2 bodyPos = glm::vec2(ik->transform->position);
 
-        Renderer::RenderLine2D(
-            {ik->legRoot[0] + bodyPos, ik->legPos[0]},
-            engineState.projMat, engineState.camera->GetViewMatrix(),
-            glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0f), 10.0f, 50.0f);
-        Renderer::RenderLine2D(
-            {ik->legRoot[1] + bodyPos, ik->legPos[1]},
-            engineState.projMat, engineState.camera->GetViewMatrix(),
-            glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0f), 10.0f, 50.0f);
+        Renderer::RenderLine2D({ik->legRoot[0] + bodyPos, ik->legPos[0]}, engineState.projMat,
+                               engineState.camera->GetViewMatrix(),
+                               glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0f), 10.0f,
+                               50.0f);
+        Renderer::RenderLine2D({ik->legRoot[1] + bodyPos, ik->legPos[1]}, engineState.projMat,
+                               engineState.camera->GetViewMatrix(),
+                               glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0f), 10.0f,
+                               50.0f);
 
         Renderer::RenderPoint(glm::vec3(bodyPos, 0.0f), engineState.projMat,
                               engineState.camera->GetViewMatrix(),
@@ -164,11 +201,33 @@ void PlayerIKDraw(PlayerIK* ik)
 
         Renderer::RenderLine2D(
             ik->handRopeSim[0].points, engineState.projMat, engineState.camera->GetViewMatrix(),
-            glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0f), 10.0f, 50.0f);
-        
+            glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0f), 0.1f, 50.0f, false);
+
         Renderer::RenderLine2D(
             ik->handRopeSim[1].points, engineState.projMat, engineState.camera->GetViewMatrix(),
-            glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0f), 10.0f, 50.0f);
+            glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0f), 0.1f, 50.0f, false);
+
+        // Update FPS every second
+        auto currentTime = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<float> elapsed = currentTime - lastTime;
+        lastTime = currentTime;
+        frameCount++;
+        static float timeAccumulator = 0.0f;
+        timeAccumulator += elapsed.count();
+        if (timeAccumulator >= 0.1f)
+        {
+            fps = frameCount / timeAccumulator;
+
+            // Reset counters
+            frameCount = 0;
+            timeAccumulator = 0.0f;
+
+            // Update the FPS string
+            FPS = std::to_string(fps);
+
+            engineState.window->SetTitle(FPS.c_str());
+        }
     }
 }
 

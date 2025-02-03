@@ -69,8 +69,10 @@ void Init2D()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glGenVertexArrays(1, &lVAO);
-    glGenBuffers(1, &lVBO);
+    glGenVertexArrays(1, &lineVAO);
+    glGenBuffers(1, &lineVBO);
+    glGenVertexArrays(1, &lineVAO2D);
+    glGenBuffers(1, &lineVBO2D);
 }
 
 void InitParticles()
@@ -264,9 +266,9 @@ glm::mat4 MakeModelTransform(Transform* trans)
 void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projection,
                 const glm::mat4& view, const glm::vec4& color, float pointSize, float lineSize)
 {
-    glBindVertexArray(lVAO);
+    glBindVertexArray(lineVAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, lVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, lineVBO);
     glBufferData(GL_ARRAY_BUFFER, points.size() * sizeof(glm::vec3), points.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
@@ -291,16 +293,14 @@ void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projectio
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-    glDeleteBuffers(1, &lVBO);
-    glDeleteVertexArrays(1, &lVAO);
 }
 
 void RenderLine2D(const std::vector<glm::vec2>& points, const glm::mat4& projection,
-                const glm::mat4& view, const glm::vec4& color, float pointSize, float lineSize)
+                const glm::mat4& view, const glm::vec4& color, float pointSize, float lineSize, bool looping)
 {
-    glBindVertexArray(lVAO);
+    glBindVertexArray(lineVAO2D);
 
-    glBindBuffer(GL_ARRAY_BUFFER, lVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, lineVBO2D);
     glBufferData(GL_ARRAY_BUFFER, points.size() * sizeof(glm::vec2), points.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
@@ -317,7 +317,7 @@ void RenderLine2D(const std::vector<glm::vec2>& points, const glm::mat4& project
 
     // Draw line
     glLineWidth(lineSize);
-    glDrawArrays(GL_LINE_LOOP, 0, (GLsizei)points.size());
+    glDrawArrays(looping ? GL_LINE_LOOP : GL_LINE_STRIP, 0, (GLsizei)points.size());
 
     // Draw points
     glPointSize(pointSize);
@@ -325,8 +325,6 @@ void RenderLine2D(const std::vector<glm::vec2>& points, const glm::mat4& project
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-    glDeleteBuffers(1, &lVBO);
-    glDeleteVertexArrays(1, &lVAO);
 }
 
 void RenderPoint(const glm::vec3& point, const glm::mat4& projection, const glm::mat4& view,
