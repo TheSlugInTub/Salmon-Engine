@@ -1,5 +1,3 @@
-#include "salmon/renderer.h"
-#include "salmon/utils.h"
 #include <sm2d/functions.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui/imgui.h>
@@ -9,7 +7,7 @@
 #include <salmon/particle_system.h>
 #include <salmon/sprite_animation.h>
 #include <salmon/tilemap.h>
-#include <winsock.h>
+#include <glm/gtx/string_cast.hpp>
 
 // -------------------
 

@@ -633,7 +633,13 @@ void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
                 bool node2Moved = node2.collider->body->hasMoved &&
                                   !node2.collider->body->type == BodyType::sm2d_Static;
 
-                if (node1.collider == node2.collider)
+                if (node1.collider->sensor || node2.collider->sensor)
+                {
+                    std::cout << "One of them sensor\n";
+                }
+
+                if ((node1.collider == node2.collider) ||
+                    (node1.collider->sensor && node2.collider->sensor))
                 {
                     return;
                 }
@@ -641,13 +647,11 @@ void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
                 if (node1.collider->sensor && !node2.collider->sensor)
                 {
                     node1.collider->sensorCollider = &(*node2.collider);
-                    node1.collider->colliding = true;
                 }
 
                 if (node2.collider->sensor && !node1.collider->sensor)
                 {
                     node2.collider->sensorCollider = &(*node1.collider);
-                    node2.collider->colliding = true;
                 }
 
                 if (node1Moved && !node2Moved)
@@ -671,16 +675,17 @@ void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
                 {
                     collisionResults.push_back(data);
                 }
-            }else
+            }
+            else
             {
                 if (node1.collider->sensor && !node2.collider->sensor)
                 {
-                    node1.collider->colliding = false;
+                    node1.collider->sensorCollider = nullptr;
                 }
 
                 if (node2.collider->sensor && !node1.collider->sensor)
                 {
-                    node2.collider->colliding = false;
+                    node2.collider->sensorCollider = nullptr;
                 }
             }
             return;

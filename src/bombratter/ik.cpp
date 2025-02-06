@@ -78,23 +78,30 @@ void PlayerIKSys()
         unsigned char leg1Moved = glm::fastDistance(ik->legPos[0], bodyPos) > ik->legThreshold;
         unsigned char leg2Moved = glm::fastDistance(ik->legPos[1], bodyPos) > ik->legThreshold;
 
-        if (!ik->groundSensor[0]->colliding && !ik->groundSensor[1]->colliding)
+        if (!ik->groundSensor[0]->sensorCollider && !ik->groundSensor[1]->sensorCollider)
         {
             ik->legPos[0] = worldSpaceLegRoot[0] + glm::vec2(0.0f, -0.2f);
             ik->legPos[1] = worldSpaceLegRoot[1] + glm::vec2(0.0f, -0.2f);
         }
         else
         {
-            if (ik->groundSensor[0]->colliding && leg1Moved)
+            if (ik->groundSensor[0]->sensorCollider && leg1Moved)
             {
                 ik->legPos[0] = sm2d::FindClosestPointOnPolygon(
                     ik->groundSensor[0]->sensorCollider->polygon, worldSpaceLegRoot[0]);
             }
 
-            if (ik->groundSensor[1]->colliding && leg2Moved)
+            if (ik->groundSensor[1]->sensorCollider && leg2Moved)
             {
                 ik->legPos[1] = sm2d::FindClosestPointOnPolygon(
                     ik->groundSensor[1]->sensorCollider->polygon, worldSpaceLegRoot[1]);
+            }
+
+            if (Input::GetKeyDown(Key::Up))
+            {
+                ik->rigidbody->awake = true;
+                ik->rigidbody->hasMoved = true;
+                ik->rigidbody->force.y += 1400.0f;
             }
         }
 
@@ -125,13 +132,6 @@ void PlayerIKSys()
             ik->rigidbody->awake = true;
             ik->rigidbody->hasMoved = true;
             ik->rigidbody->linearVelocity.x += 0.05f;
-        }
-
-        if (Input::GetKeyDown(Key::Up))
-        {
-            ik->rigidbody->awake = true;
-            ik->rigidbody->hasMoved = true;
-            ik->rigidbody->force.y += 1400.0f;
         }
     }
 }
