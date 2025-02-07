@@ -78,20 +78,26 @@ void PlayerIKSys()
         unsigned char leg1Moved = glm::fastDistance(ik->legPos[0], bodyPos) > ik->legThreshold;
         unsigned char leg2Moved = glm::fastDistance(ik->legPos[1], bodyPos) > ik->legThreshold;
 
-        if (!ik->groundSensor[0]->sensorCollider && !ik->groundSensor[1]->sensorCollider)
+        unsigned char isColliding1 = ik->groundSensor[0]->sensorCollider != nullptr;
+        unsigned char isColliding2 = ik->groundSensor[1]->sensorCollider != nullptr;
+
+        std::cout << "Is leg1 colliding? " << (int)isColliding1 << '\n';
+        std::cout << "Is leg2 colliding? " << (int)isColliding2 << '\n';
+
+        if (!isColliding1 && !isColliding2)
         {
             ik->legPos[0] = worldSpaceLegRoot[0] + glm::vec2(0.0f, -0.2f);
             ik->legPos[1] = worldSpaceLegRoot[1] + glm::vec2(0.0f, -0.2f);
         }
         else
         {
-            if (ik->groundSensor[0]->sensorCollider && leg1Moved)
+            if (isColliding1 && leg1Moved)
             {
                 ik->legPos[0] = sm2d::FindClosestPointOnPolygon(
                     ik->groundSensor[0]->sensorCollider->polygon, worldSpaceLegRoot[0]);
             }
 
-            if (ik->groundSensor[1]->sensorCollider && leg2Moved)
+            if (isColliding2 && leg2Moved)
             {
                 ik->legPos[1] = sm2d::FindClosestPointOnPolygon(
                     ik->groundSensor[1]->sensorCollider->polygon, worldSpaceLegRoot[1]);

@@ -639,14 +639,16 @@ void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
                     return;
                 }
 
-                if (node1.collider->sensor && !node2.collider->sensor)
+                if (node1.collider->sensor && !node2.collider->sensor &&
+                    node2.collider->body->userData == node1.collider->sensorTag)
                 {
-                    node1.collider->sensorCollider = &(*node2.collider);
+                    node1.collider->sensorCollider = node2.collider;
                 }
 
-                if (node2.collider->sensor && !node1.collider->sensor)
+                if (node2.collider->sensor && !node1.collider->sensor &&
+                    node1.collider->body->userData == node2.collider->sensorTag)
                 {
-                    node2.collider->sensorCollider = &(*node1.collider);
+                    node2.collider->sensorCollider = node1.collider;
                 }
 
                 if (node1Moved && !node2Moved)
@@ -673,24 +675,6 @@ void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
             }
             else
             {
-                if (node1.collider->sensor && !node2.collider->sensor)
-                {
-                    node1.collider->sensorCollider = nullptr;
-                }
-
-                if (node2.collider->sensor && !node1.collider->sensor)
-                {
-                    node2.collider->sensorCollider = nullptr;
-                }
-
-                // if (node1.collider->sensor || node2.collider->sensor)
-                // {
-                //     if (node1.collider->body->transform->position.x == -3.0f ||
-                //         node2.collider->body->transform->position.x == -3.0f)
-                //     {
-                //         std::cout << "get yo shit on";
-                //     }
-                // }
             }
             return;
         }

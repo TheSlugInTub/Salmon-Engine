@@ -391,6 +391,7 @@ void RigidbodyDraw(sm2d::Rigidbody* rb)
         ImGui::DragFloat("Angular Velocity", &rb->angularVelocity, 0.1f);
         ImGui::DragFloat2("Force", glm::value_ptr(rb->force), 0.1f);
         ImGui::DragFloat("Torque", &rb->torque, 0.1f);
+        ImGui::InputInt("UserData", &rb->userData);
     }
 }
 
@@ -407,6 +408,7 @@ nlohmann::json RigidbodySave(sm2d::Rigidbody* rb)
             {"LinearVelocity", {rb->linearVelocity.x, rb->linearVelocity.y}},
             {"AngularVelocity", rb->angularVelocity},
             {"Force", {rb->force.x, rb->force.y}},
+            {"UserData", rb->userData},
             {"Torque", rb->torque}};
 }
 
@@ -424,6 +426,8 @@ void RigidbodyLoad(sm2d::Rigidbody* rb, const nlohmann::json& j)
     rb->angularVelocity = j["AngularVelocity"];
     rb->force = {j["Force"][0], j["Force"][1]};
     rb->torque = j["Torque"];
+    if (j.contains("UserData"))
+        rb->userData = j["UserData"];
 }
 
 // -------------------
@@ -613,7 +617,7 @@ void TilemapDraw(Tilemap* tilemap)
         {
             for (int i = 0; i < tilemap->tileTransforms.size(); i++)
             {
-                if (Utils::GetPositionOfMat4(tilemap->tileTransforms[i]) == roundedPos) 
+                if (Utils::GetPositionOfMat4(tilemap->tileTransforms[i]) == roundedPos)
                 {
                     tilemap->tileTransforms.erase(tilemap->tileTransforms.begin() + i);
                     tilemap->tileTextureIndices.erase(tilemap->tileTextureIndices.begin() + i);

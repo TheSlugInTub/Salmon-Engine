@@ -39,8 +39,8 @@ struct Collider
     Rigidbody*   body = nullptr;
     int          treeIndex = -1;    // Index in the AABB tree
     bool         sensor = false;    // Flag: put colliding collider in sensorCollider
-    bool         colliding = false; // Flag: is this body colliding with another?
-    Collider*    sensorCollider = nullptr;
+    int sensorTag = 0; // The tag that bodies have to be to be detected by sensors
+    Collider* sensorCollider = nullptr;
 
     int bodyIndex = 0; // Ignore this, it's only for the editor
 

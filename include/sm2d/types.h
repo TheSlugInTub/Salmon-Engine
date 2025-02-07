@@ -48,7 +48,7 @@ struct Rigidbody
     bool  fixedRotation = false;  // If this is true, the body won't rotate
     float momentOfInertia = 0.5f; // The closer to zero this is, the easier it is to be rotated
 
-    void* userData = nullptr; // Put whatever you want in here, useful for marking tags
+    int userData = 0; // Put whatever you want in here, useful for marking tags
 
     glm::vec2 linearVelocity = glm::vec2(0.0f); // Rate of change of position
     float     angularVelocity = 0.0f;           // In radians
