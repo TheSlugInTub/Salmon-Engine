@@ -53,6 +53,21 @@ int main(int argc, char** argv)
         sm2d::GetCollisionsInTree(sm2d::bvh, colResults);
         sm2d::ResolveCollisions(sm2d::bvh, colResults);
 
+        for (auto& node : sm2d::bvh.nodes)
+        {
+            if (node.index == -1)
+                continue;
+
+            glm::vec3 topRight = glm::vec3(node.box.upperBound, 0.0f);
+            glm::vec3 bottomLeft = glm::vec3(node.box.lowerBound, 0.0f);
+            glm::vec3 bottomRight = glm::vec3(glm::vec2(topRight.x, bottomLeft.y), 0.0f);
+            glm::vec3 topLeft = glm::vec3(glm::vec2(bottomLeft.x, topRight.y), 0.0f);
+            std::vector<glm::vec3> points = {bottomLeft, topLeft, topRight, bottomRight};
+            Renderer::RenderLine(
+                points, engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
+                engineState.camera->GetViewMatrix());
+        }
+
         // End of frame
         ImGuiLayer::EndFrame();
         window.Update();

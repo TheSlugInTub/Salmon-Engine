@@ -633,11 +633,6 @@ void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
                 bool node2Moved = node2.collider->body->hasMoved &&
                                   !node2.collider->body->type == BodyType::sm2d_Static;
 
-                if (node1.collider->sensor || node2.collider->sensor)
-                {
-                    std::cout << "One of them sensor\n";
-                }
-
                 if ((node1.collider == node2.collider) ||
                     (node1.collider->sensor && node2.collider->sensor))
                 {
@@ -687,6 +682,15 @@ void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
                 {
                     node2.collider->sensorCollider = nullptr;
                 }
+
+                // if (node1.collider->sensor || node2.collider->sensor)
+                // {
+                //     if (node1.collider->body->transform->position.x == -3.0f ||
+                //         node2.collider->body->transform->position.x == -3.0f)
+                //     {
+                //         std::cout << "get yo shit on";
+                //     }
+                // }
             }
             return;
         }
