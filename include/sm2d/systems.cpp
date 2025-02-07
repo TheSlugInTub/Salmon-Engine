@@ -195,7 +195,8 @@ void ColliderSys()
             }
         }
 
-        if (collider->body->type == BodyType::sm2d_Static || !collider->body->awake)
+        if ((collider->body->type == BodyType::sm2d_Static || !collider->body->awake) &&
+            !collider->sensor)
         {
             continue;
         }
