@@ -392,6 +392,7 @@ void RigidbodyDraw(sm2d::Rigidbody* rb)
         ImGui::DragFloat2("Force", glm::value_ptr(rb->force), 0.1f);
         ImGui::DragFloat("Torque", &rb->torque, 0.1f);
         ImGui::InputInt("UserData", &rb->userData);
+        ImGui::Checkbox("AlwaysAwake", &rb->alwaysAwake);
     }
 }
 
@@ -409,6 +410,7 @@ nlohmann::json RigidbodySave(sm2d::Rigidbody* rb)
             {"AngularVelocity", rb->angularVelocity},
             {"Force", {rb->force.x, rb->force.y}},
             {"UserData", rb->userData},
+            {"AlwaysAwake", rb->alwaysAwake},
             {"Torque", rb->torque}};
 }
 
@@ -428,6 +430,8 @@ void RigidbodyLoad(sm2d::Rigidbody* rb, const nlohmann::json& j)
     rb->torque = j["Torque"];
     if (j.contains("UserData"))
         rb->userData = j["UserData"];
+    if (j.contains("AlwaysAwake"))
+        rb->alwaysAwake = j["AlwaysAwake"];
 }
 
 // -------------------

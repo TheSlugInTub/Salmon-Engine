@@ -66,6 +66,13 @@ auto        lastTime = std::chrono::high_resolution_clock::now();
 int         frameCount = 0;
 float       fps = 0.0f;
 
+float MoveTowards(float current, float target, float maxDelta)
+{
+    if (std::abs(target - current) <= maxDelta)
+        return target;
+    return current + glm::sign(target - current) * maxDelta;
+}
+
 void PlayerIKSys()
 {
     for (EntityID ent : SceneView<PlayerIK>(engineState.scene))
@@ -78,26 +85,23 @@ void PlayerIKSys()
         unsigned char leg1Moved = glm::fastDistance(ik->legPos[0], bodyPos) > ik->legThreshold;
         unsigned char leg2Moved = glm::fastDistance(ik->legPos[1], bodyPos) > ik->legThreshold;
 
-        unsigned char isColliding1 = ik->groundSensor[0]->sensorCollider != nullptr;
-        unsigned char isColliding2 = ik->groundSensor[1]->sensorCollider != nullptr;
+        unsigned char notNull1 = ik->groundSensor[0]->sensorCollider != nullptr;
+        unsigned char notNull2 = ik->groundSensor[1]->sensorCollider != nullptr;
 
-        std::cout << "Is leg1 colliding? " << (int)isColliding1 << '\n';
-        std::cout << "Is leg2 colliding? " << (int)isColliding2 << '\n';
-
-        if (!isColliding1 && !isColliding2)
+        if (!notNull1 && !notNull2)
         {
             ik->legPos[0] = worldSpaceLegRoot[0] + glm::vec2(0.0f, -0.2f);
             ik->legPos[1] = worldSpaceLegRoot[1] + glm::vec2(0.0f, -0.2f);
         }
         else
         {
-            if (isColliding1 && leg1Moved)
+            if (leg1Moved && notNull1)
             {
                 ik->legPos[0] = sm2d::FindClosestPointOnPolygon(
                     ik->groundSensor[0]->sensorCollider->polygon, worldSpaceLegRoot[0]);
             }
 
-            if (isColliding2 && leg2Moved)
+            if (leg2Moved && notNull2)
             {
                 ik->legPos[1] = sm2d::FindClosestPointOnPolygon(
                     ik->groundSensor[1]->sensorCollider->polygon, worldSpaceLegRoot[1]);
@@ -107,7 +111,7 @@ void PlayerIKSys()
             {
                 ik->rigidbody->awake = true;
                 ik->rigidbody->hasMoved = true;
-                ik->rigidbody->force.y += 1400.0f;
+                ik->rigidbody->force.y += 800.0f;
             }
         }
 
@@ -131,13 +135,31 @@ void PlayerIKSys()
         {
             ik->rigidbody->awake = true;
             ik->rigidbody->hasMoved = true;
-            ik->rigidbody->linearVelocity.x -= 0.05f;
+
+            // Apply acceleration towards target speed
+            float targetSpeed = -ik->maxSpeed;
+            float currentSpeed = ik->rigidbody->linearVelocity.x;
+            float acceleration = ik->acceleration * engineState.deltaTime;
+
+            ik->rigidbody->linearVelocity.x = MoveTowards(currentSpeed, targetSpeed, acceleration);
         }
         else if (Input::GetKey(Key::Right))
         {
             ik->rigidbody->awake = true;
             ik->rigidbody->hasMoved = true;
-            ik->rigidbody->linearVelocity.x += 0.05f;
+
+            float targetSpeed = ik->maxSpeed;
+            float currentSpeed = ik->rigidbody->linearVelocity.x;
+            float acceleration = ik->acceleration * engineState.deltaTime;
+
+            ik->rigidbody->linearVelocity.x = MoveTowards(currentSpeed, targetSpeed, acceleration);
+        }
+        else
+        {
+            // Decelerate when no input
+            float deceleration = ik->deceleration * engineState.deltaTime;
+            ik->rigidbody->linearVelocity.x =
+                MoveTowards(ik->rigidbody->linearVelocity.x, 0.0f, deceleration);
         }
     }
 }
@@ -160,6 +182,10 @@ void PlayerIKDraw(PlayerIK* ik)
 
         ImGui::DragFloat("CircleCastRadius", &ik->circleCastRadius);
         ImGui::DragFloat("LegThreshold", &ik->legThreshold);
+
+        ImGui::DragFloat("MaxSpeed", &ik->maxSpeed);
+        ImGui::DragFloat("Acceleration", &ik->acceleration);
+        ImGui::DragFloat("Deceleration", &ik->deceleration);
 
         if (ImGui::DragFloat("HandElasticity", &ik->handElasticity))
         {
@@ -251,6 +277,9 @@ nlohmann::json PlayerIKSave(PlayerIK* ik)
                         {"HandPointDistance", ik->handPointDistance},
                         {"HandDamping", ik->handDamping},
                         {"HandNumPoints", ik->handNumPoints},
+                        {"HandNumPoints", ik->maxSpeed},
+                        {"Acceleration", ik->acceleration},
+                        {"Deceleration", ik->deceleration},
                         {"LegRoot2", {ik->legRoot[1].x, ik->legRoot[1].y}},
                         {"HandRoot1", {ik->handRoot[0].x, ik->handRoot[0].y}},
                         {"HandRoot2", {ik->handRoot[1].x, ik->handRoot[1].y}}};
@@ -315,6 +344,18 @@ void PlayerIKLoad(PlayerIK* ik, const nlohmann::json& j)
     if (j.contains("HandNumPoints"))
     {
         ik->handNumPoints = j["HandNumPoints"];
+    }
+    if (j.contains("MaxSpeed"))
+    {
+        ik->maxSpeed = j["MaxSpeed"];
+    }
+    if (j.contains("Acceleration"))
+    {
+        ik->acceleration = j["Acceleration"];
+    }
+    if (j.contains("Deceleration"))
+    {
+        ik->deceleration = j["Deceleration"];
     }
 }
 

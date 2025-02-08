@@ -49,7 +49,8 @@ void RigidbodySys()
 
         rigid->transform->rotation.z += rigid->angularVelocity * engineState.deltaTime;
 
-        if (rigid->angularVelocity > 0.05f || glm::length(rigid->linearVelocity) > 0.01f)
+        if (rigid->angularVelocity > 0.03f || glm::length(rigid->linearVelocity) > 0.004f ||
+            rigid->alwaysAwake)
         {
             rigid->hasMoved = true;
         }
@@ -220,6 +221,11 @@ void ColliderSys()
             RemoveLeaf(bvh, collider->treeIndex);
             RemoveDeletedLeaves(bvh);
             InsertLeaf(bvh, collider, ColPolygonToAABB(*collider));
+        }
+
+        if (collider->sensor)
+        {
+            collider->sensorCollider = nullptr;
         }
     }
 }

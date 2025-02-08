@@ -56,7 +56,9 @@ struct Rigidbody
     glm::vec2 force = glm::vec2(0.0f); // Net force
     float     torque = 0.0f;           // In radians
 
-    bool hasMoved = false; // If it has moved in the last frame
+    bool hasMoved = true; // If it has moved in the last frame
+
+    bool alwaysAwake = false; // The body will never fall asleep if this is true
 };
 
 struct Node

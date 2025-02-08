@@ -1,7 +1,9 @@
 [
     [
         {
+            "Acceleration": 4.0,
             "CircleCastRadius": 0.6000000238418579,
+            "Deceleration": 3.0,
             "HandDamping": 0.9800000190734863,
             "HandElasticity": 1.0,
             "HandNumPoints": 3,
@@ -31,12 +33,12 @@
                 -0.14000000059604645
             ],
             "LegRoot1": [
-                -0.699999988079071,
-                -0.6000000238418579
+                -0.10000000149011612,
+                -0.20000000298023224
             ],
             "LegRoot2": [
-                0.699999988079071,
-                -0.6000000238418579
+                0.10000000149011612,
+                -0.20000000298023224
             ],
             "LegThreshold": 0.6000000238418579,
             "type": "PlayerIK"
@@ -64,6 +66,7 @@
             "type": "Transform"
         },
         {
+            "AlwaysAwake": true,
             "AngularDamping": 0.9800000190734863,
             "AngularVelocity": 0.0,
             "Awake": true,
@@ -82,22 +85,22 @@
             "Restitution": 0.10000000149011612,
             "Torque": 0.0,
             "Type": 1,
-            "UserData": 255,
+            "UserData": 1,
             "type": "Rigidbody"
         },
         {
             "Center": [
-                0.004943430423736572,
-                -0.24515610933303833
+                0.011111587285995483,
+                0.008516162633895874
             ],
             "Points": [
                 [
-                    -0.3302518129348755,
-                    -0.9503448009490967
+                    -0.3185749650001526,
+                    -0.4403100609779358
                 ],
                 [
-                    0.3328518867492676,
-                    -0.9554060697555542
+                    0.34475475549697876,
+                    -0.45033368468284607
                 ],
                 [
                     0.34083423018455505,
@@ -147,6 +150,7 @@
             "type": "SpriteRenderer"
         },
         {
+            "AlwaysAwake": false,
             "AngularDamping": 0.9800000190734863,
             "AngularVelocity": 0.0,
             "Awake": false,
@@ -230,6 +234,7 @@
             "type": "SpriteRenderer"
         },
         {
+            "AlwaysAwake": false,
             "AngularDamping": 0.9800000190734863,
             "AngularVelocity": 0.0,
             "Awake": false,

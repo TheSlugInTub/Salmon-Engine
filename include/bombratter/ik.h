@@ -42,5 +42,9 @@ struct PlayerIK
 
     RopeSim handRopeSim[2] = {}; // Rope simulations for the hands
 
+    float maxSpeed = 1.0f;
+    float acceleration = 1.0f;
+    float deceleration = 1.0f;
+
     PlayerIK() {}
 };
