@@ -839,6 +839,24 @@ glm::vec2 FindClosestPointOnPolygon(const ColPolygon& polygon, const glm::vec2& 
     return closestPoint;
 }
 
+size_t FindClosestVertex(const glm::vec2& point, const std::vector<glm::vec2>& vertices)
+{
+    size_t closest = 0;
+    float minDistSq = std::numeric_limits<float>::max();
+    
+    for (size_t i = 0; i < vertices.size(); i++)
+    {
+        float distSq = glm::length2(vertices[i] - point);
+        if (distSq < minDistSq)
+        {
+            minDistSq = distSq;
+            closest = i;
+        }
+    }
+    
+    return closest;
+}
+
 void UpdateCollider(Collider* collider)
 {
     if (collider->type == ColliderType::sm2d_AABB)

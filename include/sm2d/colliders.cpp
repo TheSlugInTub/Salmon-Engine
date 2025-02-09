@@ -401,74 +401,47 @@ Manifold TestColAABBPolygon(Collider& aabb, Collider& poly)
 
 Manifold TestColCirclePolygon(const Collider& circle, const Collider& poly)
 {
-    Manifold result;
-    result.colliding = false;
-    result.objectA = const_cast<Collider*>(&circle);
-    result.objectB = const_cast<Collider*>(&poly);
+    Manifold manifold = {};
+    manifold.objectA = const_cast<Collider*>(&circle);
+    manifold.objectB = const_cast<Collider*>(&poly);
 
-    // Get circle center and radius
-    glm::vec2 circleCenter = circle.body->transform->position;
-    float radius = circle.circle.radius;
+    // Get circle center in world space
+    glm::vec2 circleCenter = glm::vec2(circle.body->transform->position);
+    float circleRadius = circle.circle.radius;
 
-    // Find the closest point on the polygon to the circle
-    float minDistance = std::numeric_limits<float>::max();
-    glm::vec2 closestPoint;
-    int closestEdgeIndex = 0;
-
-    // Check each edge of the polygon
-    for (size_t i = 0; i < poly.polygon.worldPoints.size(); i++) {
-        size_t j = (i + 1) % poly.polygon.worldPoints.size();
+    // Find the closest point on the polygon to the circle center
+    glm::vec2 closestPoint = FindClosestPointOnPolygon(poly.polygon, circleCenter);
+    
+    // Vector from closest point to circle center
+    glm::vec2 normal = circleCenter - closestPoint;
+    float distance = glm::length(normal);
+    
+    // If distance is less than radius, we have a collision
+    if (distance <= circleRadius)
+    {
+        manifold.colliding = true;
         
-        glm::vec2 edge = poly.polygon.worldPoints[j] - poly.polygon.worldPoints[i];
-        glm::vec2 normal = glm::normalize(glm::vec2(-edge.y, edge.x));
-        
-        // Vector from vertex to circle center
-        glm::vec2 circleToVertex = circleCenter - poly.polygon.worldPoints[i];
-        
-        // Project circle center onto edge
-        float projection = glm::dot(circleToVertex, glm::normalize(edge));
-        glm::vec2 closestPointOnEdge;
-        
-        // Find closest point on the edge
-        if (projection <= 0.0f) {
-            closestPointOnEdge = poly.polygon.worldPoints[i];
+        // Important: For stability, we want the normal pointing from A to B
+        // In this case, from polygon to circle
+        if (distance > 0.0001f)
+        {
+            manifold.collisionNormal = -normal / distance; // Note the negative sign
         }
-        else if (projection >= glm::length(edge)) {
-            closestPointOnEdge = poly.polygon.worldPoints[j];
-        }
-        else {
-            closestPointOnEdge = poly.polygon.worldPoints[i] + glm::normalize(edge) * projection;
+        else
+        {
+            // If circle center is on polygon, use polygon's face normal
+            size_t closest_vertex = FindClosestVertex(circleCenter, poly.polygon.worldPoints);
+            size_t next_vertex = (closest_vertex + 1) % poly.polygon.worldPoints.size();
+            glm::vec2 edge = poly.polygon.worldPoints[next_vertex] - poly.polygon.worldPoints[closest_vertex];
+            manifold.collisionNormal = glm::normalize(glm::vec2(edge.y, -edge.x));
         }
         
-        // Check if this is the closest point so far
-        float distance = glm::length(circleCenter - closestPointOnEdge);
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestPoint = closestPointOnEdge;
-            closestEdgeIndex = i;
-        }
+        // Adjust penetration depth and contact point
+        manifold.penetrationDepth = circleRadius - distance;
+        manifold.contactPoint = circleCenter - manifold.collisionNormal * circleRadius;
     }
-
-    // Check if circle is colliding
-    if (minDistance <= radius) {
-        result.colliding = true;
-        result.penetrationDepth = radius - minDistance;
-        
-        // If circle center is exactly on the edge, use the edge normal
-        if (minDistance > 0.0f) {
-            result.collisionNormal = glm::normalize(circleCenter - closestPoint);
-        }
-        else {
-            // Use the edge normal if circle center is exactly on the edge
-            size_t j = (closestEdgeIndex + 1) % poly.polygon.worldPoints.size();
-            glm::vec2 edge = poly.polygon.worldPoints[j] - poly.polygon.worldPoints[closestEdgeIndex];
-            result.collisionNormal = glm::normalize(glm::vec2(-edge.y, edge.x));
-        }
-        
-        result.contactPoint = closestPoint;
-    }
-
-    return result;
+    
+    return manifold;
 }
 
 } // namespace sm2d

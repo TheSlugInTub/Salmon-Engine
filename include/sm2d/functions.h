@@ -78,6 +78,9 @@ float CrossProduct(const glm::vec2& a, const glm::vec2& b);
 // Finds the closest point on the surface of a polygon to another point
 glm::vec2 FindClosestPointOnPolygon(const ColPolygon& polygon, const glm::vec2& point);
 
+// Finds the closest vertex on a polygon to a point
+size_t FindClosestVertex(const glm::vec2& point, const std::vector<glm::vec2>& vertices);
+
 // Update a collider, does the same as the ColliderSys
 void UpdateCollider(Collider* collider);
 
