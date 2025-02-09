@@ -22,7 +22,7 @@ void PlayerIKStartSys()
         auto rigid = engineState.scene.AssignParam<sm2d::Rigidbody>(
             sen1, sm2d::BodyType::sm2d_Static, trans1);
         ik->groundSensor[0] = engineState.scene.AssignParam<sm2d::Collider>(
-            sen1, sm2d::ColliderType::sm2d_AABB, sm2d::ColAABB(glm::vec2(0.5f, 0.5f)), rigid, true);
+            sen1, sm2d::ColliderType::sm2d_AABB, sm2d::ColAABB(glm::vec2(0.17f, 0.4f)), rigid, true);
 
         EntityID sen2 = engineState.scene.AddEntity();
         engineState.scene.AssignParam<Name>(sen2, "Sen2");
@@ -31,7 +31,7 @@ void PlayerIKStartSys()
         auto rigid2 = engineState.scene.AssignParam<sm2d::Rigidbody>(
             sen2, sm2d::BodyType::sm2d_Static, trans2);
         ik->groundSensor[1] = engineState.scene.AssignParam<sm2d::Collider>(
-            sen2, sm2d::ColliderType::sm2d_AABB, sm2d::ColAABB(glm::vec2(0.5f, 0.5f)), rigid2,
+            sen2, sm2d::ColliderType::sm2d_AABB, sm2d::ColAABB(glm::vec2(0.17f, 0.4f)), rigid2,
             true);
 
         EntityID face = engineState.scene.AddEntity();
@@ -277,7 +277,7 @@ nlohmann::json PlayerIKSave(PlayerIK* ik)
                         {"HandPointDistance", ik->handPointDistance},
                         {"HandDamping", ik->handDamping},
                         {"HandNumPoints", ik->handNumPoints},
-                        {"HandNumPoints", ik->maxSpeed},
+                        {"MaxSpeed", ik->maxSpeed},
                         {"Acceleration", ik->acceleration},
                         {"Deceleration", ik->deceleration},
                         {"LegRoot2", {ik->legRoot[1].x, ik->legRoot[1].y}},

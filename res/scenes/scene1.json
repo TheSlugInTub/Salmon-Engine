@@ -41,6 +41,7 @@
                 -0.20000000298023224
             ],
             "LegThreshold": 0.6000000238418579,
+            "MaxSpeed": 2.0,
             "type": "PlayerIK"
         },
         {
@@ -280,6 +281,69 @@
                 ]
             ],
             "Type": 3,
+            "type": "Collider"
+        }
+    ],
+    [
+        {
+            "EntName": "Circle",
+            "type": "Name"
+        },
+        {
+            "Position": [
+                2.299999952316284,
+                -0.75,
+                0.0
+            ],
+            "Rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                0.699999988079071,
+                0.699999988079071,
+                1.0
+            ],
+            "type": "Transform"
+        },
+        {
+            "Billboard": false,
+            "Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "TexturePath": "res/textures/SlugariusCircle.png",
+            "type": "SpriteRenderer"
+        },
+        {
+            "AlwaysAwake": false,
+            "AngularDamping": 0.9800000190734863,
+            "AngularVelocity": 0.0,
+            "Awake": true,
+            "FixedRotation": false,
+            "Force": [
+                0.0,
+                0.0
+            ],
+            "LinearDamping": 0.9800000190734863,
+            "LinearVelocity": [
+                0.0,
+                0.0
+            ],
+            "Mass": 1.0,
+            "MomentOfInertia": 0.5,
+            "Restitution": 0.10000000149011612,
+            "Torque": 0.0,
+            "Type": 1,
+            "UserData": 0,
+            "type": "Rigidbody"
+        },
+        {
+            "Radius": 0.3499999940395355,
+            "Type": 2,
             "type": "Collider"
         }
     ]
