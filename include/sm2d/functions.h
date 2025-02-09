@@ -81,8 +81,15 @@ glm::vec2 FindClosestPointOnPolygon(const ColPolygon& polygon, const glm::vec2& 
 // Finds the closest vertex on a polygon to a point
 size_t FindClosestVertex(const glm::vec2& point, const std::vector<glm::vec2>& vertices);
 
+// Brings a rigidbody closer to a point while keeping distance from it
+void ApplySpringJoint(Rigidbody* body, const glm::vec2& anchorPoint, float restLength,
+                      float stiffness, float damping);
+
 // Update a collider, does the same as the ColliderSys
 void UpdateCollider(Collider* collider);
+
+// Simulate a body without it attached to an entity
+void SimulateBody(Rigidbody* rigid);
 
 // Conversion functions
 

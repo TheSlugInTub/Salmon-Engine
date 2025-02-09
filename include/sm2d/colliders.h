@@ -44,15 +44,15 @@ struct Collider
 
     int bodyIndex = 0; // Ignore this, it's only for the editor
 
-    Collider(ColliderType type, const ColAABB& aabb, Rigidbody* body, bool sensor)
+    Collider(ColliderType type, const ColAABB& aabb, Rigidbody* body, bool sensor = false)
        : type(type), aabb(aabb), body(body), sensor(sensor)
     {
     }
-    Collider(ColliderType type, const ColCircle& circle, Rigidbody* body, bool sensor)
+    Collider(ColliderType type, const ColCircle& circle, Rigidbody* body, bool sensor = false)
        : type(type), circle(circle), body(body), sensor(sensor)
     {
     }
-    Collider(ColliderType type, const ColPolygon& poly, Rigidbody* body, bool sensor)
+    Collider(ColliderType type, const ColPolygon& poly, Rigidbody* body, bool sensor = false)
        : type(type), polygon(poly), body(body), sensor(sensor)
     {
     }

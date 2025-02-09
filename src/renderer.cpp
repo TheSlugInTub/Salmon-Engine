@@ -296,7 +296,8 @@ void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projectio
 }
 
 void RenderLine2D(const std::vector<glm::vec2>& points, const glm::mat4& projection,
-                const glm::mat4& view, const glm::vec4& color, float pointSize, float lineSize, bool looping)
+                  const glm::mat4& view, const glm::vec4& color, float pointSize, float lineSize,
+                  bool looping)
 {
     glBindVertexArray(lineVAO2D);
 
@@ -327,8 +328,7 @@ void RenderLine2D(const std::vector<glm::vec2>& points, const glm::mat4& project
     glBindVertexArray(0);
 }
 
-void RenderPoint(const glm::vec3& point, const glm::mat4& projection, const glm::mat4& view,
-                 const glm::vec4& color)
+void RenderPoint(const glm::vec3& point, const glm::vec4& color)
 {
     GLuint lVAO, lVBO;
     glGenVertexArrays(1, &lVAO);
@@ -344,8 +344,8 @@ void RenderPoint(const glm::vec3& point, const glm::mat4& projection, const glm:
 
     lineShader.use();
 
-    lineShader.setMat4("view", view);
-    lineShader.setMat4("projection", projection);
+    lineShader.setMat4("view", engineState.camera->GetViewMatrix());
+    lineShader.setMat4("projection", engineState.projMat);
 
     glm::mat4 model = glm::mat4(1.0f);
     lineShader.setMat4("model", model);

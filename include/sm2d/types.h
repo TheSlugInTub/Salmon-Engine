@@ -50,6 +50,8 @@ struct Rigidbody
 
     int  userData = 0; // Put whatever you want in here, useful for marking tags
     bool applyGravity = true;
+    
+    bool alwaysAwake = false; // The body will never fall asleep if this is true
 
     glm::vec2 linearVelocity = glm::vec2(0.0f); // Rate of change of position
     float     angularVelocity = 0.0f;           // In radians
@@ -58,8 +60,6 @@ struct Rigidbody
     float     torque = 0.0f;           // In radians
 
     bool hasMoved = true; // If it has moved in the last frame
-
-    bool alwaysAwake = false; // The body will never fall asleep if this is true
 };
 
 struct Node

@@ -26,4 +26,5 @@
 - [ ] Make setting the projection matrix for the rendering a one time thing
 - [X] Sprite animations
 - [X] Split renderer Init function
-- [ ] Fix the tilemaps bugging out when initializing particles
+- [X] Fix the tilemaps bugging out when initializing particles
+- [ ] Make the Rigidbody have its own vec2 of position instead of relying on the Transform

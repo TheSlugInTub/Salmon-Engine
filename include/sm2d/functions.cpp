@@ -673,9 +673,7 @@ void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
                     collisionResults.push_back(data);
                 }
             }
-            else
-            {
-            }
+            else {}
             return;
         }
 
@@ -842,8 +840,8 @@ glm::vec2 FindClosestPointOnPolygon(const ColPolygon& polygon, const glm::vec2& 
 size_t FindClosestVertex(const glm::vec2& point, const std::vector<glm::vec2>& vertices)
 {
     size_t closest = 0;
-    float minDistSq = std::numeric_limits<float>::max();
-    
+    float  minDistSq = std::numeric_limits<float>::max();
+
     for (size_t i = 0; i < vertices.size(); i++)
     {
         float distSq = glm::length2(vertices[i] - point);
@@ -853,8 +851,85 @@ size_t FindClosestVertex(const glm::vec2& point, const std::vector<glm::vec2>& v
             closest = i;
         }
     }
-    
+
     return closest;
+}
+
+void ApplySpringJoint(Rigidbody* body, const glm::vec2& anchorPoint, 
+                     float restLength = 1.0f, 
+                     float stiffness = 10.0f, 
+                     float damping = 0.5f)
+{
+    if (!body->awake || body->type == sm2d_Static)
+        return;
+
+    glm::vec2 toAnchor = anchorPoint - glm::vec2(body->transform->position);
+    float currentLength = glm::length(toAnchor);
+    
+    if (currentLength < 0.001f)
+        return;
+    
+    glm::vec2 direction = toAnchor / currentLength;
+    
+    // Linear spring force
+    float displacement = currentLength - restLength;
+    float springForce = stiffness * displacement;
+    
+    // Critical damping calculation
+    float criticalDamping = 2.0f * sqrtf(stiffness * body->mass);
+    float dampingCoeff = damping * criticalDamping;
+    
+    // Linear velocity damping
+    float velAlongSpring = glm::dot(body->linearVelocity, direction);
+    float dampingForce = dampingCoeff * velAlongSpring;
+    
+    glm::vec2 totalForce = direction * (springForce - dampingForce);
+    
+    // Softer force limiting
+    float maxForce = stiffness * restLength;
+    float forceMagnitude = glm::length(totalForce);
+    if (forceMagnitude > maxForce)
+    {
+        totalForce *= (maxForce / forceMagnitude) * 0.9f; // Add some extra softening
+    }
+    
+    body->force += totalForce;
+    body->hasMoved = true;
+}
+
+void SimulateBody(Rigidbody* rigid)
+{
+    if (rigid->type == sm2d_Static || !rigid->awake)
+    {
+        return;
+    }
+
+    if (rigid->applyGravity)
+        rigid->force.y += -3.5f * rigid->mass; // GRAVITAS
+
+    rigid->linearVelocity += rigid->force / rigid->mass * engineState.deltaTime;
+    rigid->linearVelocity *= glm::pow(rigid->linearDamping, engineState.deltaTime);
+
+    rigid->transform->position.x += rigid->linearVelocity.x * engineState.deltaTime;
+    rigid->transform->position.y += rigid->linearVelocity.y * engineState.deltaTime;
+
+    rigid->angularVelocity += rigid->torque / rigid->mass * engineState.deltaTime;
+    rigid->angularVelocity *= glm::pow(rigid->angularDamping, engineState.deltaTime);
+
+    rigid->transform->rotation.z += rigid->angularVelocity * engineState.deltaTime;
+
+    if (rigid->angularVelocity > 0.03f || glm::length(rigid->linearVelocity) > 0.004f ||
+        rigid->alwaysAwake)
+    {
+        rigid->hasMoved = true;
+    }
+    else
+    {
+        rigid->hasMoved = false;
+    }
+
+    rigid->force = glm::vec2(0.0f);
+    rigid->torque = 0.0f;
 }
 
 void UpdateCollider(Collider* collider)
