@@ -5,6 +5,7 @@
 #include <salmon/components.h>
 #include <sm2d/colliders.h>
 #include <sm2d/functions.h>
+#include <filesystem>
 
 void DrawHierarchy()
 {
@@ -80,12 +81,15 @@ void DrawInspector()
 
     ImGui::Begin("Inspector");
 
-    auto name = engineState.scene.Get<Name>(selectedEntity);
-    char nameBuffer[128];
-    std::strncpy(nameBuffer, name->name.c_str(), sizeof(nameBuffer));
-    if (ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer)))
+    if (auto name = engineState.scene.Get<Name>(selectedEntity))
     {
-        name->name = std::string(nameBuffer);
+        char nameBuffer[128];
+        std::strncpy(nameBuffer, name->name.c_str(),
+                     sizeof(nameBuffer));
+        if (ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer)))
+        {
+            name->name = std::string(nameBuffer);
+        }
     }
 
     ComponentRegistry::Instance().DrawAll();
@@ -129,9 +133,7 @@ void LoadScene(const std::string& filename)
     nlohmann::json j;
     file >> j;
 
-    engineState.scene.entities.clear();
-    engineState.scene.freeEntities.clear();
-    engineState.scene.componentPools.clear();
+    engineState.scene.Clear();
     sm2d::bvh.nodes.clear();
     Renderer::lights.clear();
 
@@ -165,6 +167,8 @@ void DrawTray()
             SaveScene(sceneName);
             playing = true;
             StartStartSystems();
+            std::cout << "Entity size after play: "
+                      << engineState.scene.entities.size() << '\n';
         }
     }
     else
@@ -173,6 +177,8 @@ void DrawTray()
         {
             LoadScene(sceneName);
             playing = false;
+            std::cout << "Entity size after stop: "
+                      << engineState.scene.entities.size() << '\n';
         }
     }
     ImGui::End();
