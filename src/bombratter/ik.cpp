@@ -53,7 +53,7 @@ void PlayerIKStartSys()
             true, 0.98f, 0.98f, 0.1f, true, 1.0f, 0, true, true);
         engineState.scene.AssignParam<sm2d::Collider>(
             bodyEnt, sm2d::ColliderType::sm2d_Circle,
-            sm2d::ColCircle(0.4f), ik->body);
+            sm2d::ColCircle(0.1f), ik->body);
 
         EntityID headEnt = engineState.scene.AddEntity();
         engineState.scene.AssignParam<Name>(headEnt, "HeadEnt");
@@ -65,7 +65,7 @@ void PlayerIKStartSys()
             true, 0.98f, 0.98f, 0.1f, true, 1.0f, 0, false, true);
         engineState.scene.AssignParam<sm2d::Collider>(
             headEnt, sm2d::ColliderType::sm2d_Circle,
-            sm2d::ColCircle(0.4f), ik->head);
+            sm2d::ColCircle(0.1f), ik->head);
     }
 }
 
@@ -83,15 +83,45 @@ float MoveTowards(float current, float target, float maxDelta)
     return current + glm::sign(target - current) * maxDelta;
 }
 
+glm::vec3 SlerpVectors(const glm::vec3& start, const glm::vec3& end,
+                       float t)
+{
+    float smoothT = t * t * (3.0f - 2.0f * t);
+
+    // Linear interpolation between start and end points
+    return glm::mix(start, end, smoothT);
+}
+
+float GetSmoothInterpolationTimer(float period = 2.0f)
+{
+    // Get current time
+    double currentTime = glfwGetTime();
+
+    // Create a cyclical timer that smoothly goes between 0 and 1
+    float t = std::fmod(currentTime, period) / period;
+
+    // Optional: apply smoothstep for more natural easing
+    return t * t * (3.0f - 2.0f * t);
+}
+
 void PlayerIKSys()
 {
     for (EntityID ent : SceneView<PlayerIK>(engineState.scene))
     {
         auto ik = engineState.scene.Get<PlayerIK>(ent);
 
-        sm2d::ApplySpringJoint(ik->head,
-                               ik->body->transform->position, 1.0f,
-                               100.0f, 1.0f);
+        // sm2d::ApplySpringJoint(ik->head,
+        //                        ik->body->transform->position +
+        //                            glm::vec3(0.0f, 0.3f, 0.0f),
+        //                        0.01f, 100.0f, 0.1f);
+
+        ik->head->transform->position =
+            SlerpVectors(ik->head->transform->position,
+                         ik->body->transform->position +
+                             glm::vec3(0.0f, 0.3f, 0.0f),
+                         GetSmoothInterpolationTimer(1.0f));
+
+        std::cout << "Interop: " << GetSmoothInterpolationTimer(1.0f) << '\n'; 
     }
 }
 
@@ -118,16 +148,12 @@ void PlayerIKDraw(PlayerIK* ik)
         // glm::value_ptr(ik->handRoot[0]));
         // ImGui::DragFloat2("handRoot2",
         // glm::value_ptr(ik->handRoot[1]));
-
         // ImGui::DragFloat("CircleCastRadius",
         // &ik->circleCastRadius); ImGui::DragFloat("LegThreshold",
-        // &ik->legThreshold);
-
-        // ImGui::DragFloat("MaxSpeed", &ik->maxSpeed);
-        // ImGui::DragFloat("Acceleration", &ik->acceleration);
-        // ImGui::DragFloat("Deceleration", &ik->deceleration);
-
-        // if (ImGui::DragFloat("HandElasticity",
+        // &ik->legThreshold); ImGui::DragFloat("MaxSpeed",
+        // &ik->maxSpeed); ImGui::DragFloat("Acceleration",
+        // &ik->acceleration); ImGui::DragFloat("Deceleration",
+        // &ik->deceleration); if (ImGui::DragFloat("HandElasticity",
         // &ik->handElasticity))
         // {
         //     ik->handRopeSim[0].elasticity = ik->handElasticity;

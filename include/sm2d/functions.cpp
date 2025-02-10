@@ -7,8 +7,10 @@
 namespace sm2d
 {
 
-std::optional<glm::vec2> GetLineIntersection(const glm::vec2& p0, const glm::vec2& p1,
-                                             const glm::vec2& q0, const glm::vec2& q1)
+std::optional<glm::vec2> GetLineIntersection(const glm::vec2& p0,
+                                             const glm::vec2& p1,
+                                             const glm::vec2& q0,
+                                             const glm::vec2& q1)
 {
     glm::vec2 s1 = p1 - p0;
     glm::vec2 s2 = q1 - q0;
@@ -35,7 +37,8 @@ std::optional<glm::vec2> GetLineIntersection(const glm::vec2& p0, const glm::vec
     return std::nullopt;
 }
 
-glm::vec2 ClosestPointOnLineSegment(const glm::vec2& vertex, const glm::vec2& lineStart,
+glm::vec2 ClosestPointOnLineSegment(const glm::vec2& vertex,
+                                    const glm::vec2& lineStart,
                                     const glm::vec2& lineEnd)
 {
     // Vector from lineStart to lineEnd
@@ -54,14 +57,16 @@ glm::vec2 ClosestPointOnLineSegment(const glm::vec2& vertex, const glm::vec2& li
     // Compute the projection factor (t) of the vertex onto the line
     float t = glm::dot(vertexVector, lineVector) / lineLengthSquared;
 
-    // Clamp t to the range [0, 1] to find the closest point on the segment
+    // Clamp t to the range [0, 1] to find the closest point on the
+    // segment
     t = std::clamp(t, 0.0f, 1.0f);
 
     // Calculate the closest point on the line segment
     return lineStart + t * lineVector;
 }
 
-glm::vec2 LocalToWorld(glm::vec2 point, const glm::vec2 pos, float cosine, float sine)
+glm::vec2 LocalToWorld(glm::vec2 point, const glm::vec2 pos,
+                       float cosine, float sine)
 {
     float x = (cosine * point.x - sine * point.y) + pos.x;
     float y = (sine * point.x + cosine * point.y) + pos.y;
@@ -81,7 +86,8 @@ void UpdatePolygon(Collider& poly)
     }
     for (int i = 0; i < poly.polygon.points.size(); ++i)
     {
-        poly.polygon.worldPoints[i] = LocalToWorld(poly.polygon.points[i], pos, cosine, sine);
+        poly.polygon.worldPoints[i] =
+            LocalToWorld(poly.polygon.points[i], pos, cosine, sine);
     }
 }
 
@@ -119,16 +125,25 @@ glm::vec2 ComputePolygonCenter(ColPolygon& poly)
     return center;
 }
 
-void ComputeAABBPoints(const Collider& collider, std::vector<glm::vec2>& points)
+void ComputeAABBPoints(const Collider&         collider,
+                       std::vector<glm::vec2>& points)
 {
-    glm::vec2 topLeft = glm::vec2(collider.body->transform->position) +
-                        glm::vec2(-collider.aabb.halfwidths.x, collider.aabb.halfwidths.y);
-    glm::vec2 topRight = glm::vec2(collider.body->transform->position) +
-                         glm::vec2(collider.aabb.halfwidths.x, collider.aabb.halfwidths.y);
-    glm::vec2 bottomRight = glm::vec2(collider.body->transform->position) +
-                            glm::vec2(collider.aabb.halfwidths.x, -collider.aabb.halfwidths.y);
-    glm::vec2 bottomLeft = glm::vec2(collider.body->transform->position) +
-                           glm::vec2(-collider.aabb.halfwidths.x, -collider.aabb.halfwidths.y);
+    glm::vec2 topLeft =
+        glm::vec2(collider.body->transform->position) +
+        glm::vec2(-collider.aabb.halfwidths.x,
+                  collider.aabb.halfwidths.y);
+    glm::vec2 topRight =
+        glm::vec2(collider.body->transform->position) +
+        glm::vec2(collider.aabb.halfwidths.x,
+                  collider.aabb.halfwidths.y);
+    glm::vec2 bottomRight =
+        glm::vec2(collider.body->transform->position) +
+        glm::vec2(collider.aabb.halfwidths.x,
+                  -collider.aabb.halfwidths.y);
+    glm::vec2 bottomLeft =
+        glm::vec2(collider.body->transform->position) +
+        glm::vec2(-collider.aabb.halfwidths.x,
+                  -collider.aabb.halfwidths.y);
     points = {bottomLeft, topLeft, topRight, bottomRight};
 }
 
@@ -169,8 +184,10 @@ bool AABBEnlarge(AABB* a, const AABB& b)
 
 bool AABBTest(const AABB& a, const AABB& b)
 {
-    return !(b.lowerBound.x > a.upperBound.x || b.lowerBound.y > a.upperBound.y ||
-             a.lowerBound.x > b.upperBound.x || a.lowerBound.y > b.upperBound.y);
+    return !(b.lowerBound.x > a.upperBound.x ||
+             b.lowerBound.y > a.upperBound.y ||
+             a.lowerBound.x > b.upperBound.x ||
+             a.lowerBound.y > b.upperBound.y);
 }
 
 float MinFloat(float a, float b)
@@ -195,8 +212,9 @@ AABB AABBUnion(const AABB& a, const AABB& b)
 
 float AABBPerimeter(const AABB& a)
 {
-    glm::vec2 d = a.upperBound - a.lowerBound; // Calculate width and height
-    return 2.0f * (d.x + d.y);                 // Perimeter of the rectangle
+    glm::vec2 d =
+        a.upperBound - a.lowerBound; // Calculate width and height
+    return 2.0f * (d.x + d.y);       // Perimeter of the rectangle
 }
 
 glm::vec2 AABBCenter(const AABB& a)
@@ -206,15 +224,19 @@ glm::vec2 AABBCenter(const AABB& a)
     return b;
 }
 
-glm::vec2 ClosestPointOnAABB(const glm::vec2& point, const Collider& aabb)
+glm::vec2 ClosestPointOnAABB(const glm::vec2& point,
+                             const Collider&  aabb)
 {
-    glm::vec2 localPoint = point - glm::vec2(aabb.body->transform->position);
+    glm::vec2 localPoint =
+        point - glm::vec2(aabb.body->transform->position);
 
     // Clamp the point to the AABB's bounds
-    glm::vec2 closestLocal = glm::clamp(localPoint, -aabb.aabb.halfwidths, aabb.aabb.halfwidths);
+    glm::vec2 closestLocal = glm::clamp(
+        localPoint, -aabb.aabb.halfwidths, aabb.aabb.halfwidths);
 
     // Transform back to world space
-    glm::vec2 worldClosest = closestLocal + glm::vec2(aabb.body->transform->position);
+    glm::vec2 worldClosest =
+        closestLocal + glm::vec2(aabb.body->transform->position);
 
     return worldClosest;
 }
@@ -223,11 +245,12 @@ int FindBestSibling(Tree& tree, const AABB& box)
 {
     float     boxArea = AABBPerimeter(box);
     glm::vec2 boxCenter = AABBCenter(box);
-    float     baseArea = AABBPerimeter(tree.nodes[tree.rootIndex].box);
+    float baseArea = AABBPerimeter(tree.nodes[tree.rootIndex].box);
 
     int   currentNode = tree.rootIndex;
     int   bestSibling = currentNode;
-    float directCost = AABBPerimeter(AABBUnion(tree.nodes[currentNode].box, box));
+    float directCost =
+        AABBPerimeter(AABBUnion(tree.nodes[currentNode].box, box));
     float inheritedCost = 0.0f;
     float bestCost = directCost;
 
@@ -273,7 +296,8 @@ int FindBestSibling(Tree& tree, const AABB& box)
             area1 = AABBPerimeter(box1);
 
             // Lower bound cost of inserting under child 1.
-            lowerCost1 = inheritedCost + directCost1 + MinFloat(boxArea - area1, 0.0f);
+            lowerCost1 = inheritedCost + directCost1 +
+                         MinFloat(boxArea - area1, 0.0f);
         }
 
         // Cost of descending into child 2
@@ -299,9 +323,11 @@ int FindBestSibling(Tree& tree, const AABB& box)
             // Child 2 is an internal node
             area2 = AABBPerimeter(box2);
 
-            // Lower bound cost of inserting under child 2. This is not the cost
-            // of child 2, it is the best we can hope for under child 2.
-            lowerCost2 = inheritedCost + directCost2 + MinFloat(boxArea - area2, 0.0f);
+            // Lower bound cost of inserting under child 2. This is
+            // not the cost of child 2, it is the best we can hope for
+            // under child 2.
+            lowerCost2 = inheritedCost + directCost2 +
+                         MinFloat(boxArea - area2, 0.0f);
         }
 
         if (leaf1 && leaf2)
@@ -320,8 +346,9 @@ int FindBestSibling(Tree& tree, const AABB& box)
             assert(lowerCost1 < FLT_MAX);
             assert(lowerCost2 < FLT_MAX);
 
-            // No clear choice based on lower bound surface area. This can happen when both
-            // children fully contain D. Fall back to node distance.
+            // No clear choice based on lower bound surface area. This
+            // can happen when both children fully contain D. Fall
+            // back to node distance.
             glm::vec2 d1 = AABBCenter(box1) - boxCenter;
             glm::vec2 d2 = AABBCenter(box2) - boxCenter;
             lowerCost1 = glm::length2(d1);
@@ -342,7 +369,8 @@ int FindBestSibling(Tree& tree, const AABB& box)
             directCost = directCost2;
         }
 
-        assert(tree.nodes[currentNode].leaf == false && "Current node is not a leaf");
+        assert(tree.nodes[currentNode].leaf == false &&
+               "Current node is not a leaf");
     }
 
     return bestSibling;
@@ -436,7 +464,8 @@ void InsertLeaf(Tree& tree, Collider* body, const AABB& box)
         // Recompute the bounding box of the current node
         if (!node.leaf)
         {
-            node.box = AABBUnion(tree.nodes[node.child1].box, tree.nodes[node.child2].box);
+            node.box = AABBUnion(tree.nodes[node.child1].box,
+                                 tree.nodes[node.child2].box);
         }
 
         // Move up to the parent node
@@ -447,7 +476,8 @@ void InsertLeaf(Tree& tree, Collider* body, const AABB& box)
 void RemoveLeaf(Tree& tree, int leafIndex)
 {
     // If the tree is empty or the leaf index is invalid, do nothing
-    if (tree.nodes.empty() || leafIndex < 0 || leafIndex >= tree.nodes.size())
+    if (tree.nodes.empty() || leafIndex < 0 ||
+        leafIndex >= tree.nodes.size())
         return;
 
     // If this is the root and it's a leaf, clear the entire tree
@@ -506,7 +536,8 @@ void RemoveLeaf(Tree& tree, int leafIndex)
         // Recompute the bounding box of the current node
         if (!node.leaf)
         {
-            node.box = AABBUnion(tree.nodes[node.child1].box, tree.nodes[node.child2].box);
+            node.box = AABBUnion(tree.nodes[node.child1].box,
+                                 tree.nodes[node.child2].box);
         }
 
         // Move up to the parent node
@@ -528,7 +559,8 @@ void RemoveDeletedLeaves(Tree& tree)
             newNodes.push_back(tree.nodes[oldIndex]);
             newNodes.back().index = (int)newNodes.size() - 1;
             if (newNodes.back().collider)
-                newNodes.back().collider->treeIndex = (int)newNodes.size() - 1;
+                newNodes.back().collider->treeIndex =
+                    (int)newNodes.size() - 1;
         }
     }
 
@@ -558,12 +590,14 @@ void RemoveDeletedLeaves(Tree& tree)
     tree.nodes = std::move(newNodes);
 }
 
-void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
+void GetCollisionsInTree(Tree&                  tree,
+                         std::vector<Manifold>& collisionResults)
 {
     if (bvh.nodes.empty())
         return;
     // Recursive lambda function to traverse and check collisions
-    std::function<void(int, int)> CheckCollisions = [&](int node1Index, int node2Index)
+    std::function<void(int, int)> CheckCollisions =
+        [&](int node1Index, int node2Index)
     {
         // Invalid node check
         if (node1Index == -1 || node2Index == -1)
@@ -583,70 +617,100 @@ void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
             if (node1.collider->type == ColliderType::sm2d_AABB &&
                 node2.collider->type == ColliderType::sm2d_AABB)
             {
-                data = TestColAABBAABB(*node1.collider, *node2.collider);
+                data =
+                    TestColAABBAABB(*node1.collider, *node2.collider);
             }
-            else if (node1.collider->type == ColliderType::sm2d_Polygon &&
-                     node2.collider->type == ColliderType::sm2d_Polygon)
+            else if (node1.collider->type ==
+                         ColliderType::sm2d_Polygon &&
+                     node2.collider->type ==
+                         ColliderType::sm2d_Polygon)
             {
-                data = TestColPolygonPolygon(*node1.collider, *node2.collider);
+                data = TestColPolygonPolygon(*node1.collider,
+                                             *node2.collider);
             }
-            else if (node1.collider->type == ColliderType::sm2d_Polygon &&
+            else if (node1.collider->type ==
+                         ColliderType::sm2d_Polygon &&
                      node2.collider->type == ColliderType::sm2d_AABB)
             {
-                data = TestColAABBPolygon(*node2.collider, *node1.collider);
+                data = TestColAABBPolygon(*node2.collider,
+                                          *node1.collider);
             }
-            else if (node1.collider->type == ColliderType::sm2d_AABB &&
-                     node2.collider->type == ColliderType::sm2d_Polygon)
+            else if (node1.collider->type ==
+                         ColliderType::sm2d_AABB &&
+                     node2.collider->type ==
+                         ColliderType::sm2d_Polygon)
             {
-                data = TestColAABBPolygon(*node1.collider, *node2.collider);
+                data = TestColAABBPolygon(*node1.collider,
+                                          *node2.collider);
             }
-            else if (node1.collider->type == ColliderType::sm2d_Polygon &&
-                     node2.collider->type == ColliderType::sm2d_Circle)
+            else if (node1.collider->type ==
+                         ColliderType::sm2d_Polygon &&
+                     node2.collider->type ==
+                         ColliderType::sm2d_Circle)
             {
-                data = TestColCirclePolygon(*node2.collider, *node1.collider);
+                data = TestColCirclePolygon(*node2.collider,
+                                            *node1.collider);
             }
-            else if (node1.collider->type == ColliderType::sm2d_Circle &&
-                     node2.collider->type == ColliderType::sm2d_Polygon)
+            else if (node1.collider->type ==
+                         ColliderType::sm2d_Circle &&
+                     node2.collider->type ==
+                         ColliderType::sm2d_Polygon)
             {
-                data = TestColCirclePolygon(*node1.collider, *node2.collider);
+                data = TestColCirclePolygon(*node1.collider,
+                                            *node2.collider);
             }
-            else if (node1.collider->type == ColliderType::sm2d_Circle &&
-                     node2.collider->type == ColliderType::sm2d_Circle)
+            else if (node1.collider->type ==
+                         ColliderType::sm2d_Circle &&
+                     node2.collider->type ==
+                         ColliderType::sm2d_Circle)
             {
-                data = TestColCircleCircle(*node1.collider, *node2.collider);
+                data = TestColCircleCircle(*node1.collider,
+                                           *node2.collider);
             }
-            else if (node1.collider->type == ColliderType::sm2d_Circle &&
+            else if (node1.collider->type ==
+                         ColliderType::sm2d_Circle &&
                      node2.collider->type == ColliderType::sm2d_AABB)
             {
-                data = TestColAABBCircle(*node2.collider, *node1.collider);
+                data = TestColAABBCircle(*node2.collider,
+                                         *node1.collider);
             }
-            else if (node1.collider->type == ColliderType::sm2d_AABB &&
-                     node2.collider->type == ColliderType::sm2d_Circle)
+            else if (node1.collider->type ==
+                         ColliderType::sm2d_AABB &&
+                     node2.collider->type ==
+                         ColliderType::sm2d_Circle)
             {
-                data = TestColAABBCircle(*node1.collider, *node2.collider);
+                data = TestColAABBCircle(*node1.collider,
+                                         *node2.collider);
             }
 
             if (data)
             {
                 bool node1Moved = node1.collider->body->hasMoved &&
-                                  !node1.collider->body->type == BodyType::sm2d_Static;
+                                  !node1.collider->body->type ==
+                                      BodyType::sm2d_Static;
                 bool node2Moved = node2.collider->body->hasMoved &&
-                                  !node2.collider->body->type == BodyType::sm2d_Static;
+                                  !node2.collider->body->type ==
+                                      BodyType::sm2d_Static;
 
                 if ((node1.collider == node2.collider) ||
-                    (node1.collider->sensor && node2.collider->sensor))
+                    (node1.collider->sensor &&
+                     node2.collider->sensor))
                 {
                     return;
                 }
 
-                if (node1.collider->sensor && !node2.collider->sensor &&
-                    node2.collider->body->userData == node1.collider->sensorTag)
+                if (node1.collider->sensor &&
+                    !node2.collider->sensor &&
+                    node2.collider->body->userData ==
+                        node1.collider->sensorTag)
                 {
                     node1.collider->sensorCollider = node2.collider;
                 }
 
-                if (node2.collider->sensor && !node1.collider->sensor &&
-                    node1.collider->body->userData == node2.collider->sensorTag)
+                if (node2.collider->sensor &&
+                    !node1.collider->sensor &&
+                    node1.collider->body->userData ==
+                        node2.collider->sensorTag)
                 {
                     node2.collider->sensorCollider = node1.collider;
                 }
@@ -668,7 +732,8 @@ void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
                 }
 
                 // if both aren't sensors
-                if (!(node1.collider->sensor || node2.collider->sensor))
+                if (!(node1.collider->sensor ||
+                      node2.collider->sensor))
                 {
                     collisionResults.push_back(data);
                 }
@@ -699,7 +764,8 @@ void GetCollisionsInTree(Tree& tree, std::vector<Manifold>& collisionResults)
         }
     };
 
-    // Start by checking the root node against itself and all other nodes
+    // Start by checking the root node against itself and all other
+    // nodes
     CheckCollisions(tree.rootIndex, tree.rootIndex);
 }
 
@@ -708,7 +774,8 @@ float CrossProduct(const glm::vec2& a, const glm::vec2& b)
     return a.x * b.y - a.y * b.x;
 }
 
-void ResolveCollisions(const Tree& tree, std::vector<Manifold>& collisionResults)
+void ResolveCollisions(const Tree&            tree,
+                       std::vector<Manifold>& collisionResults)
 {
     for (auto& colData : collisionResults)
     {
@@ -721,53 +788,73 @@ void ResolveCollisions(const Tree& tree, std::vector<Manifold>& collisionResults
         float totalMass = rigid1->mass + rigid2->mass;
         if (totalMass > 0.0f)
         {
-            const float penetrationTolerance = 0.005f; // Adjust this value as needed
-            float       correctionMagnitude = std::max(0.0f,
-                                                       colData.penetrationDepth - penetrationTolerance) *
-                                        0.8f; // Bias factor
+            const float penetrationTolerance =
+                0.005f; // Adjust this value as needed
+            float correctionMagnitude =
+                std::max(0.0f,
+                         colData.penetrationDepth -
+                             penetrationTolerance) *
+                0.8f; // Bias factor
 
             glm::vec2 correctionA =
-                -(correctionMagnitude / totalMass) * colData.collisionNormal * rigid2->mass;
+                -(correctionMagnitude / totalMass) *
+                colData.collisionNormal * rigid2->mass;
             glm::vec2 correctionB =
-                +(correctionMagnitude / totalMass) * colData.collisionNormal * rigid1->mass;
+                +(correctionMagnitude / totalMass) *
+                colData.collisionNormal * rigid1->mass;
 
             if (rigid1->type == BodyType::sm2d_Dynamic)
-                rigid1->transform->position += glm::vec3(correctionA, 0.0f);
+                rigid1->transform->position +=
+                    glm::vec3(correctionA, 0.0f);
             if (rigid2->type == BodyType::sm2d_Dynamic)
-                rigid2->transform->position += glm::vec3(correctionB, 0.0f);
+                rigid2->transform->position +=
+                    glm::vec3(correctionB, 0.0f);
         }
 
         // Velocity resolution
-        glm::vec2 rA = colData.contactPoint - glm::vec2(rigid1->transform->position);
-        glm::vec2 rB = colData.contactPoint - glm::vec2(rigid2->transform->position);
+        glm::vec2 rA = colData.contactPoint -
+                       glm::vec2(rigid1->transform->position);
+        glm::vec2 rB = colData.contactPoint -
+                       glm::vec2(rigid2->transform->position);
 
         glm::vec2 relativeVelocity =
             rigid2->linearVelocity +
-            glm::vec2(-rigid2->angularVelocity * rB.y, rigid2->angularVelocity * rB.x) -
+            glm::vec2(-rigid2->angularVelocity * rB.y,
+                      rigid2->angularVelocity * rB.x) -
             rigid1->linearVelocity -
-            glm::vec2(-rigid1->angularVelocity * rA.y, rigid1->angularVelocity * rA.x);
+            glm::vec2(-rigid1->angularVelocity * rA.y,
+                      rigid1->angularVelocity * rA.x);
 
-        float velocityAlongNormal = glm::dot(relativeVelocity, colData.collisionNormal);
+        float velocityAlongNormal =
+            glm::dot(relativeVelocity, colData.collisionNormal);
 
         if (velocityAlongNormal < 0)
         {
-            float e = std::min(rigid1->restitution, rigid2->restitution);
+            float e =
+                std::min(rigid1->restitution, rigid2->restitution);
 
             // Calculate angular contributions
-            float rACrossN = CrossProduct(rA, colData.collisionNormal);
-            float rBCrossN = CrossProduct(rB, colData.collisionNormal);
+            float rACrossN =
+                CrossProduct(rA, colData.collisionNormal);
+            float rBCrossN =
+                CrossProduct(rB, colData.collisionNormal);
 
-            float angularFactor = (rACrossN * rACrossN) / rigid1->momentOfInertia +
-                                  (rBCrossN * rBCrossN) / rigid2->momentOfInertia;
+            float angularFactor =
+                (rACrossN * rACrossN) / rigid1->momentOfInertia +
+                (rBCrossN * rBCrossN) / rigid2->momentOfInertia;
 
             // Dampen angular impulse for vertex collisions
-            float vertexCollisionDamping = 0.7f; // Adjust this value to control angular damping
+            float vertexCollisionDamping =
+                0.7f; // Adjust this value to control angular damping
             angularFactor *= vertexCollisionDamping;
 
-            float impulseMagnitude = -(1 + e) * velocityAlongNormal /
-                                     ((1.0f / rigid1->mass + 1.0f / rigid2->mass) + angularFactor);
+            float impulseMagnitude =
+                -(1 + e) * velocityAlongNormal /
+                ((1.0f / rigid1->mass + 1.0f / rigid2->mass) +
+                 angularFactor);
 
-            glm::vec2 impulse = impulseMagnitude * colData.collisionNormal;
+            glm::vec2 impulse =
+                impulseMagnitude * colData.collisionNormal;
 
             // Apply linear impulses
             if (rigid1->type == BodyType::sm2d_Dynamic)
@@ -776,28 +863,34 @@ void ResolveCollisions(const Tree& tree, std::vector<Manifold>& collisionResults
                 rigid2->linearVelocity += impulse / rigid2->mass;
 
             // Apply angular impulses with damping
-            if (rigid1->type == BodyType::sm2d_Dynamic && !rigid1->fixedRotation)
+            if (rigid1->type == BodyType::sm2d_Dynamic &&
+                !rigid1->fixedRotation)
             {
                 float torqueA = CrossProduct(rA, -impulse);
                 rigid1->angularVelocity +=
-                    (torqueA / rigid1->momentOfInertia) * vertexCollisionDamping;
+                    (torqueA / rigid1->momentOfInertia) *
+                    vertexCollisionDamping;
             }
 
-            if (rigid2->type == BodyType::sm2d_Dynamic && !rigid2->fixedRotation)
+            if (rigid2->type == BodyType::sm2d_Dynamic &&
+                !rigid2->fixedRotation)
             {
                 float torqueB = CrossProduct(rB, impulse);
                 rigid2->angularVelocity +=
-                    (torqueB / rigid2->momentOfInertia) * vertexCollisionDamping;
+                    (torqueB / rigid2->momentOfInertia) *
+                    vertexCollisionDamping;
             }
         }
     }
 }
 
-glm::vec2 FindClosestPointOnPolygon(const ColPolygon& polygon, const glm::vec2& point)
+glm::vec2 FindClosestPointOnPolygon(const ColPolygon& polygon,
+                                    const glm::vec2&  point)
 {
     if (polygon.worldPoints.size() < 2)
     {
-        return polygon.center; // Return center if polygon is degenerate
+        return polygon
+            .center; // Return center if polygon is degenerate
     }
 
     float     minDistance = std::numeric_limits<float>::max();
@@ -808,7 +901,8 @@ glm::vec2 FindClosestPointOnPolygon(const ColPolygon& polygon, const glm::vec2& 
     {
         // Get current edge vertices
         const glm::vec2& start = polygon.worldPoints[i];
-        const glm::vec2& end = polygon.worldPoints[(i + 1) % polygon.worldPoints.size()];
+        const glm::vec2& end =
+            polygon.worldPoints[(i + 1) % polygon.worldPoints.size()];
 
         // Vector from start to end of edge
         glm::vec2 edge = end - start;
@@ -837,7 +931,8 @@ glm::vec2 FindClosestPointOnPolygon(const ColPolygon& polygon, const glm::vec2& 
     return closestPoint;
 }
 
-size_t FindClosestVertex(const glm::vec2& point, const std::vector<glm::vec2>& vertices)
+size_t FindClosestVertex(const glm::vec2&              point,
+                         const std::vector<glm::vec2>& vertices)
 {
     size_t closest = 0;
     float  minDistSq = std::numeric_limits<float>::max();
@@ -855,44 +950,87 @@ size_t FindClosestVertex(const glm::vec2& point, const std::vector<glm::vec2>& v
     return closest;
 }
 
-void ApplySpringJoint(Rigidbody* body, const glm::vec2& anchorPoint, 
-                     float restLength = 1.0f, 
-                     float stiffness = 10.0f, 
-                     float damping = 0.5f)
+void ApplySpringJoint(Rigidbody* body, const glm::vec2& anchorPoint,
+                      float restLength = 1.0f,
+                      float stiffness = 10.0f, float damping = 0.5f)
 {
     if (!body->awake || body->type == sm2d_Static)
         return;
 
-    glm::vec2 toAnchor = anchorPoint - glm::vec2(body->transform->position);
+    glm::vec2 toAnchor =
+        anchorPoint - glm::vec2(body->transform->position);
     float currentLength = glm::length(toAnchor);
-    
+
     if (currentLength < 0.001f)
         return;
-    
+
     glm::vec2 direction = toAnchor / currentLength;
-    
+
     // Linear spring force
     float displacement = currentLength - restLength;
     float springForce = stiffness * displacement;
-    
+
     // Critical damping calculation
     float criticalDamping = 2.0f * sqrtf(stiffness * body->mass);
     float dampingCoeff = damping * criticalDamping;
-    
+
     // Linear velocity damping
     float velAlongSpring = glm::dot(body->linearVelocity, direction);
     float dampingForce = dampingCoeff * velAlongSpring;
-    
+
     glm::vec2 totalForce = direction * (springForce - dampingForce);
-    
+
     // Softer force limiting
     float maxForce = stiffness * restLength;
     float forceMagnitude = glm::length(totalForce);
     if (forceMagnitude > maxForce)
     {
-        totalForce *= (maxForce / forceMagnitude) * 0.9f; // Add some extra softening
+        totalForce *= (maxForce / forceMagnitude) *
+                      0.9f; // Add some extra softening
     }
-    
+
+    body->force += totalForce;
+    body->hasMoved = true;
+}
+
+void ApplySpringJointWithoutRestLength(Rigidbody*       body,
+                                       const glm::vec2& anchorPoint,
+                                       float stiffness, float damping)
+{
+    if (!body->awake || body->type == sm2d_Static)
+        return;
+
+    glm::vec2 toAnchor = 
+        anchorPoint - glm::vec2(body->transform->position);
+    float currentLength = glm::length(toAnchor);
+
+    if (currentLength < 0.001f)
+        return;
+
+    glm::vec2 direction = toAnchor / currentLength;
+
+    // Linear spring force (always pulls toward anchor)
+    float springForce = stiffness * currentLength;
+
+    // Critical damping calculation
+    float criticalDamping = 2.0f * sqrtf(stiffness * body->mass);
+    float dampingCoeff = damping * criticalDamping;
+
+    // Linear velocity damping
+    float velAlongSpring = glm::dot(body->linearVelocity, direction);
+    float dampingForce = dampingCoeff * velAlongSpring;
+
+    glm::vec2 totalForce = direction * (springForce - dampingForce);
+
+    // Softer force limiting
+    float maxForce = stiffness * currentLength;
+    float forceMagnitude = glm::length(totalForce);
+    if (forceMagnitude > maxForce)
+    {
+        totalForce *= (maxForce / forceMagnitude) *
+                      0.9f; // Add some extra softening
+    }
+
     body->force += totalForce;
     body->hasMoved = true;
 }
@@ -907,18 +1045,26 @@ void SimulateBody(Rigidbody* rigid)
     if (rigid->applyGravity)
         rigid->force.y += -3.5f * rigid->mass; // GRAVITAS
 
-    rigid->linearVelocity += rigid->force / rigid->mass * engineState.deltaTime;
-    rigid->linearVelocity *= glm::pow(rigid->linearDamping, engineState.deltaTime);
+    rigid->linearVelocity +=
+        rigid->force / rigid->mass * engineState.deltaTime;
+    rigid->linearVelocity *=
+        glm::pow(rigid->linearDamping, engineState.deltaTime);
 
-    rigid->transform->position.x += rigid->linearVelocity.x * engineState.deltaTime;
-    rigid->transform->position.y += rigid->linearVelocity.y * engineState.deltaTime;
+    rigid->transform->position.x +=
+        rigid->linearVelocity.x * engineState.deltaTime;
+    rigid->transform->position.y +=
+        rigid->linearVelocity.y * engineState.deltaTime;
 
-    rigid->angularVelocity += rigid->torque / rigid->mass * engineState.deltaTime;
-    rigid->angularVelocity *= glm::pow(rigid->angularDamping, engineState.deltaTime);
+    rigid->angularVelocity +=
+        rigid->torque / rigid->mass * engineState.deltaTime;
+    rigid->angularVelocity *=
+        glm::pow(rigid->angularDamping, engineState.deltaTime);
 
-    rigid->transform->rotation.z += rigid->angularVelocity * engineState.deltaTime;
+    rigid->transform->rotation.z +=
+        rigid->angularVelocity * engineState.deltaTime;
 
-    if (rigid->angularVelocity > 0.03f || glm::length(rigid->linearVelocity) > 0.004f ||
+    if (rigid->angularVelocity > 0.03f ||
+        glm::length(rigid->linearVelocity) > 0.004f ||
         rigid->alwaysAwake)
     {
         rigid->hasMoved = true;
@@ -949,7 +1095,8 @@ void UpdateCollider(Collider* collider)
     else if (collider->type == ColliderType::sm2d_Polygon)
     {
         UpdatePolygon(*collider);
-        collider->polygon.center = ComputePolygonCenter(collider->polygon);
+        collider->polygon.center =
+            ComputePolygonCenter(collider->polygon);
         RemoveLeaf(bvh, collider->treeIndex);
         RemoveDeletedLeaves(bvh);
         InsertLeaf(bvh, collider, ColPolygonToAABB(*collider));
@@ -958,10 +1105,12 @@ void UpdateCollider(Collider* collider)
 
 AABB ColAABBToABBB(const Collider& box)
 {
-    glm::vec2 topRight = glm::vec2(box.body->transform->position) +
-                         glm::vec2(box.aabb.halfwidths.x, box.aabb.halfwidths.y);
-    glm::vec2 bottomLeft = glm::vec2(box.body->transform->position) +
-                           glm::vec2(-box.aabb.halfwidths.x, -box.aabb.halfwidths.y);
+    glm::vec2 topRight =
+        glm::vec2(box.body->transform->position) +
+        glm::vec2(box.aabb.halfwidths.x, box.aabb.halfwidths.y);
+    glm::vec2 bottomLeft =
+        glm::vec2(box.body->transform->position) +
+        glm::vec2(-box.aabb.halfwidths.x, -box.aabb.halfwidths.y);
     return AABB(topRight, bottomLeft);
 }
 
