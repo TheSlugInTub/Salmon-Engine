@@ -223,17 +223,18 @@ void PlayerIKDraw(PlayerIK* ik)
         ImGui::DragFloat2("LegRoot2", glm::value_ptr(ik->legRoot[1]));
         ImGui::DragFloat2("IKendpoint", glm::value_ptr(endpoint));
         ImGui::DragFloat("LegLength", &ik->legLength);
-        
+ 
+        testIK.endpoint = endpoint;
         SolveIK2D(testIK);
 
         Renderer::RenderLine2D(testIK.points,
                                glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
                                10.0f, 3.0f, false);
 
-        for (auto point : testIK.points)
-        {
-            std::cout << "Point in points: " << glm::to_string(point) << '\n';
-        }
+        // for (auto point : testIK.points)
+        // {
+        //     std::cout << "Point in points: " << glm::to_string(point) << '\n';
+        // }
 
         // Renderer::RenderLine2D(
         //     ik->handRopeSim[1].points, engineState.projMat,

@@ -9,15 +9,22 @@ struct IKSolver2D
     glm::vec2              endpoint = {};
 
     float pointDistance = 1.0f; // Distance between points
+    int   numPoints = 5;
 
     IKSolver2D(const glm::vec2& base, const glm::vec2& endpointM,
                int size, float pointDistanceM)
     {
         endpoint = endpointM;
         pointDistance = pointDistanceM;
+        numPoints = size;
+        points.resize(numPoints);
 
-        points.resize(size);
-        points[0] = base;
+        // Initialize points in a straight line from base
+        for (int i = 0; i < numPoints; i++)
+        {
+            // Create initial chain going downward from base
+            points[i] = base + glm::vec2(0.0f, -pointDistance * i);
+        }
     }
 
     IKSolver2D() {}
