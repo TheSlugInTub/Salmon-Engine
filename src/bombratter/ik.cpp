@@ -147,10 +147,10 @@ void PlayerIKSys()
                          GetSmoothInterpolationTimer(1.0f));
 
         unsigned char leg1Moved =
-            glm::fastDistance(ik->legIK[0].endpoint, bodyPos) >
+            glm::distance(ik->legIK[0].endpoint, worldSpaceLegRoot[0]) >
             ik->legThreshold;
         unsigned char leg2Moved =
-            glm::fastDistance(ik->legIK[1].endpoint, bodyPos) >
+            glm::distance(ik->legIK[1].endpoint, worldSpaceLegRoot[1]) >
             ik->legThreshold;
 
         unsigned char notNull1 =
@@ -212,25 +212,15 @@ void PlayerIKSys()
 
 REGISTER_SYSTEM(PlayerIKSys);
 
-glm::vec2 endpoint = glm::vec2(0.0f, -1.0f);
-IKSolver2D testIK(glm::vec2(0.0f, 0.0f), endpoint, 4, 1.0f);
-
 void PlayerIKDraw(PlayerIK* ik)
 {
     if (ImGui::CollapsingHeader("PlayerIK"))
     {
         ImGui::DragFloat2("LegRoot1", glm::value_ptr(ik->legRoot[0]));
         ImGui::DragFloat2("LegRoot2", glm::value_ptr(ik->legRoot[1]));
-        ImGui::DragFloat2("IKendpoint", glm::value_ptr(endpoint));
         ImGui::DragFloat("LegLength", &ik->legLength);
+        ImGui::DragFloat("LegThreshold", &ik->legThreshold);
  
-        testIK.endpoint = endpoint;
-        SolveIK2D(testIK);
-
-        Renderer::RenderLine2D(testIK.points,
-                               glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
-                               10.0f, 3.0f, false);
-
         // for (auto point : testIK.points)
         // {
         //     std::cout << "Point in points: " << glm::to_string(point) << '\n';
