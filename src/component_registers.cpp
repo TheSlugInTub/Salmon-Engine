@@ -393,6 +393,7 @@ void RigidbodyDraw(sm2d::Rigidbody* rb)
         ImGui::DragFloat("Torque", &rb->torque, 0.1f);
         ImGui::InputInt("UserData", &rb->userData);
         ImGui::Checkbox("AlwaysAwake", &rb->alwaysAwake);
+        ImGui::Checkbox("ApplyGravity", &rb->applyGravity);
     }
 }
 
@@ -411,6 +412,7 @@ nlohmann::json RigidbodySave(sm2d::Rigidbody* rb)
             {"Force", {rb->force.x, rb->force.y}},
             {"UserData", rb->userData},
             {"AlwaysAwake", rb->alwaysAwake},
+            {"ApplyGravity", rb->applyGravity},
             {"Torque", rb->torque}};
 }
 
@@ -432,6 +434,8 @@ void RigidbodyLoad(sm2d::Rigidbody* rb, const nlohmann::json& j)
         rb->userData = j["UserData"];
     if (j.contains("AlwaysAwake"))
         rb->alwaysAwake = j["AlwaysAwake"];
+    if (j.contains("ApplyGravity"))
+        rb->applyGravity = j["ApplyGravity"];
 }
 
 // -------------------

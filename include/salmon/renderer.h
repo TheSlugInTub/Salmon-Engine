@@ -67,8 +67,7 @@ void RenderLine(const std::vector<glm::vec3>& points, const glm::mat4& projectio
                 const glm::mat4& view, const glm::vec4& color = glm::vec4(0.0, 1.0f, 0.0f, 1.0f),
                 float pointSize = 10.0f, float lineSize = 3.0f);
 // Renders a line from one vec2 to another vec2, uses the line shader
-void RenderLine2D(const std::vector<glm::vec2>& points, const glm::mat4& projection,
-                  const glm::mat4& view, const glm::vec4& color = glm::vec4(0.0, 1.0f, 0.0f, 1.0f),
+void RenderLine2D(const std::vector<glm::vec2>& points,  const glm::vec4& color = glm::vec4(0.0, 1.0f, 0.0f, 1.0f),
                   float pointSize = 10.0f, float lineSize = 3.0f, bool looping = true);
 // Renders a single dot
 void RenderPoint(const glm::vec3& point, const glm::vec4& color = glm::vec4(0.0, 1.0f, 0.0f, 1.0f));

@@ -37,6 +37,7 @@
             "AlwaysAwake": false,
             "AngularDamping": 0.9800000190734863,
             "AngularVelocity": 0.0,
+            "ApplyGravity": true,
             "Awake": false,
             "FixedRotation": false,
             "Force": [
@@ -85,6 +86,16 @@
     ],
     [
         {
+            "LegLength": 50.0,
+            "LegRoot1": [
+                -0.20000000298023224,
+                -0.30000001192092896
+            ],
+            "LegRoot2": [
+                0.20000000298023224,
+                -0.30000001192092896
+            ],
+            "LegThreshold": 0.5,
             "type": "PlayerIK"
         },
         {

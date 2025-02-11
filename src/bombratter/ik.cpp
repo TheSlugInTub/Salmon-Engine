@@ -1,6 +1,3 @@
-#include "sm2d/colliders.h"
-#include "sm2d/functions.h"
-#include "sm2d/types.h"
 #include <chrono>
 #include <salmon/editor.h>
 #include <imgui/imgui.h>
@@ -9,6 +6,8 @@
 #include <salmon/json.hpp>
 #include <glm/gtx/fast_square_root.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <salmon/ik_solver.h>
+#include <sm2d/functions.h>
 
 void PlayerIKStartSys()
 {
@@ -17,55 +16,74 @@ void PlayerIKStartSys()
         auto ik = engineState.scene.Get<PlayerIK>(ent);
         auto trans = engineState.scene.Get<Transform>(ent);
 
-        // EntityID sen1 = engineState.scene.AddEntity();
-        // engineState.scene.AssignParam<Name>(sen1, "Sen1");
-        // auto trans1 = engineState.scene.AssignParam<Transform>(
-        //     sen1, glm::vec3(ik->legRoot[0], 0.0f), glm::vec3(0.0f),
-        //     glm::vec3(1.0f, 1.0f, 0.0f));
-        // auto rigid =
-        // engineState.scene.AssignParam<sm2d::Rigidbody>(
-        //     sen1, sm2d::BodyType::sm2d_Static, trans1);
-        // ik->groundSensor[0] =
-        // engineState.scene.AssignParam<sm2d::Collider>(
-        //     sen1, sm2d::ColliderType::sm2d_AABB,
-        //     sm2d::ColAABB(glm::vec2(0.17f, 0.4f)), rigid, true);
+        EntityID sen1 = engineState.scene.AddEntity();
+        engineState.scene.AssignParam<Name>(sen1, "Sen1");
 
-        // EntityID sen2 = engineState.scene.AddEntity();
-        // engineState.scene.AssignParam<Name>(sen2, "Sen2");
-        // auto trans2 = engineState.scene.AssignParam<Transform>(
-        //     sen2, glm::vec3(ik->legRoot[1], 0.0f), glm::vec3(0.0f),
-        //     glm::vec3(1.0f, 1.0f, 0.0f));
-        // auto rigid2 =
-        // engineState.scene.AssignParam<sm2d::Rigidbody>(
-        //     sen2, sm2d::BodyType::sm2d_Static, trans2);
-        // ik->groundSensor[1] =
-        // engineState.scene.AssignParam<sm2d::Collider>(
-        //     sen2, sm2d::ColliderType::sm2d_AABB,
-        //     sm2d::ColAABB(glm::vec2(0.17f, 0.4f)), rigid2, true);
+        auto trans1 = engineState.scene.AssignParam<Transform>(
+            sen1, glm::vec3(ik->legRoot[0], 0.0f), glm::vec3(0.0f),
+            glm::vec3(1.0f, 1.0f, 0.0f));
+
+        auto rigid = engineState.scene.AssignParam<sm2d::Rigidbody>(
+            sen1, sm2d::BodyType::sm2d_Static, trans1);
+
+        ik->groundSensor[0] =
+            engineState.scene.AssignParam<sm2d::Collider>(
+                sen1, sm2d::ColliderType::sm2d_AABB,
+                sm2d::ColAABB(glm::vec2(0.17f, 0.4f)), rigid, true);
+
+        EntityID sen2 = engineState.scene.AddEntity();
+        engineState.scene.AssignParam<Name>(sen2, "Sen2");
+
+        auto trans2 = engineState.scene.AssignParam<Transform>(
+            sen2, glm::vec3(ik->legRoot[1], 0.0f), glm::vec3(0.0f),
+            glm::vec3(1.0f, 1.0f, 0.0f));
+
+        auto rigid2 = engineState.scene.AssignParam<sm2d::Rigidbody>(
+            sen2, sm2d::BodyType::sm2d_Static, trans2);
+
+        ik->groundSensor[1] =
+            engineState.scene.AssignParam<sm2d::Collider>(
+                sen2, sm2d::ColliderType::sm2d_AABB,
+                sm2d::ColAABB(glm::vec2(0.17f, 0.4f)), rigid2, true);
+
+        // -----
 
         EntityID bodyEnt = engineState.scene.AddEntity();
         engineState.scene.AssignParam<Name>(bodyEnt, "BodyEnt");
+
         auto bodyEntTrans = engineState.scene.AssignParam<Transform>(
             bodyEnt, trans->position, glm::vec3(0.0f),
             glm::vec3(0.0f));
+
         ik->body = engineState.scene.AssignParam<sm2d::Rigidbody>(
             bodyEnt, sm2d::BodyType::sm2d_Dynamic, bodyEntTrans, 1.0f,
             true, 0.98f, 0.98f, 0.1f, true, 1.0f, 0, true, true);
+        ik->body->userData = 255;
+
         engineState.scene.AssignParam<sm2d::Collider>(
             bodyEnt, sm2d::ColliderType::sm2d_Circle,
             sm2d::ColCircle(0.1f), ik->body);
 
         EntityID headEnt = engineState.scene.AddEntity();
         engineState.scene.AssignParam<Name>(headEnt, "HeadEnt");
+
         auto headEntTrans = engineState.scene.AssignParam<Transform>(
             headEnt, trans->position + glm::vec3(0.0f, 0.3f, 0.0f),
             glm::vec3(0.0f), glm::vec3(0.0f));
+
         ik->head = engineState.scene.AssignParam<sm2d::Rigidbody>(
             headEnt, sm2d::BodyType::sm2d_Dynamic, headEntTrans, 1.0f,
             true, 0.98f, 0.98f, 0.1f, true, 1.0f, 0, false, true);
+        ik->head->userData = 255;
+
         engineState.scene.AssignParam<sm2d::Collider>(
             headEnt, sm2d::ColliderType::sm2d_Circle,
             sm2d::ColCircle(0.1f), ik->head);
+
+        ik->legIK[0] = IKSolver2D(ik->legRoot[0], glm::vec2(0.0f), 3,
+                                  ik->legLength);
+        ik->legIK[1] = IKSolver2D(ik->legRoot[1], glm::vec2(0.0f), 3,
+                                  ik->legLength);
     }
 }
 
@@ -98,7 +116,7 @@ float GetSmoothInterpolationTimer(float period = 2.0f)
     double currentTime = glfwGetTime();
 
     // Create a cyclical timer that smoothly goes between 0 and 1
-    float t = std::fmod(currentTime, period) / period;
+    float t = (float)(std::fmod(currentTime, period) / period);
 
     // Optional: apply smoothstep for more natural easing
     return t * t * (3.0f - 2.0f * t);
@@ -115,99 +133,107 @@ void PlayerIKSys()
         //                            glm::vec3(0.0f, 0.3f, 0.0f),
         //                        0.01f, 100.0f, 0.1f);
 
+        glm::vec2 worldSpaceLegRoot[2] = {
+            glm::vec2(ik->body->transform->position) + ik->legRoot[0],
+            glm::vec2(ik->body->transform->position) +
+                ik->legRoot[1]};
+
+        glm::vec2 bodyPos = ik->body->transform->position;
+
         ik->head->transform->position =
             SlerpVectors(ik->head->transform->position,
                          ik->body->transform->position +
                              glm::vec3(0.0f, 0.3f, 0.0f),
                          GetSmoothInterpolationTimer(1.0f));
 
-        std::cout << "Interop: " << GetSmoothInterpolationTimer(1.0f) << '\n'; 
+        unsigned char leg1Moved =
+            glm::fastDistance(ik->legIK[0].endpoint, bodyPos) >
+            ik->legThreshold;
+        unsigned char leg2Moved =
+            glm::fastDistance(ik->legIK[1].endpoint, bodyPos) >
+            ik->legThreshold;
+
+        unsigned char notNull1 =
+            ik->groundSensor[0]->sensorCollider != nullptr;
+        unsigned char notNull2 =
+            ik->groundSensor[1]->sensorCollider != nullptr;
+
+        if (leg1Moved && notNull1)
+        {
+            ik->legIK[0].endpoint = sm2d::FindClosestPointOnPolygon(
+                ik->groundSensor[0]->sensorCollider->polygon,
+                worldSpaceLegRoot[0]);
+        }
+
+        if (leg2Moved && notNull2)
+        {
+            ik->legIK[1].endpoint = sm2d::FindClosestPointOnPolygon(
+                ik->groundSensor[1]->sensorCollider->polygon,
+                worldSpaceLegRoot[1]);
+        }
+
+        ik->legIK[0].points[0] = worldSpaceLegRoot[0];
+        ik->legIK[1].points[0] = worldSpaceLegRoot[1];
+
+        SolveIK2D(ik->legIK[0]);
+        SolveIK2D(ik->legIK[1]);
+
+        ik->groundSensor[0]->body->transform->position =
+            glm::vec3(worldSpaceLegRoot[0], 0.0f);
+        ik->groundSensor[1]->body->transform->position =
+            glm::vec3(worldSpaceLegRoot[1], 0.0f);
+
+        if (notNull1 && notNull2)
+        {
+            Renderer::RenderPoint(
+                glm::vec3(
+                    sm2d::FindClosestPointOnPolygon(
+                        ik->groundSensor[1]->sensorCollider->polygon,
+                        worldSpaceLegRoot[1]),
+                    0.0f),
+                glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+            Renderer::RenderPoint(
+                glm::vec3(
+                    sm2d::FindClosestPointOnPolygon(
+                        ik->groundSensor[0]->sensorCollider->polygon,
+                        worldSpaceLegRoot[0]),
+                    0.0f),
+                glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        }
+
+        Renderer::RenderLine2D(ik->legIK[0].points,
+                               glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+                               10.0f, 10.0f, false);
+        Renderer::RenderLine2D(ik->legIK[1].points,
+                               glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+                               10.0f, 3.0f, false);
     }
 }
 
 REGISTER_SYSTEM(PlayerIKSys);
 
+glm::vec2 endpoint = glm::vec2(0.0f, -1.0f);
+IKSolver2D testIK(glm::vec2(0.0f, 0.0f), endpoint, 4, 1.0f);
+
 void PlayerIKDraw(PlayerIK* ik)
 {
     if (ImGui::CollapsingHeader("PlayerIK"))
     {
-        // ImGui::DragFloat2("legPos1",
-        // glm::value_ptr(ik->legPos[0]));
-        // ImGui::DragFloat2("legPos2",
-        // glm::value_ptr(ik->legPos[1]));
-        // ImGui::DragFloat2("handTarget1",
-        // glm::value_ptr(ik->handTarget[0]));
-        // ImGui::DragFloat2("handTarget2",
-        // glm::value_ptr(ik->handTarget[1]));
+        ImGui::DragFloat2("LegRoot1", glm::value_ptr(ik->legRoot[0]));
+        ImGui::DragFloat2("LegRoot2", glm::value_ptr(ik->legRoot[1]));
+        ImGui::DragFloat2("IKendpoint", glm::value_ptr(endpoint));
+        ImGui::DragFloat("LegLength", &ik->legLength);
+        
+        SolveIK2D(testIK);
 
-        // ImGui::DragFloat2("legRoot1",
-        // glm::value_ptr(ik->legRoot[0]));
-        // ImGui::DragFloat2("legRoot2",
-        // glm::value_ptr(ik->legRoot[1]));
-        // ImGui::DragFloat2("handRoot1",
-        // glm::value_ptr(ik->handRoot[0]));
-        // ImGui::DragFloat2("handRoot2",
-        // glm::value_ptr(ik->handRoot[1]));
-        // ImGui::DragFloat("CircleCastRadius",
-        // &ik->circleCastRadius); ImGui::DragFloat("LegThreshold",
-        // &ik->legThreshold); ImGui::DragFloat("MaxSpeed",
-        // &ik->maxSpeed); ImGui::DragFloat("Acceleration",
-        // &ik->acceleration); ImGui::DragFloat("Deceleration",
-        // &ik->deceleration); if (ImGui::DragFloat("HandElasticity",
-        // &ik->handElasticity))
-        // {
-        //     ik->handRopeSim[0].elasticity = ik->handElasticity;
-        //     ik->handRopeSim[1].elasticity = ik->handElasticity;
-        // }
+        Renderer::RenderLine2D(testIK.points,
+                               glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+                               10.0f, 3.0f, false);
 
-        // if (ImGui::DragFloat("HandPointDistance",
-        // &ik->handPointDistance))
-        // {
-        //     ik->handRopeSim[0].pointDistance =
-        //     ik->handPointDistance; ik->handRopeSim[1].pointDistance
-        //     = ik->handPointDistance;
-        // }
-
-        // if (ImGui::DragInt("HandNumPoints", &ik->handNumPoints))
-        // {
-        //     ik->handRopeSim[0].numPoints = ik->handNumPoints;
-        //     ik->handRopeSim[1].numPoints = ik->handNumPoints;
-        // }
-
-        // if (ImGui::DragFloat("HandDamping", &ik->handDamping))
-        // {
-        //     ik->handRopeSim[0].damping = ik->handDamping;
-        //     ik->handRopeSim[1].damping = ik->handDamping;
-        // }
-
-        // if (ik->transform == nullptr)
-        // {
-        //     return;
-        // }
-
-        // glm::vec2 bodyPos = glm::vec2(ik->transform->position);
-
-        // Renderer::RenderLine2D({ik->legRoot[0] + bodyPos,
-        // ik->legPos[0]}, engineState.projMat,
-        //                        engineState.camera->GetViewMatrix(),
-        //                        glm::vec4(0.188235294f, 0.23137254f,
-        //                        0.3176470f, 1.0f), 10.0f, 50.0f);
-        // Renderer::RenderLine2D({ik->legRoot[1] + bodyPos,
-        // ik->legPos[1]}, engineState.projMat,
-        //                        engineState.camera->GetViewMatrix(),
-        //                        glm::vec4(0.188235294f, 0.23137254f,
-        //                        0.3176470f, 1.0f), 10.0f, 50.0f);
-
-        // Renderer::RenderPoint(glm::vec3(bodyPos, 0.0f),
-        // engineState.projMat,
-        //                       engineState.camera->GetViewMatrix(),
-        //                       glm::vec4(1.0f, 0.0f, 0.0f, 1.0));
-
-        // Renderer::RenderLine2D(
-        //     ik->handRopeSim[0].points, engineState.projMat,
-        //     engineState.camera->GetViewMatrix(),
-        //     glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0f),
-        //     0.1f, 50.0f, false);
+        for (auto point : testIK.points)
+        {
+            std::cout << "Point in points: " << glm::to_string(point) << '\n';
+        }
 
         // Renderer::RenderLine2D(
         //     ik->handRopeSim[1].points, engineState.projMat,
@@ -215,10 +241,10 @@ void PlayerIKDraw(PlayerIK* ik)
         //     glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0f),
         //     0.1f, 50.0f, false);
 
-        Renderer::RenderPoint(ik->head->transform->position,
-                              glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-        Renderer::RenderPoint(ik->body->transform->position,
-                              glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        // Renderer::RenderPoint(ik->head->transform->position,
+        //                       glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        // Renderer::RenderPoint(ik->body->transform->position,
+        //                       glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
         // Update FPS every second
         auto currentTime = std::chrono::high_resolution_clock::now();
@@ -246,81 +272,25 @@ void PlayerIKDraw(PlayerIK* ik)
 
 nlohmann::json PlayerIKSave(PlayerIK* ik)
 {
-    nlohmann::json j;
+    nlohmann::json j = {
+        {"LegRoot1", {ik->legRoot[0].x, ik->legRoot[0].y}},
+        {"LegRoot2", {ik->legRoot[1].x, ik->legRoot[1].y}},
+        {"LegThreshold", ik->legThreshold},
+        {"LegLength", ik->legLength}};
 
     return j;
 }
 
 void PlayerIKLoad(PlayerIK* ik, const nlohmann::json& j)
 {
-    // if (j.contains("CircleCastRadius"))
-    // {
-    //     ik->circleCastRadius = j["CircleCastRadius"];
-    // }
-    // if (j.contains("LegThreshold"))
-    // {
-    //     ik->legThreshold = j["LegThreshold"];
-    // }
-    // if (j.contains("LegPos1"))
-    // {
-    //     ik->legPos[0] = {j["LegPos1"][0], j["LegPos1"][1]};
-    // }
-    // if (j.contains("LegPos2"))
-    // {
-    //     ik->legPos[1] = {j["LegPos2"][0], j["LegPos2"][1]};
-    // }
-    // if (j.contains("HandPos1"))
-    // {
-    //     ik->handTarget[0] = {j["HandPos1"][0], j["HandPos1"][1]};
-    // }
-    // if (j.contains("HandPos2"))
-    // {
-    //     ik->handTarget[1] = {j["HandPos2"][0], j["HandPos2"][1]};
-    // }
-    // if (j.contains("LegRoot1"))
-    // {
-    //     ik->legRoot[0] = {j["LegRoot1"][0], j["LegRoot1"][1]};
-    // }
-    // if (j.contains("LegRoot2"))
-    // {
-    //     ik->legRoot[1] = {j["LegRoot2"][0], j["LegRoot2"][1]};
-    // }
-    // if (j.contains("HandRoot1"))
-    // {
-    //     ik->handRoot[0] = {j["HandRoot1"][0], j["HandRoot1"][1]};
-    // }
-    // if (j.contains("HandRoot2"))
-    // {
-    //     ik->handRoot[1] = {j["HandRoot2"][0], j["HandRoot2"][1]};
-    // }
-    // if (j.contains("HandElasticity"))
-    // {
-    //     ik->handElasticity = j["HandElasticity"];
-    // }
-    // if (j.contains("HandPointDistance"))
-    // {
-    //     ik->handPointDistance = j["HandPointDistance"];
-    // }
-    // if (j.contains("HandDamping"))
-    // {
-    //     ik->handDamping = j["HandDamping"];
-    // }
-    // if (j.contains("HandNumPoints"))
-    // {
-    //     ik->handNumPoints = j["HandNumPoints"];
-    // }
-    // if (j.contains("MaxSpeed"))
-    // {
-    //     ik->maxSpeed = j["MaxSpeed"];
-    // }
-    // if (j.contains("Acceleration"))
-    // {
-    //     ik->acceleration = j["Acceleration"];
-    // }
-    // if (j.contains("Deceleration"))
-    // {
-    //     ik->deceleration = j["Deceleration"];
-    // }
+    if (j.contains("LegLength"))
+        ik->legLength = j["LegLength"];
+    if (j.contains("LegRoot1"))
+        ik->legRoot[0] = {j["LegRoot1"][0], j["LegRoot1"][1]};
+    if (j.contains("LegRoot2"))
+        ik->legRoot[1] = {j["LegRoot2"][0], j["LegRoot2"][1]};
+    if (j.contains("LegThreshold"))
+        ik->legThreshold = j["LegThreshold"];
 }
 
 REGISTER_COMPONENT(PlayerIK, PlayerIKDraw, PlayerIKSave,
