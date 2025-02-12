@@ -106,6 +106,14 @@ void ApplySpringJointWithoutRestLength(Rigidbody*       body,
                                        float stiffness = 10.0f,
                                        float damping = 0.5f);
 
+// Brings a rigidbody closer to a point while keeping distance from it
+// but locked into an angle range that it can rotate around the body
+void ApplySpringJointWithinAngle(Rigidbody*       body,
+                                 const glm::vec2& anchorPoint,
+                                 float restLength, float stiffness,
+                                 float damping, float minAngle,
+                                 float maxAngle);
+
 // Update a collider, does the same as the ColliderSys
 void UpdateCollider(Collider* collider);
 

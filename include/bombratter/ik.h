@@ -23,6 +23,7 @@ struct PlayerIK
     IKSolver2D legIK[2];
 
     sm2d::Collider* groundSensor[2];
+    sm2d::Collider* legCollider = nullptr;
 
     glm::vec2 legRoot[2] = {};
     glm::vec2 legTarget[2] = {};

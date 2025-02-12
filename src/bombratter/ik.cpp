@@ -56,8 +56,8 @@ void PlayerIKStartSys()
             glm::vec3(0.0f));
 
         ik->body = engineState.scene.AssignParam<sm2d::Rigidbody>(
-            bodyEnt, sm2d::BodyType::sm2d_Dynamic, bodyEntTrans, 1.0f,
-            true, 0.98f, 0.98f, 0.1f, true, 1.0f, 0, true, true);
+            bodyEnt, sm2d::BodyType::sm2d_Dynamic, bodyEntTrans, 0.1f,
+            true, 0.98f, 0.98f, 0.1f, true, 1.0f, 255, false, true);
         ik->body->userData = 255;
 
         engineState.scene.AssignParam<sm2d::Collider>(
@@ -73,12 +73,29 @@ void PlayerIKStartSys()
 
         ik->head = engineState.scene.AssignParam<sm2d::Rigidbody>(
             headEnt, sm2d::BodyType::sm2d_Dynamic, headEntTrans, 1.0f,
-            true, 0.98f, 0.98f, 0.1f, true, 1.0f, 0, false, true);
-        ik->head->userData = 255;
+            true, 0.98f, 0.98f, 0.1f, true, 1.0f, 255, false, true);
 
         engineState.scene.AssignParam<sm2d::Collider>(
             headEnt, sm2d::ColliderType::sm2d_Circle,
             sm2d::ColCircle(0.1f), ik->head);
+
+        EntityID legEnt = engineState.scene.AddEntity();
+        engineState.scene.AssignParam<Name>(legEnt, "LegEnt");
+
+        auto legEntTrans = engineState.scene.AssignParam<Transform>(
+            legEnt, trans->position + glm::vec3(0.0f, -0.2f, 0.0f),
+            glm::vec3(0.0f), glm::vec3(0.0f));
+
+        auto legEntBody =
+            engineState.scene.AssignParam<sm2d::Rigidbody>(
+                legEnt, sm2d::BodyType::sm2d_Dynamic, legEntTrans,
+                1.0f, true, 0.98f, 0.98f, 0.1f, true, 1.0f, 255,
+                true, true);
+
+        ik->legCollider =
+            engineState.scene.AssignParam<sm2d::Collider>(
+                legEnt, sm2d::ColliderType::sm2d_Circle,
+                sm2d::ColCircle(0.25f), legEntBody);
 
         ik->legIK[0] = IKSolver2D(ik->legRoot[0], glm::vec2(0.0f), 3,
                                   ik->legLength);
@@ -128,48 +145,66 @@ void PlayerIKSys()
     {
         auto ik = engineState.scene.Get<PlayerIK>(ent);
 
-        // sm2d::ApplySpringJoint(ik->head,
-        //                        ik->body->transform->position +
-        //                            glm::vec3(0.0f, 0.3f, 0.0f),
-        //                        0.01f, 100.0f, 0.1f);
-
         glm::vec2 worldSpaceLegRoot[2] = {
-            glm::vec2(ik->body->transform->position) + ik->legRoot[0],
-            glm::vec2(ik->body->transform->position) +
+            glm::vec2(ik->legCollider->body->transform->position) +
+                ik->legRoot[0],
+            glm::vec2(ik->legCollider->body->transform->position) +
                 ik->legRoot[1]};
 
-        glm::vec2 bodyPos = ik->body->transform->position;
+        glm::vec2 bodyPos =
+            ik->legCollider->body->transform->position;
 
-        ik->head->transform->position =
-            SlerpVectors(ik->head->transform->position,
-                         ik->body->transform->position +
-                             glm::vec3(0.0f, 0.3f, 0.0f),
-                         GetSmoothInterpolationTimer(1.0f));
+        sm2d::ApplySpringJointWithinAngle(
+            ik->head,
+            ik->body->transform->position +
+                glm::vec3(0.0f, 0.3f, 0.0f),
+            0.01f, 160.0f, 0.0f, 140, 40);
+        sm2d::ApplySpringJointWithinAngle(
+            ik->body,
+            ik->legCollider->body->transform->position +
+                glm::vec3(0.0f, 0.3f, 0.0f),
+            0.05f, 160.0f, 0.0f, 140, 40);
 
+        // Check if legs need to move
         unsigned char leg1Moved =
-            glm::distance(ik->legIK[0].endpoint, worldSpaceLegRoot[0]) >
-            ik->legThreshold;
+            glm::distance(ik->legIK[0].endpoint,
+                          worldSpaceLegRoot[0]) > ik->legThreshold;
         unsigned char leg2Moved =
-            glm::distance(ik->legIK[1].endpoint, worldSpaceLegRoot[1]) >
-            ik->legThreshold;
+            glm::distance(ik->legIK[1].endpoint,
+                          worldSpaceLegRoot[1]) > ik->legThreshold;
 
         unsigned char notNull1 =
             ik->groundSensor[0]->sensorCollider != nullptr;
         unsigned char notNull2 =
             ik->groundSensor[1]->sensorCollider != nullptr;
 
-        if (leg1Moved && notNull1)
-        {
-            ik->legIK[0].endpoint = sm2d::FindClosestPointOnPolygon(
-                ik->groundSensor[0]->sensorCollider->polygon,
-                worldSpaceLegRoot[0]);
-        }
+        static bool  leg1CanMove = true;
+        static float legMoveTimer = 0.0f;
+        const float  LEG_MOVE_DELAY = 0.1f;
 
-        if (leg2Moved && notNull2)
+        legMoveTimer += engineState.deltaTime;
+
+        // Handle leg movement with alternation
+        if (legMoveTimer >= LEG_MOVE_DELAY)
         {
-            ik->legIK[1].endpoint = sm2d::FindClosestPointOnPolygon(
-                ik->groundSensor[1]->sensorCollider->polygon,
-                worldSpaceLegRoot[1]);
+            if (leg1Moved && notNull1 && leg1CanMove)
+            {
+                ik->legIK[0].endpoint =
+                    sm2d::FindClosestPointOnPolygon(
+                        ik->groundSensor[0]->sensorCollider->polygon,
+                        worldSpaceLegRoot[0]);
+                leg1CanMove = false;
+                legMoveTimer = 0.0f;
+            }
+            else if (leg2Moved && notNull2 && !leg1CanMove)
+            {
+                ik->legIK[1].endpoint =
+                    sm2d::FindClosestPointOnPolygon(
+                        ik->groundSensor[1]->sensorCollider->polygon,
+                        worldSpaceLegRoot[1]);
+                leg1CanMove = true;
+                legMoveTimer = 0.0f;
+            }
         }
 
         ik->legIK[0].points[0] = worldSpaceLegRoot[0];
@@ -183,30 +218,12 @@ void PlayerIKSys()
         ik->groundSensor[1]->body->transform->position =
             glm::vec3(worldSpaceLegRoot[1], 0.0f);
 
-        if (notNull1 && notNull2)
-        {
-            Renderer::RenderPoint(
-                glm::vec3(
-                    sm2d::FindClosestPointOnPolygon(
-                        ik->groundSensor[1]->sensorCollider->polygon,
-                        worldSpaceLegRoot[1]),
-                    0.0f),
-                glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-            Renderer::RenderPoint(
-                glm::vec3(
-                    sm2d::FindClosestPointOnPolygon(
-                        ik->groundSensor[0]->sensorCollider->polygon,
-                        worldSpaceLegRoot[0]),
-                    0.0f),
-                glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-        }
-
         Renderer::RenderLine2D(ik->legIK[0].points,
                                glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
-                               10.0f, 10.0f, false);
+                               10.0f, 6.0f, false);
         Renderer::RenderLine2D(ik->legIK[1].points,
                                glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
-                               10.0f, 3.0f, false);
+                               10.0f, 6.0f, false);
     }
 }
 
@@ -220,10 +237,11 @@ void PlayerIKDraw(PlayerIK* ik)
         ImGui::DragFloat2("LegRoot2", glm::value_ptr(ik->legRoot[1]));
         ImGui::DragFloat("LegLength", &ik->legLength);
         ImGui::DragFloat("LegThreshold", &ik->legThreshold);
- 
+
         // for (auto point : testIK.points)
         // {
-        //     std::cout << "Point in points: " << glm::to_string(point) << '\n';
+        //     std::cout << "Point in points: " <<
+        //     glm::to_string(point) << '\n';
         // }
 
         // Renderer::RenderLine2D(

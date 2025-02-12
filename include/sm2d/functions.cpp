@@ -993,6 +993,31 @@ void ApplySpringJoint(Rigidbody* body, const glm::vec2& anchorPoint,
     body->hasMoved = true;
 }
 
+void ApplySpringJointWithinAngle(Rigidbody*       body,
+                                 const glm::vec2& anchorPoint,
+                                 float            restLength = 1.0f,
+                                 float            stiffness = 10.0f,
+                                 float            damping = 0.5f,
+                                 float            minAngle = -45.0f,
+                                 float            maxAngle = 45.0f)
+{
+    if (!body->awake || body->type == sm2d_Static)
+        return;
+
+    glm::vec2 toAnchor =
+        anchorPoint - glm::vec2(body->transform->position);
+    float currentLength = glm::length(toAnchor);
+
+    if (currentLength < 0.001f)
+        return;
+
+    body->transform->position =
+        body->transform->position +
+        glm::vec3(toAnchor * (currentLength - restLength), 0.0f);
+
+    body->hasMoved = true;
+}
+
 void ApplySpringJointWithoutRestLength(Rigidbody*       body,
                                        const glm::vec2& anchorPoint,
                                        float stiffness, float damping)
@@ -1000,7 +1025,7 @@ void ApplySpringJointWithoutRestLength(Rigidbody*       body,
     if (!body->awake || body->type == sm2d_Static)
         return;
 
-    glm::vec2 toAnchor = 
+    glm::vec2 toAnchor =
         anchorPoint - glm::vec2(body->transform->position);
     float currentLength = glm::length(toAnchor);
 

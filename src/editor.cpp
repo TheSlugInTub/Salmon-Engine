@@ -17,40 +17,54 @@ void DrawHierarchy()
 
         ImGui::PushID(static_cast<int>(i));
 
-        auto name = engineState.scene.Get<Name>(engineState.scene.entities[i].id);
+        auto name = engineState.scene.Get<Name>(
+            engineState.scene.entities[i].id);
         bool selected = selectedEntityIndex == static_cast<int>(i);
         assert(name != nullptr);
         if (ImGui::Selectable(name->name.c_str(), selected))
         {
             selectedEntityIndex = static_cast<int>(i);
-            selectedEntity = engineState.scene.entities[selectedEntityIndex].id;
+            selectedEntity =
+                engineState.scene.entities[selectedEntityIndex].id;
         }
 
-        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+        if (ImGui::BeginDragDropSource(
+                ImGuiDragDropFlags_SourceAllowNullID))
         {
-            ImGui::SetDragDropPayload("DND_DEMO_CELL", &i, sizeof(size_t));
+            ImGui::SetDragDropPayload("DND_DEMO_CELL", &i,
+                                      sizeof(size_t));
             ImGui::Text("Dragging Object %d", i);
             ImGui::EndDragDropSource();
         }
 
         if (ImGui::BeginDragDropTarget())
         {
-            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL"))
+            if (const ImGuiPayload* payload =
+                    ImGui::AcceptDragDropPayload("DND_DEMO_CELL"))
             {
                 IM_ASSERT(payload->DataSize == sizeof(size_t));
                 size_t payload_n = *(const size_t*)payload->Data;
                 if (payload_n != i)
                 {
-                    std::swap(engineState.scene.entities[payload_n], engineState.scene.entities[i]);
+                    std::swap(engineState.scene.entities[payload_n],
+                              engineState.scene.entities[i]);
                     if (selectedEntityIndex == static_cast<int>(i))
                     {
-                        selectedEntityIndex = static_cast<int>(payload_n);
-                        selectedEntity = engineState.scene.entities[selectedEntityIndex].id;
+                        selectedEntityIndex =
+                            static_cast<int>(payload_n);
+                        selectedEntity =
+                            engineState.scene
+                                .entities[selectedEntityIndex]
+                                .id;
                     }
-                    else if (selectedEntityIndex == static_cast<int>(payload_n))
+                    else if (selectedEntityIndex ==
+                             static_cast<int>(payload_n))
                     {
                         selectedEntityIndex = static_cast<int>(i);
-                        selectedEntity = engineState.scene.entities[selectedEntityIndex].id;
+                        selectedEntity =
+                            engineState.scene
+                                .entities[selectedEntityIndex]
+                                .id;
                     }
                 }
             }
@@ -146,7 +160,8 @@ void DrawTray()
 
     char sceneBuffer[128];
     strncpy_s(sceneBuffer, sceneName.c_str(), sizeof(sceneBuffer));
-    if (ImGui::InputText("SceneName", sceneBuffer, sizeof(sceneBuffer),
+    if (ImGui::InputText("SceneName", sceneBuffer,
+                         sizeof(sceneBuffer),
                          ImGuiInputTextFlags_EnterReturnsTrue))
     {
         sceneName = std::string(sceneBuffer);
@@ -167,8 +182,6 @@ void DrawTray()
             SaveScene(sceneName);
             playing = true;
             StartStartSystems();
-            std::cout << "Entity size after play: "
-                      << engineState.scene.entities.size() << '\n';
         }
     }
     else
@@ -177,8 +190,6 @@ void DrawTray()
         {
             LoadScene(sceneName);
             playing = false;
-            std::cout << "Entity size after stop: "
-                      << engineState.scene.entities.size() << '\n';
         }
     }
     ImGui::End();

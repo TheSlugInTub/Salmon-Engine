@@ -37,7 +37,9 @@ void RigidbodySys()
         }
 
         if (rigid->applyGravity)
+        {
             rigid->force.y += -3.5f * rigid->mass; // GRAVITAS
+        }
 
         rigid->linearVelocity += rigid->force / rigid->mass * engineState.deltaTime;
         rigid->linearVelocity *= glm::pow(rigid->linearDamping, engineState.deltaTime);
