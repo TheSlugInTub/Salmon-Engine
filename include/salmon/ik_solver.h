@@ -30,4 +30,5 @@ struct IKSolver2D
     IKSolver2D() {}
 };
 
+void ResetIK2D(IKSolver2D& ik, const glm::vec2& dir);
 void SolveIK2D(IKSolver2D& ik);

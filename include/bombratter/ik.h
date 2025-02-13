@@ -18,7 +18,7 @@
 struct PlayerIK
 {
     sm2d::Rigidbody* head = nullptr;
-    sm2d::Rigidbody* body = nullptr;
+    sm2d::Rigidbody* body[2] = {nullptr, nullptr};
 
     IKSolver2D legIK[2];
 
@@ -30,5 +30,11 @@ struct PlayerIK
     float     legLength = 1.0f;
     float     legThreshold = 0.5f;
 
+    float acceleration = 0.0f;
+    float deceleration = 0.0f;
+    float maxSpeed = 0.0f;
+
     PlayerIK() {}
 };
+
+void PlayerIKSys();

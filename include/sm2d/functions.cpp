@@ -1008,6 +1008,8 @@ void ApplySpringJointWithinAngle(Rigidbody*       body,
         anchorPoint - glm::vec2(body->transform->position);
     float currentLength = glm::length(toAnchor);
 
+    toAnchor = glm::normalize(toAnchor);
+
     if (currentLength < 0.001f)
         return;
 

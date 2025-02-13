@@ -41,3 +41,14 @@ void SolveIK2D(IKSolver2D& ik)
         ik.points[i + 1] = point + (direction * ik.pointDistance);
     }
 }
+
+void ResetIK2D(IKSolver2D& ik, const glm::vec2& dir)
+{
+    glm::vec2 base = ik.points[0];
+
+    for (int i = 0; i < ik.numPoints; i++)
+    {
+        // Create initial chain going downward from base
+        ik.points[i] = base + dir * ik.pointDistance * (float)i;
+    }
+}

@@ -86,16 +86,19 @@
     ],
     [
         {
-            "LegLength": 0.12999999523162842,
+            "Acceleration": 5.0,
+            "Deceleration": 6.0,
+            "LegLength": 0.10000000149011612,
             "LegRoot1": [
-                0.15000000596046448,
-                0.0
+                0.07999999821186066,
+                0.07999999821186066
             ],
             "LegRoot2": [
-                -0.15000000596046448,
-                0.0
+                -0.07999999821186066,
+                0.07999999821186066
             ],
-            "LegThreshold": 0.33000001311302185,
+            "LegThreshold": 0.27000001072883606,
+            "MaxSpeed": 1.5,
             "type": "PlayerIK"
         },
         {
@@ -119,6 +122,91 @@
                 1.0
             ],
             "type": "Transform"
+        }
+    ],
+    [
+        {
+            "EntName": "Thimg",
+            "type": "Name"
+        },
+        {
+            "Position": [
+                -1.5800000429153442,
+                -1.1399999856948853,
+                0.0
+            ],
+            "Rotation": [
+                0.0,
+                -0.2199999988079071,
+                0.0
+            ],
+            "Scale": [
+                1.159999966621399,
+                0.2199999988079071,
+                1.0
+            ],
+            "type": "Transform"
+        },
+        {
+            "Billboard": false,
+            "Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "TexturePath": "res/textures/Slugarius.png",
+            "type": "SpriteRenderer"
+        },
+        {
+            "AlwaysAwake": false,
+            "AngularDamping": 0.9800000190734863,
+            "AngularVelocity": 0.0,
+            "ApplyGravity": false,
+            "Awake": false,
+            "FixedRotation": false,
+            "Force": [
+                0.0,
+                0.0
+            ],
+            "LinearDamping": 0.9800000190734863,
+            "LinearVelocity": [
+                0.0,
+                0.0
+            ],
+            "Mass": 1.0,
+            "MomentOfInertia": 0.5,
+            "Restitution": 0.10000000149011612,
+            "Torque": 0.0,
+            "Type": 0,
+            "UserData": 0,
+            "type": "Rigidbody"
+        },
+        {
+            "Center": [
+                -1.5754871368408203,
+                -1.145868182182312
+            ],
+            "Points": [
+                [
+                    -0.5665384531021118,
+                    0.10258638858795166
+                ],
+                [
+                    -0.5763822793960571,
+                    -0.11777830123901367
+                ],
+                [
+                    0.58144211769104,
+                    -0.11394655704498291
+                ],
+                [
+                    0.5794738531112671,
+                    0.10641860961914063
+                ]
+            ],
+            "Type": 3,
+            "type": "Collider"
         }
     ]
 ]
