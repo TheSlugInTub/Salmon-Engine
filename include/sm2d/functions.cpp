@@ -1,3 +1,4 @@
+#include "sm2d/types.h"
 #include <sm2d/functions.h>
 #include <cassert>
 #include <cmath>
@@ -804,11 +805,27 @@ void ResolveCollisions(const Tree&            tree,
                 colData.collisionNormal * rigid1->mass;
 
             if (rigid1->type == BodyType::sm2d_Dynamic)
+            {
                 rigid1->transform->position +=
                     glm::vec3(correctionA, 0.0f);
+
+                if (rigid1->resLink != nullptr)
+                {
+                    rigid1->resLink->transform->position +=
+                        glm::vec3(correctionA, 0.0f);
+                }
+            }
             if (rigid2->type == BodyType::sm2d_Dynamic)
+            {
                 rigid2->transform->position +=
                     glm::vec3(correctionB, 0.0f);
+
+                if (rigid2->resLink != nullptr)
+                {
+                    rigid2->resLink->transform->position +=
+                        glm::vec3(correctionB, 0.0f);
+                }
+            }
         }
 
         // Velocity resolution
@@ -858,9 +875,24 @@ void ResolveCollisions(const Tree&            tree,
 
             // Apply linear impulses
             if (rigid1->type == BodyType::sm2d_Dynamic)
+            {
                 rigid1->linearVelocity -= impulse / rigid1->mass;
+                if (rigid1->resLink != nullptr)
+                {
+                    rigid1->resLink->linearVelocity -=
+                        impulse / rigid1->mass;
+                }
+            }
             if (rigid2->type == BodyType::sm2d_Dynamic)
+            {
                 rigid2->linearVelocity += impulse / rigid2->mass;
+
+                if (rigid2->resLink != nullptr)
+                {
+                    rigid2->resLink->linearVelocity -=
+                        impulse / rigid2->mass;
+                }
+            }
 
             // Apply angular impulses with damping
             if (rigid1->type == BodyType::sm2d_Dynamic &&
@@ -870,6 +902,13 @@ void ResolveCollisions(const Tree&            tree,
                 rigid1->angularVelocity +=
                     (torqueA / rigid1->momentOfInertia) *
                     vertexCollisionDamping;
+
+                if (rigid1->resLink != nullptr)
+                {
+                    rigid1->resLink->angularVelocity +=
+                        (torqueA / rigid1->momentOfInertia) *
+                        vertexCollisionDamping;
+                }
             }
 
             if (rigid2->type == BodyType::sm2d_Dynamic &&
@@ -879,6 +918,13 @@ void ResolveCollisions(const Tree&            tree,
                 rigid2->angularVelocity +=
                     (torqueB / rigid2->momentOfInertia) *
                     vertexCollisionDamping;
+
+                if (rigid2->resLink != nullptr)
+                {
+                    rigid2->resLink->angularVelocity +=
+                        (torqueB / rigid2->momentOfInertia) *
+                        vertexCollisionDamping;
+                }
             }
         }
     }

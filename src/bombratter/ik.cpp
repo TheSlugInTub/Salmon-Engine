@@ -48,28 +48,6 @@ void PlayerIKStartSys()
 
         // -----
 
-        for (int i = 0; i < 2; i++)
-        {
-            EntityID bodyEnt = engineState.scene.AddEntity();
-            engineState.scene.AssignParam<Name>(
-                bodyEnt, "BodyEnt" + std::to_string(i));
-
-            auto bodyEntTrans =
-                engineState.scene.AssignParam<Transform>(
-                    bodyEnt, trans->position, glm::vec3(0.0f),
-                    glm::vec3(0.0f));
-
-            ik->body[i] =
-                engineState.scene.AssignParam<sm2d::Rigidbody>(
-                    bodyEnt, sm2d::BodyType::sm2d_Dynamic,
-                    bodyEntTrans, 0.1f, true, 0.98f, 0.98f, 0.1f,
-                    true, 1.0f, 255, false, true);
-
-            engineState.scene.AssignParam<sm2d::Collider>(
-                bodyEnt, sm2d::ColliderType::sm2d_Circle,
-                sm2d::ColCircle(0.05f), ik->body[i]);
-        }
-
         EntityID headEnt = engineState.scene.AddEntity();
         engineState.scene.AssignParam<Name>(headEnt, "HeadEnt");
 
@@ -107,6 +85,29 @@ void PlayerIKStartSys()
                                   ik->legLength);
         ik->legIK[1] = IKSolver2D(ik->legRoot[1], glm::vec2(0.0f), 3,
                                   ik->legLength);
+
+        for (int i = 0; i < 2; i++)
+        {
+            EntityID bodyEnt = engineState.scene.AddEntity();
+            engineState.scene.AssignParam<Name>(
+                bodyEnt, "BodyEnt" + std::to_string(i));
+
+            auto bodyEntTrans =
+                engineState.scene.AssignParam<Transform>(
+                    bodyEnt, trans->position, glm::vec3(0.0f),
+                    glm::vec3(0.0f));
+
+            ik->body[i] =
+                engineState.scene.AssignParam<sm2d::Rigidbody>(
+                    bodyEnt, sm2d::BodyType::sm2d_Dynamic,
+                    bodyEntTrans, 0.1f, true, 0.98f, 0.98f, 0.1f,
+                    true, 1.0f, 255, false, true);
+            ik->body[i]->resLink = ik->legCollider->body;
+
+            engineState.scene.AssignParam<sm2d::Collider>(
+                bodyEnt, sm2d::ColliderType::sm2d_Circle,
+                sm2d::ColCircle(0.05f), ik->body[i]);
+        }
     }
 }
 

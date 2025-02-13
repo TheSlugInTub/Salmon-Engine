@@ -53,6 +53,8 @@ struct Rigidbody
     
     bool alwaysAwake = false; // The body will never fall asleep if this is true
 
+    Rigidbody* resLink; // resLink will receive the same resolution as this body
+
     glm::vec2 linearVelocity = glm::vec2(0.0f); // Rate of change of position
     float     angularVelocity = 0.0f;           // In radians
 
