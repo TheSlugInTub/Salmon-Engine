@@ -5,15 +5,17 @@
 #include <salmon/window.h>
 
 // Struct to store the state of the engine
-// This is just so I can make the current scene, camera, and window global
-// So I can access them from systems to loop over the current scene
+// This is just so I can make the current scene, camera, and window
+// global So I can access them from systems to loop over the current
+// scene
 struct EngineState
 {
     Scene   scene;
     Camera* camera;
-    Window* window; // The window class automatically assigns itself to the global engine state on
-                    // creation
+    Window* window; // The window class automatically assigns itself
+                    // to the global engine state on creation
     float     deltaTime;
+    float     currentTime;
     glm::mat4 projMat;
     glm::mat4 orthoProjMat;
 
@@ -22,7 +24,8 @@ struct EngineState
     {
         camera = &newCamera;
         projMat = camera->GetProjMatrix(window->GetAspectRatio());
-        orthoProjMat = glm::ortho(0.0f, (float)window->width, 0.0f, (float)window->height);
+        orthoProjMat = glm::ortho(0.0f, (float)window->width, 0.0f,
+                                  (float)window->height);
     }
 };
 

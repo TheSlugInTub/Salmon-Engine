@@ -41,18 +41,26 @@ void RigidbodySys()
             rigid->force.y += -3.5f * rigid->mass; // GRAVITAS
         }
 
-        rigid->linearVelocity += rigid->force / rigid->mass * engineState.deltaTime;
-        rigid->linearVelocity *= glm::pow(rigid->linearDamping, engineState.deltaTime);
+        rigid->linearVelocity +=
+            rigid->force / rigid->mass * engineState.deltaTime;
+        rigid->linearVelocity *=
+            glm::pow(rigid->linearDamping, engineState.deltaTime);
 
-        rigid->transform->position.x += rigid->linearVelocity.x * engineState.deltaTime;
-        rigid->transform->position.y += rigid->linearVelocity.y * engineState.deltaTime;
+        rigid->transform->position.x +=
+            rigid->linearVelocity.x * engineState.deltaTime;
+        rigid->transform->position.y +=
+            rigid->linearVelocity.y * engineState.deltaTime;
 
-        rigid->angularVelocity += rigid->torque / rigid->mass * engineState.deltaTime;
-        rigid->angularVelocity *= glm::pow(rigid->angularDamping, engineState.deltaTime);
+        rigid->angularVelocity +=
+            rigid->torque / rigid->mass * engineState.deltaTime;
+        rigid->angularVelocity *=
+            glm::pow(rigid->angularDamping, engineState.deltaTime);
 
-        rigid->transform->rotation.z += rigid->angularVelocity * engineState.deltaTime;
+        rigid->transform->rotation.z +=
+            rigid->angularVelocity * engineState.deltaTime;
 
-        if (rigid->angularVelocity > 0.03f || glm::length(rigid->linearVelocity) > 0.004f ||
+        if (rigid->angularVelocity > 0.03f ||
+            glm::length(rigid->linearVelocity) > 0.004f ||
             rigid->alwaysAwake)
         {
             rigid->hasMoved = true;
@@ -67,7 +75,8 @@ void RigidbodySys()
     }
 }
 
-// PLEASE TURN THIS OFF WHEN YOU CAN, THIS FUNCTION IS AN ABSOLUTE CATASTROPHE
+// PLEASE TURN THIS OFF WHEN YOU CAN, THIS FUNCTION IS AN ABSOLUTE
+// CATASTROPHE
 void DebugSys()
 {
     for (EntityID ent : SceneView<Collider>(engineState.scene))
@@ -82,7 +91,8 @@ void DebugSys()
 
                 if (rigid->transform == nullptr)
                 {
-                    if (auto trans = engineState.scene.Get<Transform>(ent))
+                    if (auto trans =
+                            engineState.scene.Get<Transform>(ent))
                     {
                         rigid->transform = trans;
                     }
@@ -94,42 +104,61 @@ void DebugSys()
         {
             glm::vec2 topLeft =
                 glm::vec2(collider->body->transform->position) +
-                glm::vec2(-collider->aabb.halfwidths.x, collider->aabb.halfwidths.y);
+                glm::vec2(-collider->aabb.halfwidths.x,
+                          collider->aabb.halfwidths.y);
             glm::vec2 topRight =
                 glm::vec2(collider->body->transform->position) +
-                glm::vec2(collider->aabb.halfwidths.x, collider->aabb.halfwidths.y);
+                glm::vec2(collider->aabb.halfwidths.x,
+                          collider->aabb.halfwidths.y);
             glm::vec2 bottomRight =
                 glm::vec2(collider->body->transform->position) +
-                glm::vec2(collider->aabb.halfwidths.x, -collider->aabb.halfwidths.y);
+                glm::vec2(collider->aabb.halfwidths.x,
+                          -collider->aabb.halfwidths.y);
             glm::vec2 bottomLeft =
                 glm::vec2(collider->body->transform->position) +
-                glm::vec2(-collider->aabb.halfwidths.x, -collider->aabb.halfwidths.y);
+                glm::vec2(-collider->aabb.halfwidths.x,
+                          -collider->aabb.halfwidths.y);
 
-            std::vector<glm::vec3> points = {glm::vec3(bottomLeft, 0.0f), glm::vec3(topLeft, 0.0f),
-                                             glm::vec3(topRight, 0.0f),
-                                             glm::vec3(bottomRight, 0.0f)};
+            std::vector<glm::vec3> points = {
+                glm::vec3(bottomLeft, 0.0f), glm::vec3(topLeft, 0.0f),
+                glm::vec3(topRight, 0.0f),
+                glm::vec3(bottomRight, 0.0f)};
 
             Renderer::RenderLine(
-                points, engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
+                points,
+                engineState.camera->GetProjMatrix(
+                    engineState.window->GetAspectRatio()),
                 engineState.camera->GetViewMatrix());
         }
         else if (collider->type == ColliderType::sm2d_Circle)
         {
-            glm::vec2 topLeft = glm::vec2(collider->body->transform->position) -
-                                glm::vec2(collider->circle.radius, collider->circle.radius);
-            glm::vec2 topRight = glm::vec2(collider->body->transform->position) +
-                                 glm::vec2(collider->circle.radius, -collider->circle.radius);
-            glm::vec2 bottomRight = glm::vec2(collider->body->transform->position) +
-                                    glm::vec2(-collider->circle.radius, collider->circle.radius);
-            glm::vec2 bottomLeft = glm::vec2(collider->body->transform->position) +
-                                   glm::vec2(collider->circle.radius, collider->circle.radius);
+            glm::vec2 topLeft =
+                glm::vec2(collider->body->transform->position) -
+                glm::vec2(collider->circle.radius,
+                          collider->circle.radius);
+            glm::vec2 topRight =
+                glm::vec2(collider->body->transform->position) +
+                glm::vec2(collider->circle.radius,
+                          -collider->circle.radius);
+            glm::vec2 bottomRight =
+                glm::vec2(collider->body->transform->position) +
+                glm::vec2(-collider->circle.radius,
+                          collider->circle.radius);
+            glm::vec2 bottomLeft =
+                glm::vec2(collider->body->transform->position) +
+                glm::vec2(collider->circle.radius,
+                          collider->circle.radius);
 
-            std::vector<glm::vec3> points = {glm::vec3(topLeft, 0.0f), glm::vec3(bottomRight, 0.0f),
-                                             glm::vec3(bottomLeft, 0.0f),
-                                             glm::vec3(topRight, 0.0f)};
+            std::vector<glm::vec3> points = {
+                glm::vec3(topLeft, 0.0f),
+                glm::vec3(bottomRight, 0.0f),
+                glm::vec3(bottomLeft, 0.0f),
+                glm::vec3(topRight, 0.0f)};
 
             Renderer::RenderLine(
-                points, engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
+                points,
+                engineState.camera->GetProjMatrix(
+                    engineState.window->GetAspectRatio()),
                 engineState.camera->GetViewMatrix());
         }
         else if (collider->type == ColliderType::sm2d_Polygon)
@@ -137,7 +166,8 @@ void DebugSys()
             UpdatePolygon(*collider);
             if (collider->polygon.worldPoints.size() != 0)
             {
-                collider->polygon.center = ComputePolygonCenter(collider->polygon);
+                collider->polygon.center =
+                    ComputePolygonCenter(collider->polygon);
             }
             std::vector<glm::vec3> threedpoints;
             for (auto& point : collider->polygon.worldPoints)
@@ -146,13 +176,15 @@ void DebugSys()
             }
             Renderer::RenderLine(
                 threedpoints,
-                engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
+                engineState.camera->GetProjMatrix(
+                    engineState.window->GetAspectRatio()),
                 engineState.camera->GetViewMatrix());
 
             Renderer::RenderLine(
                 {glm::vec3(collider->polygon.center, 0.0f),
                  glm::vec3(collider->polygon.center, 0.0f)},
-                engineState.camera->GetProjMatrix(engineState.window->GetAspectRatio()),
+                engineState.camera->GetProjMatrix(
+                    engineState.window->GetAspectRatio()),
                 engineState.camera->GetViewMatrix());
         }
     }
@@ -164,6 +196,22 @@ void ColliderStartSys()
     {
         auto collider = engineState.scene.Get<Collider>(ent);
 
+        if (collider->body == nullptr)
+        {
+            if (auto rigid = engineState.scene.Get<Rigidbody>(ent))
+            {
+                collider->body = rigid;
+
+                if (rigid->transform == nullptr)
+                {
+                    if (auto trans =
+                            engineState.scene.Get<Transform>(ent))
+                    {
+                        rigid->transform = trans;
+                    }
+                }
+            }
+        }
         if (collider->type == ColliderType::sm2d_AABB)
         {
             InsertLeaf(bvh, collider, ColAABBToABBB(*collider));
@@ -176,10 +224,12 @@ void ColliderStartSys()
         {
             for (int i = 0; i < collider->polygon.points.size(); ++i)
             {
-                collider->polygon.worldPoints.push_back(glm::vec2(0.0f, 0.0f));
+                collider->polygon.worldPoints.push_back(
+                    glm::vec2(0.0f, 0.0f));
             }
             UpdatePolygon(*collider);
-            collider->polygon.center = ComputePolygonCenter(collider->polygon);
+            collider->polygon.center =
+                ComputePolygonCenter(collider->polygon);
             InsertLeaf(bvh, collider, ColPolygonToAABB(*collider));
         }
     }
@@ -199,7 +249,8 @@ void ColliderSys()
             }
         }
 
-        if ((collider->body->type == BodyType::sm2d_Static || !collider->body->awake) &&
+        if ((collider->body->type == BodyType::sm2d_Static ||
+             !collider->body->awake) &&
             !collider->sensor)
         {
             continue;
@@ -220,7 +271,8 @@ void ColliderSys()
         else if (collider->type == ColliderType::sm2d_Polygon)
         {
             UpdatePolygon(*collider);
-            collider->polygon.center = ComputePolygonCenter(collider->polygon);
+            collider->polygon.center =
+                ComputePolygonCenter(collider->polygon);
             RemoveLeaf(bvh, collider->treeIndex);
             RemoveDeletedLeaves(bvh);
             InsertLeaf(bvh, collider, ColPolygonToAABB(*collider));
@@ -238,6 +290,6 @@ REGISTER_START_SYSTEM(RigidbodyStartSys);
 
 REGISTER_SYSTEM(RigidbodySys);
 REGISTER_SYSTEM(ColliderSys);
-REGISTER_EDITOR_SYSTEM(DebugSys);
+/// REGISTER_EDITOR_SYSTEM(DebugSys);
 
 } // namespace sm2d

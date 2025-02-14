@@ -6,7 +6,7 @@
 struct IKSolver2D
 {
     std::vector<glm::vec2> points = {};
-    glm::vec2              endpoint = {};
+    glm::vec2              endpoint = glm::vec2(0.0f, 0.0f);
 
     float pointDistance = 1.0f; // Distance between points
     int   numPoints = 5;

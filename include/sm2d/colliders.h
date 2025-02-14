@@ -13,8 +13,9 @@ struct ColAABB
 struct ColPolygon
 {
     std::vector<glm::vec2> points;      // Points in object space
-    std::vector<glm::vec2> worldPoints; // Points in world space, get recomputed every frame
-    glm::vec2              center;      // Geometric center
+    std::vector<glm::vec2> worldPoints; // Points in world space, get
+                                        // recomputed every frame
+    glm::vec2 center;                   // Geometric center
 };
 
 struct ColCircle
@@ -37,38 +38,52 @@ struct Collider
     ColCircle    circle;
     ColPolygon   polygon;
     Rigidbody*   body = nullptr;
-    int          treeIndex = -1;    // Index in the AABB tree
-    bool         sensor = false;    // Flag: put colliding collider in sensorCollider
-    int sensorTag = 0; // The tag that bodies have to be to be detected by sensors
+    int          treeIndex = -1; // Index in the AABB tree
+    bool         sensor =
+        false; // Flag: put colliding collider in sensorCollider
+    int sensorTag =
+        0; // The tag that bodies have to be to be detected by sensors
     Collider* sensorCollider = nullptr;
+
+    int ignoreTag; // Tag to ignore
 
     int bodyIndex = 0; // Ignore this, it's only for the editor
 
-    Collider(ColliderType type, const ColAABB& aabb, Rigidbody* body, bool sensor = false)
-       : type(type), aabb(aabb), body(body), sensor(sensor)
+    Collider(ColliderType type, const ColAABB& aabb, Rigidbody* body,
+             bool sensor = false, int ignoreTag = -1)
+       : type(type), aabb(aabb), body(body), sensor(sensor),
+         ignoreTag(ignoreTag)
     {
     }
-    Collider(ColliderType type, const ColCircle& circle, Rigidbody* body, bool sensor = false)
-       : type(type), circle(circle), body(body), sensor(sensor)
+    Collider(ColliderType type, const ColCircle& circle,
+             Rigidbody* body, bool sensor = false, int ignoreTag = -1)
+       : type(type), circle(circle), body(body), sensor(sensor),
+         ignoreTag(ignoreTag)
     {
     }
-    Collider(ColliderType type, const ColPolygon& poly, Rigidbody* body, bool sensor = false)
-       : type(type), polygon(poly), body(body), sensor(sensor)
+    Collider(ColliderType type, const ColPolygon& poly,
+             Rigidbody* body, bool sensor = false, int ignoreTag = -1)
+       : type(type), polygon(poly), body(body), sensor(sensor),
+         ignoreTag(ignoreTag)
     {
     }
 
-    ~Collider() {} // This is just here so the compiler doesn't yell at me
+    ~Collider() {
+    } // This is just here so the compiler doesn't yell at me
     Collider() {}
 };
 
 struct Manifold
 {
     bool      colliding;        // Are they colliding?
-    glm::vec2 collisionNormal;  // Direction of the collision used for impulse calculation
+    glm::vec2 collisionNormal;  // Direction of the collision used for
+                                // impulse calculation
     float     penetrationDepth; // How far they're inside each other
     glm::vec2 contactPoint;     // Point of contact
-    Collider* objectA;          // Pointer to the first object involved in the collision
-    Collider* objectB;          // Pointer to the second object involved in the collision
+    Collider* objectA; // Pointer to the first object involved in the
+                       // collision
+    Collider* objectB; // Pointer to the second object involved in the
+                       // collision
 
     operator bool() const { return colliding; }
 };
@@ -79,8 +94,10 @@ Manifold TestColAABBAABB(const Collider& a, const Collider& b);
 Manifold TestColCircleCircle(const Collider& a, const Collider& b);
 Manifold TestColPolygonPolygon(Collider& a, Collider& b);
 
-Manifold TestColAABBCircle(const Collider& aabb, const Collider& circle);
+Manifold TestColAABBCircle(const Collider& aabb,
+                           const Collider& circle);
 Manifold TestColAABBPolygon(Collider& aabb, Collider& poly);
-Manifold TestColCirclePolygon(const Collider& circle, const Collider& poly);
+Manifold TestColCirclePolygon(const Collider& circle,
+                              const Collider& poly);
 
 } // namespace sm2d

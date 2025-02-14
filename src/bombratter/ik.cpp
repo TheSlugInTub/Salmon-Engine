@@ -1,3 +1,6 @@
+#include "salmon/components.h"
+#include "salmon/ecs.h"
+#include "salmon/utils.h"
 #include <chrono>
 #include <salmon/editor.h>
 #include <imgui/imgui.h>
@@ -29,7 +32,7 @@ void PlayerIKStartSys()
         ik->groundSensor[0] =
             engineState.scene.AssignParam<sm2d::Collider>(
                 sen1, sm2d::ColliderType::sm2d_AABB,
-                sm2d::ColAABB(glm::vec2(0.17f, 0.2f)), rigid, true);
+                sm2d::ColAABB(glm::vec2(0.17f, 0.13f)), rigid, true);
 
         EntityID sen2 = engineState.scene.AddEntity();
         engineState.scene.AssignParam<Name>(sen2, "Sen2");
@@ -44,24 +47,9 @@ void PlayerIKStartSys()
         ik->groundSensor[1] =
             engineState.scene.AssignParam<sm2d::Collider>(
                 sen2, sm2d::ColliderType::sm2d_AABB,
-                sm2d::ColAABB(glm::vec2(0.17f, 0.2f)), rigid2, true);
+                sm2d::ColAABB(glm::vec2(0.17f, 0.13f)), rigid2, true);
 
         // -----
-
-        EntityID headEnt = engineState.scene.AddEntity();
-        engineState.scene.AssignParam<Name>(headEnt, "HeadEnt");
-
-        auto headEntTrans = engineState.scene.AssignParam<Transform>(
-            headEnt, trans->position + glm::vec3(0.0f, 0.3f, 0.0f),
-            glm::vec3(0.0f), glm::vec3(0.0f));
-
-        ik->head = engineState.scene.AssignParam<sm2d::Rigidbody>(
-            headEnt, sm2d::BodyType::sm2d_Dynamic, headEntTrans, 1.0f,
-            true, 0.98f, 0.98f, 0.1f, true, 1.0f, 255, false, true);
-
-        engineState.scene.AssignParam<sm2d::Collider>(
-            headEnt, sm2d::ColliderType::sm2d_Circle,
-            sm2d::ColCircle(0.07f), ik->head);
 
         EntityID legEnt = engineState.scene.AddEntity();
         engineState.scene.AssignParam<Name>(legEnt, "LegEnt");
@@ -79,7 +67,7 @@ void PlayerIKStartSys()
         ik->legCollider =
             engineState.scene.AssignParam<sm2d::Collider>(
                 legEnt, sm2d::ColliderType::sm2d_Circle,
-                sm2d::ColCircle(0.1f), legEntBody);
+                sm2d::ColCircle(0.08f), legEntBody);
 
         ik->legIK[0] = IKSolver2D(ik->legRoot[0], glm::vec2(0.0f), 3,
                                   ik->legLength);
@@ -95,7 +83,7 @@ void PlayerIKStartSys()
             auto bodyEntTrans =
                 engineState.scene.AssignParam<Transform>(
                     bodyEnt, trans->position, glm::vec3(0.0f),
-                    glm::vec3(0.0f));
+                    glm::vec3(0.2f));
 
             ik->body[i] =
                 engineState.scene.AssignParam<sm2d::Rigidbody>(
@@ -106,8 +94,43 @@ void PlayerIKStartSys()
 
             engineState.scene.AssignParam<sm2d::Collider>(
                 bodyEnt, sm2d::ColliderType::sm2d_Circle,
-                sm2d::ColCircle(0.05f), ik->body[i]);
+                sm2d::ColCircle(0.05f), ik->body[i], false, 255);
+
+            engineState.scene.AssignParam<SpriteRenderer>(
+                bodyEnt,
+                Utils::LoadTexture("res/textures/slug/body1.png"));
         }
+
+        EntityID headEnt = engineState.scene.AddEntity();
+        engineState.scene.AssignParam<Name>(headEnt, "HeadEnt");
+
+        auto headEntTrans = engineState.scene.AssignParam<Transform>(
+            headEnt, trans->position + glm::vec3(0.0f, 0.3f, 0.0f),
+            glm::vec3(0.0f), glm::vec3(0.2f));
+
+        ik->head = engineState.scene.AssignParam<sm2d::Rigidbody>(
+            headEnt, sm2d::BodyType::sm2d_Dynamic, headEntTrans, 1.0f,
+            true, 0.98f, 0.98f, 0.1f, true, 1.0f, 255, false, true);
+
+        engineState.scene.AssignParam<sm2d::Collider>(
+            headEnt, sm2d::ColliderType::sm2d_Circle,
+            sm2d::ColCircle(0.07f), ik->head);
+
+        engineState.scene.AssignParam<SpriteRenderer>(
+            headEnt,
+            Utils::LoadTexture("res/textures/slug/head.png"));
+
+        EntityID eyesEnt = engineState.scene.AddEntity();
+
+        ik->eyesTexture = Utils::LoadTexture("res/textures/slug/eyes.png");
+        ik->closedEyesTexture = Utils::LoadTexture("res/textures/slug/closed_eyes.png");
+
+        engineState.scene.AssignParam<Name>(eyesEnt, "EyesEnt");
+        ik->eyesTransform = engineState.scene.AssignParam<Transform>(
+            eyesEnt, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f),
+            glm::vec3(0.25f, 0.25f, 0.0f));
+        ik->eyes = engineState.scene.AssignParam<SpriteRenderer>(
+            eyesEnt, ik->eyesTexture);
     }
 }
 
@@ -158,23 +181,20 @@ void PlayerIKSys()
             glm::vec2(ik->legCollider->body->transform->position) +
                 ik->legRoot[1]};
 
-        glm::vec2 bodyPos =
-            ik->legCollider->body->transform->position;
-
         sm2d::ApplySpringJointWithinAngle(
             ik->head,
             ik->body[1]->transform->position +
-                glm::vec3(0.0f, 0.2f, 0.0f),
+                glm::vec3(0.0f, 0.1f, 0.0f),
             0.01f, 160.0f, 0.0f, 140, 40);
         sm2d::ApplySpringJointWithinAngle(
             ik->body[1],
             ik->body[0]->transform->position +
-                glm::vec3(0.0f, 0.18f, 0.0f),
+                glm::vec3(0.0f, 0.08f, 0.0f),
             0.01f, 160.0f, 0.0f, 140, 40);
         sm2d::ApplySpringJointWithinAngle(
             ik->body[0],
             ik->legCollider->body->transform->position +
-                glm::vec3(0.0f, 0.25f, 0.0f),
+                glm::vec3(0.0f, 0.15f, 0.0f),
             0.01f, 160.0f, 0.0f, 140, 40);
 
         // Check if legs need to move
@@ -192,9 +212,13 @@ void PlayerIKSys()
 
         static bool  leg1CanMove = true;
         static float legMoveTimer = 0.0f;
+        static float blinkTimer = 0.0f;
+        static float blinkHoldTimer = 0.2f;
         const float  LEG_MOVE_DELAY = 0.1f;
 
         legMoveTimer += engineState.deltaTime;
+        blinkTimer += engineState.deltaTime;
+        blinkHoldTimer -= engineState.deltaTime;
 
         static float multiplier = 0.0f;
 
@@ -225,6 +249,23 @@ void PlayerIKSys()
             }
         }
 
+        if (blinkTimer > 3.0f)
+        {
+            blinkTimer = 0.0f;
+            blinkHoldTimer = 0.2f;
+        }
+
+        if (blinkHoldTimer >= 0)
+        {
+            ik->eyes->texture = ik->closedEyesTexture;
+        }
+        else
+        {
+            ik->eyes->texture = ik->eyesTexture;
+        }
+
+        ik->eyesTransform->position = ik->head->transform->position;
+
         if (notNull1 && notNull2)
         {
             if (Input::GetKeyDown(Key::Up))
@@ -239,10 +280,10 @@ void PlayerIKSys()
         SolveIK2D(ik->legIK[0]);
         SolveIK2D(ik->legIK[1]);
 
-        ik->groundSensor[0]->body->transform->position =
-            glm::vec3(worldSpaceLegRoot[0] - glm::vec2(0.0f, 0.2f), 0.0f);
-        ik->groundSensor[1]->body->transform->position =
-            glm::vec3(worldSpaceLegRoot[1] - glm::vec2(0.0f, 0.2f), 0.0f);
+        ik->groundSensor[0]->body->transform->position = glm::vec3(
+            worldSpaceLegRoot[0] - glm::vec2(0.0f, 0.2f), 0.0f);
+        ik->groundSensor[1]->body->transform->position = glm::vec3(
+            worldSpaceLegRoot[1] - glm::vec2(0.0f, 0.2f), 0.0f);
 
         if (Input::GetKey(Key::Left))
         {
@@ -280,11 +321,11 @@ void PlayerIKSys()
         }
 
         Renderer::RenderLine2D(ik->legIK[0].points,
-                               glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
-                               10.0f, 6.0f, false);
+                               glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+                               3.0f, 10.0f, false);
         Renderer::RenderLine2D(ik->legIK[1].points,
-                               glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
-                               10.0f, 6.0f, false);
+                               glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+                               3.0f, 10.0f, false);
     }
 }
 

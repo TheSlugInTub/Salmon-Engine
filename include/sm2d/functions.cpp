@@ -734,7 +734,11 @@ void GetCollisionsInTree(Tree&                  tree,
 
                 // if both aren't sensors
                 if (!(node1.collider->sensor ||
-                      node2.collider->sensor))
+                      node2.collider->sensor) &&
+                    (node1.collider->ignoreTag !=
+                         node2.collider->body->userData &&
+                     node2.collider->ignoreTag !=
+                         node1.collider->body->userData))
                 {
                     collisionResults.push_back(data);
                 }

@@ -317,9 +317,9 @@ float lastFrame = 0.0f;
 
 void DeltaTimeSystem()
 {
-    float currplayerFrame = static_cast<float>(glfwGetTime());
-    engineState.deltaTime = currplayerFrame - lastFrame;
-    lastFrame = currplayerFrame;
+    engineState.currentTime = static_cast<float>(glfwGetTime());
+    engineState.deltaTime = engineState.currentTime - lastFrame;
+    lastFrame = engineState.currentTime;
 }
 
 // DO NOT LET CLANG FORMAT ANYWHERE NEAR THIS BEAUTY 

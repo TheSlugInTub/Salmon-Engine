@@ -25,6 +25,11 @@ struct PlayerIK
     sm2d::Collider* groundSensor[2];
     sm2d::Collider* legCollider = nullptr;
 
+    SpriteRenderer* eyes;
+    Transform*      eyesTransform;
+    int      eyesTexture;
+    int      closedEyesTexture;
+
     glm::vec2 legRoot[2] = {};
     glm::vec2 legTarget[2] = {};
     float     legLength = 1.0f;
