@@ -732,6 +732,11 @@ void GetCollisionsInTree(Tree&                  tree,
                     return;
                 }
 
+                if (node1.collider->body->userData == 500 ||
+                    node2.collider->body->userData == 500)
+                {
+                }
+
                 // if both aren't sensors
                 if (!(node1.collider->sensor ||
                       node2.collider->sensor) &&

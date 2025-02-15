@@ -1,5 +1,6 @@
 #include "salmon/components.h"
 #include "salmon/ecs.h"
+#include "salmon/input.h"
 #include "salmon/utils.h"
 #include <chrono>
 #include <salmon/editor.h>
@@ -48,6 +49,21 @@ void PlayerIKStartSys()
             engineState.scene.AssignParam<sm2d::Collider>(
                 sen2, sm2d::ColliderType::sm2d_AABB,
                 sm2d::ColAABB(glm::vec2(0.17f, 0.13f)), rigid2, true);
+
+        EntityID itemSen = engineState.scene.AddEntity();
+        engineState.scene.AssignParam<Name>(itemSen, "ItemSen");
+        auto itemTrans = engineState.scene.AssignParam<Transform>(
+            itemSen, glm::vec3(0.0f), glm::vec3(0.0f),
+            glm::vec3(0.0f));
+        auto itemRigid =
+            engineState.scene.AssignParam<sm2d::Rigidbody>(
+                itemSen, sm2d::BodyType::sm2d_Static, itemTrans);
+        ik->itemSensor =
+            engineState.scene.AssignParam<sm2d::Collider>(
+                itemSen, sm2d::ColliderType::sm2d_AABB,
+                sm2d::ColAABB(glm::vec2(0.5f, 0.5f)), itemRigid,
+                true);
+        ik->itemSensor->sensorTag = 500;
 
         // -----
 
@@ -291,31 +307,40 @@ void PlayerIKSys()
             worldSpaceLegRoot[0] - glm::vec2(0.0f, 0.2f), 0.0f);
         ik->groundSensor[1]->body->transform->position = glm::vec3(
             worldSpaceLegRoot[1] - glm::vec2(0.0f, 0.2f), 0.0f);
+        ik->itemSensor->body->transform->position =
+            ik->body[1]->transform->position;
 
-        glm::vec2 bodyPos = glm::vec2(ik->legCollider->body->transform->position);
+        glm::vec2 bodyPos =
+            glm::vec2(ik->legCollider->body->transform->position);
         ik->handIK[0].points[0] = ik->handRoot[0] + bodyPos;
         ik->handIK[1].points[0] = ik->handRoot[1] + bodyPos;
 
-        SolveIK2D(ik->handIK[0]);
-        SolveIK2D(ik->handIK[1]);
-        
-        glm::vec2 handPos = glm::vec2(ik->body[1]->transform->position);
+        glm::vec2 handPos =
+            glm::vec2(ik->body[1]->transform->position);
 
         if (ik->handHold[0])
         {
-            ik->handIK[0].endpoint = handPos + glm::vec2(0.2f, 0.0f);
-        }else
+            ResetIK2D(ik->handIK[0], glm::vec2(0.0f, -1.0f));
+            ik->handIK[0].endpoint = handPos + glm::vec2(0.23f, 0.0f);
+        }
+        else
         {
+            ResetIK2D(ik->handIK[1], glm::vec2(0.0f, -1.0f));
             ik->handIK[0].endpoint = handPos;
         }
 
         if (ik->handHold[1])
         {
-            ik->handIK[1].endpoint = handPos + glm::vec2(-0.2f, 0.0f);
-        }else
+            ik->handIK[1].endpoint =
+                handPos + glm::vec2(-0.23f, 0.0f);
+        }
+        else
         {
             ik->handIK[1].endpoint = handPos;
         }
+
+        SolveIK2D(ik->handIK[0]);
+        SolveIK2D(ik->handIK[1]);
 
         if (Input::GetKey(Key::Left))
         {
@@ -352,6 +377,86 @@ void PlayerIKSys()
                             0.0f, deceleration);
         }
 
+        if (Input::GetKeyDown(Key::F) &&
+            ik->itemSensor->sensorCollider != nullptr)
+        {
+            if (ik->handHold[0] && !ik->handHold[1])
+            {
+                ik->handHold[1] = true;
+                ik->itemSensor->sensorCollider->ignoreTag = 255;
+                ik->itemSensor->sensorCollider->body->userData = 0;
+                ik->itemSensor->sensorCollider->body->applyGravity =
+                    false;
+                ik->itemSensor->sensorCollider->body->fixedRotation =
+                    true;
+                ik->itemSensor->sensorCollider->body
+                    ->angularVelocity = 0.0f;
+                ik->heldObjects[1] =
+                    ik->itemSensor->sensorCollider->body;
+            }
+            else if (ik->handHold[1] && !ik->handHold[0])
+            {
+                ik->handHold[0] = true;
+                ik->itemSensor->sensorCollider->body->userData = 0;
+                ik->itemSensor->sensorCollider->body->applyGravity =
+                    false;
+                ik->itemSensor->sensorCollider->body->fixedRotation =
+                    true;
+                ik->itemSensor->sensorCollider->body
+                    ->angularVelocity = 0.0f;
+                ik->heldObjects[0] =
+                    ik->itemSensor->sensorCollider->body;
+            }
+            else if (!ik->handHold[1] && !ik->handHold[0])
+            {
+                ik->handHold[0] = true;
+                ik->itemSensor->sensorCollider->body->userData = 0;
+                ik->itemSensor->sensorCollider->body->applyGravity =
+                    false;
+                ik->itemSensor->sensorCollider->body->fixedRotation =
+                    true;
+                ik->itemSensor->sensorCollider->body
+                    ->angularVelocity = 0.0f;
+                ik->heldObjects[0] =
+                    ik->itemSensor->sensorCollider->body;
+            }
+        }
+
+        if (Input::GetKeyDown(Key::G))
+        {
+            if (ik->handHold[0])
+            {
+                ik->heldObjects[0]->applyGravity = true;
+                ik->heldObjects[0]->fixedRotation = false;
+                ik->heldObjects[0]->userData = 500;
+
+                ik->heldObjects[0]->force.x += multiplier * 500.0f;
+                ik->handHold[0] = false;
+                ik->heldObjects[0] = nullptr;
+            }
+            else if (ik->handHold[1])
+            {
+                ik->heldObjects[1]->applyGravity = true;
+                ik->heldObjects[1]->fixedRotation = false;
+                ik->heldObjects[1]->userData = 500;
+
+                ik->heldObjects[1]->force.x += multiplier * 500.0f;
+                ik->handHold[1] = false;
+                ik->heldObjects[1] = nullptr;
+            }
+        }
+
+        if (ik->handHold[0])
+        {
+            ik->heldObjects[0]->transform->position =
+                glm::vec3(ik->handIK[0].endpoint, 0.0f);
+        }
+        if (ik->handHold[1])
+        {
+            ik->heldObjects[1]->transform->position =
+                glm::vec3(ik->handIK[1].endpoint, 0.0f);
+        }
+
         Renderer::RenderLine2D(ik->legIK[0].points,
                                glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                3.0f, 10.0f, false);
@@ -381,9 +486,11 @@ void PlayerIKDraw(PlayerIK* ik)
         ImGui::DragFloat("Acceleration", &ik->acceleration);
         ImGui::DragFloat("Deceleration", &ik->deceleration);
         ImGui::DragFloat("MaxSpeed", &ik->maxSpeed);
-        
-        ImGui::DragFloat2("HandRoot1", glm::value_ptr(ik->handRoot[0]));
-        ImGui::DragFloat2("HandRoot2", glm::value_ptr(ik->handRoot[1]));
+
+        ImGui::DragFloat2("HandRoot1",
+                          glm::value_ptr(ik->handRoot[0]));
+        ImGui::DragFloat2("HandRoot2",
+                          glm::value_ptr(ik->handRoot[1]));
         ImGui::DragFloat("HandLength", &ik->handLength);
 
         ImGui::Checkbox("HandHold1", &ik->handHold[0]);
@@ -442,8 +549,7 @@ nlohmann::json PlayerIKSave(PlayerIK* ik)
         {"Deceleration", ik->deceleration},
         {"HandRoot1", {ik->handRoot[0].x, ik->handRoot[0].y}},
         {"HandRoot2", {ik->handRoot[1].x, ik->handRoot[1].y}},
-        {"HandLength", ik->handLength}
-    };
+        {"HandLength", ik->handLength}};
 
     return j;
 }

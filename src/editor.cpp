@@ -1,3 +1,4 @@
+#include "salmon/ecs.h"
 #include <salmon/utils.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui/imgui.h>
@@ -152,6 +153,8 @@ void LoadScene(const std::string& filename)
     Renderer::lights.clear();
 
     ComponentRegistry::Instance().LoadAll(j);
+
+    StartEditorStartSystems();
 }
 
 void DrawTray()

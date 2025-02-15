@@ -26,6 +26,9 @@ struct PlayerIK
     sm2d::Collider* groundSensor[2];
     sm2d::Collider* legCollider = nullptr;
 
+    sm2d::Collider* itemSensor = nullptr;
+    sm2d::Rigidbody* heldObjects[2];
+
     SpriteRenderer* eyes;
     Transform*      eyesTransform;
     int             eyesTexture;

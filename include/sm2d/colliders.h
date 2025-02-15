@@ -45,7 +45,7 @@ struct Collider
         0; // The tag that bodies have to be to be detected by sensors
     Collider* sensorCollider = nullptr;
 
-    int ignoreTag; // Tag to ignore
+    int ignoreTag = -1; // Tag to ignore
 
     int bodyIndex = 0; // Ignore this, it's only for the editor
 

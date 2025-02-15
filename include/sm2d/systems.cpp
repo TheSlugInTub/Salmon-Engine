@@ -190,6 +190,31 @@ void DebugSys()
     }
 }
 
+void FixColliderStartSys()
+{
+    for (EntityID ent : SceneView<Collider>(engineState.scene))
+    {
+        auto collider = engineState.scene.Get<Collider>(ent);
+
+        if (collider->body == nullptr)
+        {
+            if (auto rigid = engineState.scene.Get<Rigidbody>(ent))
+            {
+                collider->body = rigid;
+
+                if (rigid->transform == nullptr)
+                {
+                    if (auto trans =
+                            engineState.scene.Get<Transform>(ent))
+                    {
+                        rigid->transform = trans;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void ColliderStartSys()
 {
     for (EntityID ent : SceneView<Collider>(engineState.scene))
@@ -212,6 +237,7 @@ void ColliderStartSys()
                 }
             }
         }
+
         if (collider->type == ColliderType::sm2d_AABB)
         {
             InsertLeaf(bvh, collider, ColAABBToABBB(*collider));
@@ -290,6 +316,8 @@ REGISTER_START_SYSTEM(RigidbodyStartSys);
 
 REGISTER_SYSTEM(RigidbodySys);
 REGISTER_SYSTEM(ColliderSys);
+
 // REGISTER_EDITOR_SYSTEM(DebugSys);
+REGISTER_EDITOR_START_SYSTEM(FixColliderStartSys);
 
 } // namespace sm2d

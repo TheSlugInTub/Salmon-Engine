@@ -526,6 +526,8 @@ void ColliderDraw(sm2d::Collider* col)
 {
     if (ImGui::CollapsingHeader("Collider"))
     {
+        ImGui::InputInt("IgnoreTag", &col->ignoreTag);
+
         int colTypeValue = static_cast<int>(col->type);
         if (ImGui::SliderInt("ColliderType2D", &colTypeValue, 0,
                              static_cast<int>(3)))
@@ -605,6 +607,7 @@ void ColliderDraw(sm2d::Collider* col)
 nlohmann::json ColliderSave(sm2d::Collider* col)
 {
     nlohmann::json j = {{"Type", static_cast<int>(col->type)}};
+    j["IgnoreTag"] = col->ignoreTag;
 
     switch (col->type)
     {
@@ -635,6 +638,8 @@ nlohmann::json ColliderSave(sm2d::Collider* col)
 void ColliderLoad(sm2d::Collider* col, const nlohmann::json& j)
 {
     col->type = static_cast<sm2d::ColliderType>(j["Type"]);
+    if (j.contains("IgnoreTag"))
+        col->ignoreTag = j["IgnoreTag"];
 
     switch (col->type)
     {
@@ -688,7 +693,8 @@ void TilemapDraw(Tilemap* tilemap)
 {
     if (ImGui::CollapsingHeader("Tilemap"))
     {
-        ImGui::DragFloat2("Tilemap Scale", glm::value_ptr(tilemap->scale));
+        ImGui::DragFloat2("Tilemap Scale",
+                          glm::value_ptr(tilemap->scale));
         if (ImGui::InputText("New tile texture", tileBuffer,
                              sizeof(tileBuffer),
                              ImGuiInputTextFlags_EnterReturnsTrue))
@@ -808,7 +814,7 @@ nlohmann::json TilemapSave(Tilemap* tilemap)
 
     j["tiles"] = tilesJ;
     j["editorTiles"] = editTilesJ;
-    j["Scale"] = {tilemap->scale.x, tilemap->scale.y}; 
+    j["Scale"] = {tilemap->scale.x, tilemap->scale.y};
 
     return j;
 }
