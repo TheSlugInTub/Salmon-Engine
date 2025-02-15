@@ -290,6 +290,6 @@ REGISTER_START_SYSTEM(RigidbodyStartSys);
 
 REGISTER_SYSTEM(RigidbodySys);
 REGISTER_SYSTEM(ColliderSys);
-/// REGISTER_EDITOR_SYSTEM(DebugSys);
+// REGISTER_EDITOR_SYSTEM(DebugSys);
 
 } // namespace sm2d

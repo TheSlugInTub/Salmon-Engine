@@ -21,19 +21,23 @@ struct PlayerIK
     sm2d::Rigidbody* body[2] = {nullptr, nullptr};
 
     IKSolver2D legIK[2];
+    IKSolver2D handIK[2];
 
     sm2d::Collider* groundSensor[2];
     sm2d::Collider* legCollider = nullptr;
 
     SpriteRenderer* eyes;
     Transform*      eyesTransform;
-    int      eyesTexture;
-    int      closedEyesTexture;
+    int             eyesTexture;
+    int             closedEyesTexture;
 
     glm::vec2 legRoot[2] = {};
     glm::vec2 legTarget[2] = {};
     float     legLength = 1.0f;
     float     legThreshold = 0.5f;
+    glm::vec2 handRoot[2] = {};
+    float     handLength = 0.3f;
+    bool      handHold[2] = {false, false}; // Is the hand holding something?
 
     float acceleration = 0.0f;
     float deceleration = 0.0f;

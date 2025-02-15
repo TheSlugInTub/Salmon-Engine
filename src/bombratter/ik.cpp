@@ -74,6 +74,11 @@ void PlayerIKStartSys()
         ik->legIK[1] = IKSolver2D(ik->legRoot[1], glm::vec2(0.0f), 3,
                                   ik->legLength);
 
+        ik->handIK[0] = IKSolver2D(ik->handRoot[0], glm::vec2(0.0f),
+                                   3, ik->handLength);
+        ik->handIK[1] = IKSolver2D(ik->handRoot[1], glm::vec2(0.0f),
+                                   3, ik->handLength);
+
         for (int i = 0; i < 2; i++)
         {
             EntityID bodyEnt = engineState.scene.AddEntity();
@@ -122,8 +127,10 @@ void PlayerIKStartSys()
 
         EntityID eyesEnt = engineState.scene.AddEntity();
 
-        ik->eyesTexture = Utils::LoadTexture("res/textures/slug/eyes.png");
-        ik->closedEyesTexture = Utils::LoadTexture("res/textures/slug/closed_eyes.png");
+        ik->eyesTexture =
+            Utils::LoadTexture("res/textures/slug/eyes.png");
+        ik->closedEyesTexture =
+            Utils::LoadTexture("res/textures/slug/closed_eyes.png");
 
         engineState.scene.AssignParam<Name>(eyesEnt, "EyesEnt");
         ik->eyesTransform = engineState.scene.AssignParam<Transform>(
@@ -285,6 +292,31 @@ void PlayerIKSys()
         ik->groundSensor[1]->body->transform->position = glm::vec3(
             worldSpaceLegRoot[1] - glm::vec2(0.0f, 0.2f), 0.0f);
 
+        glm::vec2 bodyPos = glm::vec2(ik->legCollider->body->transform->position);
+        ik->handIK[0].points[0] = ik->handRoot[0] + bodyPos;
+        ik->handIK[1].points[0] = ik->handRoot[1] + bodyPos;
+
+        SolveIK2D(ik->handIK[0]);
+        SolveIK2D(ik->handIK[1]);
+        
+        glm::vec2 handPos = glm::vec2(ik->body[1]->transform->position);
+
+        if (ik->handHold[0])
+        {
+            ik->handIK[0].endpoint = handPos + glm::vec2(0.2f, 0.0f);
+        }else
+        {
+            ik->handIK[0].endpoint = handPos;
+        }
+
+        if (ik->handHold[1])
+        {
+            ik->handIK[1].endpoint = handPos + glm::vec2(-0.2f, 0.0f);
+        }else
+        {
+            ik->handIK[1].endpoint = handPos;
+        }
+
         if (Input::GetKey(Key::Left))
         {
             // Apply acceleration towards target speed
@@ -326,6 +358,12 @@ void PlayerIKSys()
         Renderer::RenderLine2D(ik->legIK[1].points,
                                glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
                                3.0f, 10.0f, false);
+        Renderer::RenderLine2D(ik->handIK[0].points,
+                               glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+                               3.0f, 10.0f, false);
+        Renderer::RenderLine2D(ik->handIK[1].points,
+                               glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+                               3.0f, 10.0f, false);
     }
 }
 
@@ -343,6 +381,13 @@ void PlayerIKDraw(PlayerIK* ik)
         ImGui::DragFloat("Acceleration", &ik->acceleration);
         ImGui::DragFloat("Deceleration", &ik->deceleration);
         ImGui::DragFloat("MaxSpeed", &ik->maxSpeed);
+        
+        ImGui::DragFloat2("HandRoot1", glm::value_ptr(ik->handRoot[0]));
+        ImGui::DragFloat2("HandRoot2", glm::value_ptr(ik->handRoot[1]));
+        ImGui::DragFloat("HandLength", &ik->handLength);
+
+        ImGui::Checkbox("HandHold1", &ik->handHold[0]);
+        ImGui::Checkbox("HandHold2", &ik->handHold[1]);
 
         // for (auto point : testIK.points)
         // {
@@ -394,7 +439,11 @@ nlohmann::json PlayerIKSave(PlayerIK* ik)
         {"LegLength", ik->legLength},
         {"Acceleration", ik->acceleration},
         {"MaxSpeed", ik->maxSpeed},
-        {"Deceleration", ik->deceleration}};
+        {"Deceleration", ik->deceleration},
+        {"HandRoot1", {ik->handRoot[0].x, ik->handRoot[0].y}},
+        {"HandRoot2", {ik->handRoot[1].x, ik->handRoot[1].y}},
+        {"HandLength", ik->handLength}
+    };
 
     return j;
 }
@@ -415,6 +464,12 @@ void PlayerIKLoad(PlayerIK* ik, const nlohmann::json& j)
         ik->deceleration = j["Deceleration"];
     if (j.contains("MaxSpeed"))
         ik->maxSpeed = j["MaxSpeed"];
+    if (j.contains("HandRoot1"))
+        ik->handRoot[0] = {j["HandRoot1"][0], j["HandRoot1"][1]};
+    if (j.contains("HandRoot2"))
+        ik->handRoot[1] = {j["HandRoot2"][0], j["HandRoot2"][1]};
+    if (j.contains("HandLength"))
+        ik->handLength = j["HandLength"];
 }
 
 REGISTER_COMPONENT(PlayerIK, PlayerIKDraw, PlayerIKSave,
