@@ -48,7 +48,7 @@ std::unordered_map<Key, int> keyMap = {
     {Key::Tab, GLFW_KEY_TAB},
     {Key::Space, GLFW_KEY_SPACE},
     {Key::RShift, GLFW_KEY_RIGHT_SHIFT},
-    {Key::LShift, GLFW_KEY_RIGHT_SHIFT},
+    {Key::LShift, GLFW_KEY_LEFT_SHIFT},
     {Key::RCtrl, GLFW_KEY_RIGHT_CONTROL},
     {Key::LCtrl, GLFW_KEY_LEFT_CONTROL},
     {Key::Left, GLFW_KEY_LEFT},

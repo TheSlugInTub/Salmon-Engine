@@ -86,6 +86,14 @@ void DrawHierarchy()
         ImGui::EndPopup();
     }
 
+    if (Input::GetKeyDown(Key::RShift) && selectedEntityIndex != -1)
+    {
+        EntityID ent = engineState.scene.CloneEntity(
+            engineState.scene.entities[selectedEntityIndex].id);
+        auto name = engineState.scene.Get<Name>(ent);
+        name->name = name->name + " (Copy)";
+    }
+
     ImGui::End();
 }
 

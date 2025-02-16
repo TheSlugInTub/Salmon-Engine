@@ -718,9 +718,11 @@ void TilemapDraw(Tilemap* tilemap)
         glm::vec2 mousePos = engineState.camera->ScreenToWorld2D(
             glm::vec2(Input::GetMouseInputHorizontal(),
                       Input::GetMouseInputVertical()));
-        bool mouse = Input::GetMouseButtonDown(MouseKey::LeftClick);
-        bool rightMouse =
-            Input::GetMouseButtonDown(MouseKey::RightClick);
+        bool mouseDown = Input::GetMouseButton(
+            MouseKey::LeftClick); // Changed to GetMouseButton for
+                                  // continuous detection
+        bool rightMouseDown =
+            Input::GetMouseButton(MouseKey::RightClick);
 
         // Adjust grid snapping based on tilemap->scale
         glm::vec2 gridPos =
@@ -733,14 +735,31 @@ void TilemapDraw(Tilemap* tilemap)
                              engineState.camera->GetViewMatrix(),
                              glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
-        if (mouse && selectedTileIndex < tilemap->editorTiles.size())
+        // Check if a tile already exists at the current position
+        bool tileExists = false;
+        for (const auto& transform : tilemap->tileTransforms)
+        {
+            if (Utils::GetPositionOfMat4(transform) == roundedPos)
+            {
+                tileExists = true;
+                break;
+            }
+        }
+
+        if (mouseDown &&
+            selectedTileIndex < tilemap->editorTiles.size() &&
+            !tileExists &&
+            !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
         {
             tilemap->tileTransforms.push_back(Utils::Make2DTransform(
                 roundedPos, 0.0f, tilemap->scale));
             tilemap->tileTextureIndices.push_back(
                 (float)selectedTileIndex);
         }
-        if (rightMouse)
+
+        // For right-click deletion, we'll also support holding the
+        // button
+        if (rightMouseDown && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
         {
             for (int i = 0; i < tilemap->tileTransforms.size(); i++)
             {
@@ -751,6 +770,8 @@ void TilemapDraw(Tilemap* tilemap)
                         tilemap->tileTransforms.begin() + i);
                     tilemap->tileTextureIndices.erase(
                         tilemap->tileTextureIndices.begin() + i);
+                    break; // Only delete one tile at a time to
+                           // prevent vector issues
                 }
             }
         }

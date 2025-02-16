@@ -226,6 +226,55 @@ struct Scene
         componentPools.clear();
     }
 
+    EntityID CloneEntity(EntityID sourceId)
+    {
+        // Ensure source entity is valid
+        if (!IsEntityValid(sourceId) ||
+            GetEntityIndex(sourceId) >= entities.size() ||
+            entities[GetEntityIndex(sourceId)].id != sourceId)
+        {
+            return INVALID_ENTITY;
+        }
+
+        // Create new entity
+        EntityID newId = AddEntity();
+
+        // Get the component mask of the source entity
+        const ComponentMask& sourceMask =
+            entities[GetEntityIndex(sourceId)].mask;
+
+        // For each set bit in the mask (each component)
+        for (size_t i = 0; i < MAX_COMPONENTS; i++)
+        {
+            if (sourceMask.test(i))
+            {
+                // Ensure we have enough component pools
+                if (componentPools.size() <= i)
+                {
+                    componentPools.resize(i + 1, nullptr);
+                }
+
+                if (ComponentPool* pool = componentPools[i])
+                {
+                    // Get pointers to source and destination memory
+                    char* sourceComponent = static_cast<char*>(
+                        pool->get(GetEntityIndex(sourceId)));
+                    char* destComponent = static_cast<char*>(
+                        pool->get(GetEntityIndex(newId)));
+
+                    // Copy the component data
+                    std::memcpy(destComponent, sourceComponent,
+                                pool->elementSize);
+
+                    // Set the component bit for the new entity
+                    entities[GetEntityIndex(newId)].mask.set(i);
+                }
+            }
+        }
+
+        return newId;
+    }
+
     std::vector<EntityDesc>     entities;
     std::vector<EntityIndex>    freeEntities;
     std::vector<ComponentPool*> componentPools;

@@ -15,8 +15,16 @@
         stmt                                                      \
     }
 
+enum PlayerState : unsigned char
+{
+    Walking,
+    Crawling
+};
+
 struct PlayerIK
 {
+    PlayerState state = PlayerState::Walking;
+
     sm2d::Rigidbody* head = nullptr;
     sm2d::Rigidbody* body[2] = {nullptr, nullptr};
 
@@ -35,16 +43,20 @@ struct PlayerIK
     int             closedEyesTexture;
 
     glm::vec2 legRoot[2] = {};
+    glm::vec2 crawlingLegRoot[2] = {};
     glm::vec2 legTarget[2] = {};
     float     legLength = 1.0f;
     float     legThreshold = 0.5f;
     glm::vec2 handRoot[2] = {};
+    glm::vec2 crawlingHandRoot[2] = {};
     float     handLength = 0.3f;
     bool      handHold[2] = {false, false}; // Is the hand holding something?
 
     float acceleration = 0.0f;
     float deceleration = 0.0f;
+    float speed = 0.0f;
     float maxSpeed = 0.0f;
+    float maxCrawlSpeed = 0.0f;
 
     PlayerIK() {}
 };

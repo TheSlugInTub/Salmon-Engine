@@ -1,7 +1,3 @@
-#include "salmon/components.h"
-#include "salmon/ecs.h"
-#include "salmon/input.h"
-#include "salmon/utils.h"
 #include <chrono>
 #include <salmon/editor.h>
 #include <imgui/imgui.h>
@@ -192,33 +188,73 @@ float GetSmoothInterpolationTimer(float period = 2.0f)
     return t * t * (3.0f - 2.0f * t);
 }
 
+float sine = sin(1.5708);
+float cosine = cos(1.5708);
+
+static float multiplier = 0.0f;
+
 void PlayerIKSys()
 {
     for (EntityID ent : SceneView<PlayerIK>(engineState.scene))
     {
         auto ik = engineState.scene.Get<PlayerIK>(ent);
 
-        glm::vec2 worldSpaceLegRoot[2] = {
-            glm::vec2(ik->legCollider->body->transform->position) +
-                ik->legRoot[0],
-            glm::vec2(ik->legCollider->body->transform->position) +
-                ik->legRoot[1]};
+        glm::vec2 bodyPos =
+            glm::vec2(ik->legCollider->body->transform->position);
 
-        sm2d::ApplySpringJointWithinAngle(
-            ik->head,
-            ik->body[1]->transform->position +
-                glm::vec3(0.0f, 0.1f, 0.0f),
-            0.01f, 160.0f, 0.0f, 140, 40);
-        sm2d::ApplySpringJointWithinAngle(
-            ik->body[1],
-            ik->body[0]->transform->position +
-                glm::vec3(0.0f, 0.08f, 0.0f),
-            0.01f, 160.0f, 0.0f, 140, 40);
-        sm2d::ApplySpringJointWithinAngle(
-            ik->body[0],
-            ik->legCollider->body->transform->position +
-                glm::vec3(0.0f, 0.15f, 0.0f),
-            0.01f, 160.0f, 0.0f, 140, 40);
+        glm::vec2 worldSpaceLegRoot[2];
+        if (ik->state == PlayerState::Walking)
+        {
+            worldSpaceLegRoot[0] = bodyPos + ik->legRoot[0];
+            worldSpaceLegRoot[1] = bodyPos + ik->legRoot[1];
+        }
+        else
+        {
+            worldSpaceLegRoot[0] = bodyPos + ik->crawlingLegRoot[0];
+            worldSpaceLegRoot[1] = bodyPos + ik->crawlingLegRoot[1];
+        }
+
+        switch (ik->state)
+        {
+            case PlayerState::Walking:
+            {
+                sm2d::ApplySpringJointWithinAngle(
+                    ik->head,
+                    ik->body[1]->transform->position +
+                        glm::vec3(0.0f, 0.1f, 0.0f),
+                    0.01f, 160.0f, 0.0f, 140, 40);
+                sm2d::ApplySpringJointWithinAngle(
+                    ik->body[1],
+                    ik->body[0]->transform->position +
+                        glm::vec3(0.0f, 0.08f, 0.0f),
+                    0.01f, 160.0f, 0.0f, 140, 40);
+                sm2d::ApplySpringJointWithinAngle(
+                    ik->body[0],
+                    ik->legCollider->body->transform->position +
+                        glm::vec3(0.0f, 0.15f, 0.0f),
+                    0.01f, 160.0f, 0.0f, 140, 40);
+                break;
+            }
+            case PlayerState::Crawling:
+            {
+                sm2d::ApplySpringJointWithinAngle(
+                    ik->head,
+                    ik->body[1]->transform->position +
+                        glm::vec3(0.1f * multiplier, 0.0f, 0.0f),
+                    0.01f, 160.0f, 0.0f, 140, 40);
+                sm2d::ApplySpringJointWithinAngle(
+                    ik->body[1],
+                    ik->body[0]->transform->position +
+                        glm::vec3(0.08f * multiplier, 0.0f, 0.0f),
+                    0.01f, 160.0f, 0.0f, 140, 40);
+                sm2d::ApplySpringJointWithinAngle(
+                    ik->body[0],
+                    ik->legCollider->body->transform->position +
+                        glm::vec3(0.15f * multiplier, 0.0f, 0.0f),
+                    0.01f, 160.0f, 0.0f, 140, 40);
+                break;
+            }
+        }
 
         // Check if legs need to move
         unsigned char leg1Moved =
@@ -242,8 +278,6 @@ void PlayerIKSys()
         legMoveTimer += engineState.deltaTime;
         blinkTimer += engineState.deltaTime;
         blinkHoldTimer -= engineState.deltaTime;
-
-        static float multiplier = 0.0f;
 
         // Handle leg movement with alternation
         if (legMoveTimer >= LEG_MOVE_DELAY)
@@ -291,9 +325,18 @@ void PlayerIKSys()
 
         if (notNull1 && notNull2)
         {
+            if (Input::GetKeyDown(Key::Z))
+            {
+                ik->legCollider->body->linearVelocity.y += 2.0f;
+            }
+
             if (Input::GetKeyDown(Key::Up))
             {
-                ik->legCollider->body->force.y += 230.0f;
+                ik->state = PlayerState::Walking;
+            }
+            else if (Input::GetKeyDown(Key::Down))
+            {
+                ik->state = PlayerState::Crawling;
             }
         }
 
@@ -310,10 +353,23 @@ void PlayerIKSys()
         ik->itemSensor->body->transform->position =
             ik->body[1]->transform->position;
 
-        glm::vec2 bodyPos =
-            glm::vec2(ik->legCollider->body->transform->position);
-        ik->handIK[0].points[0] = ik->handRoot[0] + bodyPos;
-        ik->handIK[1].points[0] = ik->handRoot[1] + bodyPos;
+        switch (ik->state)
+        {
+            case PlayerState::Walking:
+            {
+                ik->speed = ik->maxSpeed;
+                ik->handIK[0].points[0] = ik->handRoot[0] + bodyPos;
+                ik->handIK[1].points[0] = ik->handRoot[1] + bodyPos;
+                break;
+            }
+            case PlayerState::Crawling:
+            {
+                ik->speed = ik->maxCrawlSpeed;
+                ik->handIK[0].points[0] = ik->crawlingHandRoot[0] + bodyPos;
+                ik->handIK[1].points[0] = ik->crawlingHandRoot[1] + bodyPos;
+                break;
+            }
+        }
 
         glm::vec2 handPos =
             glm::vec2(ik->body[1]->transform->position);
@@ -345,8 +401,11 @@ void PlayerIKSys()
         if (Input::GetKey(Key::Left))
         {
             // Apply acceleration towards target speed
-            multiplier = -1.0f;
-            float targetSpeed = -ik->maxSpeed;
+            if (ik->state != PlayerState::Crawling)
+            {
+                multiplier = -1.0f;
+            }
+            float targetSpeed = -ik->speed;
             float currentSpeed =
                 ik->legCollider->body->linearVelocity.x;
             float acceleration =
@@ -357,8 +416,11 @@ void PlayerIKSys()
         }
         else if (Input::GetKey(Key::Right))
         {
-            multiplier = 1.0f;
-            float targetSpeed = ik->maxSpeed;
+            if (ik->state != PlayerState::Crawling)
+            {
+                multiplier = 1.0f;
+            }
+            float targetSpeed = ik->speed;
             float currentSpeed =
                 ik->legCollider->body->linearVelocity.x;
             float acceleration =
@@ -377,7 +439,7 @@ void PlayerIKSys()
                             0.0f, deceleration);
         }
 
-        if (Input::GetKeyDown(Key::F) &&
+        if (Input::GetKeyDown(Key::LShift) &&
             ik->itemSensor->sensorCollider != nullptr)
         {
             if (ik->handHold[0] && !ik->handHold[1])
@@ -422,7 +484,7 @@ void PlayerIKSys()
             }
         }
 
-        if (Input::GetKeyDown(Key::G))
+        if (Input::GetKeyDown(Key::X))
         {
             if (ik->handHold[0])
             {
@@ -430,7 +492,8 @@ void PlayerIKSys()
                 ik->heldObjects[0]->fixedRotation = false;
                 ik->heldObjects[0]->userData = 500;
 
-                ik->heldObjects[0]->force.x += multiplier * 500.0f;
+                ik->heldObjects[0]->linearVelocity =
+                    glm::vec2(multiplier * 3.0f, 0.0f);
                 ik->handHold[0] = false;
                 ik->heldObjects[0] = nullptr;
             }
@@ -440,7 +503,8 @@ void PlayerIKSys()
                 ik->heldObjects[1]->fixedRotation = false;
                 ik->heldObjects[1]->userData = 500;
 
-                ik->heldObjects[1]->force.x += multiplier * 500.0f;
+                ik->heldObjects[1]->linearVelocity =
+                    glm::vec2(multiplier * 3.0f, 0.0f);
                 ik->handHold[1] = false;
                 ik->heldObjects[1] = nullptr;
             }
@@ -495,23 +559,14 @@ void PlayerIKDraw(PlayerIK* ik)
 
         ImGui::Checkbox("HandHold1", &ik->handHold[0]);
         ImGui::Checkbox("HandHold2", &ik->handHold[1]);
-
-        // for (auto point : testIK.points)
-        // {
-        //     std::cout << "Point in points: " <<
-        //     glm::to_string(point) << '\n';
-        // }
-
-        // Renderer::RenderLine2D(
-        //     ik->handRopeSim[1].points, engineState.projMat,
-        //     engineState.camera->GetViewMatrix(),
-        //     glm::vec4(0.188235294f, 0.23137254f, 0.3176470f, 1.0f),
-        //     0.1f, 50.0f, false);
-
-        // Renderer::RenderPoint(ik->head->transform->position,
-        //                       glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-        // Renderer::RenderPoint(ik->body->transform->position,
-        //                       glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        
+        ImGui::DragFloat2("CrawlingLegRoot1", glm::value_ptr(ik->crawlingLegRoot[0]));
+        ImGui::DragFloat2("CrawlingLegRoot2", glm::value_ptr(ik->crawlingLegRoot[1]));
+        
+        ImGui::DragFloat2("CrawlingHandRoot1", glm::value_ptr(ik->crawlingHandRoot[0]));
+        ImGui::DragFloat2("CrawlingHandRoot2", glm::value_ptr(ik->crawlingHandRoot[1]));
+        
+        ImGui::DragFloat("MaxCrawlSpeed", &ik->maxCrawlSpeed);
 
         // Update FPS every second
         auto currentTime = std::chrono::high_resolution_clock::now();
@@ -546,9 +601,18 @@ nlohmann::json PlayerIKSave(PlayerIK* ik)
         {"LegLength", ik->legLength},
         {"Acceleration", ik->acceleration},
         {"MaxSpeed", ik->maxSpeed},
+        {"MaxCrawlSpeed", ik->maxCrawlSpeed},
         {"Deceleration", ik->deceleration},
         {"HandRoot1", {ik->handRoot[0].x, ik->handRoot[0].y}},
         {"HandRoot2", {ik->handRoot[1].x, ik->handRoot[1].y}},
+        {"CrawlingLegRoot1",
+         {ik->crawlingLegRoot[0].x, ik->crawlingLegRoot[0].y}},
+        {"CrawlingLegRoot2",
+         {ik->crawlingLegRoot[1].x, ik->crawlingLegRoot[1].y}},
+        {"CrawlingHandRoot1",
+         {ik->crawlingHandRoot[0].x, ik->crawlingHandRoot[0].y}},
+        {"CrawlingHandRoot2",
+         {ik->crawlingHandRoot[1].x, ik->crawlingHandRoot[1].y}},
         {"HandLength", ik->handLength}};
 
     return j;
@@ -570,12 +634,26 @@ void PlayerIKLoad(PlayerIK* ik, const nlohmann::json& j)
         ik->deceleration = j["Deceleration"];
     if (j.contains("MaxSpeed"))
         ik->maxSpeed = j["MaxSpeed"];
+    if (j.contains("MaxCrawlSpeed"))
+        ik->maxCrawlSpeed = j["MaxCrawlSpeed"];
     if (j.contains("HandRoot1"))
         ik->handRoot[0] = {j["HandRoot1"][0], j["HandRoot1"][1]};
     if (j.contains("HandRoot2"))
         ik->handRoot[1] = {j["HandRoot2"][0], j["HandRoot2"][1]};
     if (j.contains("HandLength"))
         ik->handLength = j["HandLength"];
+    if (j.contains("CrawlingLegRoot1"))
+        ik->crawlingLegRoot[0] = {j["CrawlingLegRoot1"][0],
+                                  j["CrawlingLegRoot1"][1]};
+    if (j.contains("CrawlingLegRoot2"))
+        ik->crawlingLegRoot[1] = {j["CrawlingLegRoot2"][0],
+                                  j["CrawlingLegRoot2"][1]};
+    if (j.contains("CrawlingHandRoot1"))
+        ik->crawlingHandRoot[0] = {j["CrawlingHandRoot1"][0],
+                                   j["CrawlingHandRoot1"][1]};
+    if (j.contains("CrawlingHandRoot2"))
+        ik->crawlingHandRoot[1] = {j["CrawlingHandRoot2"][0],
+                                   j["CrawlingHandRoot2"][1]};
 }
 
 REGISTER_COMPONENT(PlayerIK, PlayerIKDraw, PlayerIKSave,
