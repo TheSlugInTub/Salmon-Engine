@@ -400,5 +400,34 @@
             "Type": 3,
             "type": "Collider"
         }
+    ],
+    [
+        {
+            "DepthTexturePath": "",
+            "TexturePath": "res/textures/wall.png",
+            "type": "BackgroundSprite"
+        },
+        {
+            "EntName": "Wall",
+            "type": "Name"
+        },
+        {
+            "Position": [
+                0.0,
+                -1.3600000143051147,
+                0.0
+            ],
+            "Rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                9.90999984741211,
+                6.300000190734863,
+                1.0
+            ],
+            "type": "Transform"
+        }
     ]
 ]

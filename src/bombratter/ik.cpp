@@ -8,6 +8,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <salmon/ik_solver.h>
 #include <sm2d/functions.h>
+#include <bombratter/background_sprite.h>
 
 void PlayerIKStartSys()
 {
@@ -319,6 +320,7 @@ void PlayerIKSys()
         else
         {
             ik->eyes->texture = ik->eyesTexture;
+            ik->eyes->texture = renderPassTexture;
         }
 
         ik->eyesTransform->position = ik->head->transform->position;

@@ -8,6 +8,7 @@
 #include <salmon/particle_system.h>
 #include <salmon/ui.h>
 #include <salmon/tilemap.h>
+#include <bombratter/background_sprite.h>
 
 void MeshRendererSys()
 {
@@ -333,7 +334,9 @@ REGISTER_EDITOR_START_SYSTEM (AnimatorStartSys);
 REGISTER_EDITOR_SYSTEM (DeltaTimeSystem);
 REGISTER_SYSTEM        (AnimatorSys);
 REGISTER_EDITOR_SYSTEM (MeshRendererSys);
+REGISTER_EDITOR_SYSTEM (GrabRenderPassSys);
 REGISTER_EDITOR_SYSTEM (SpriteRendererSys);
+REGISTER_EDITOR_SYSTEM (BackgroundSpriteSys);
 REGISTER_SYSTEM        (RigidBody3DSys);
 REGISTER_EDITOR_SYSTEM (ParticleSystemSys);
 REGISTER_EDITOR_SYSTEM (ButtonSys);
