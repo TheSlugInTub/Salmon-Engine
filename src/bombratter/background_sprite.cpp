@@ -1,8 +1,3 @@
-#include "salmon/ecs.h"
-#include <salmon/renderer.h>
-#include <bombratter/background_sprite.h>
-#include <imgui/imgui.h>
-#include <salmon/json.hpp>
 #include <salmon/editor.h>
 
 void BackgroundSpriteStartSys()
@@ -49,47 +44,11 @@ void BackgroundSpriteSys()
     }
 }
 
-void GrabRenderPass(int width, int height)
-{
-    // Generate and bind the framebuffer
-    glGenFramebuffers(1, &backgroundFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, backgroundFBO);
-
-    // Create the texture to store the sprites
-    glGenTextures(1, &renderPassTexture);
-    glBindTexture(GL_TEXTURE_2D, renderPassTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Attach the texture to the framebuffer
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                           GL_TEXTURE_2D, renderPassTexture, 0);
-
-    // Check if framebuffer is complete
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) !=
-        GL_FRAMEBUFFER_COMPLETE)
-    {
-        std::cout << "Framebuffer is not complete!" << std::endl;
-    }
-
-    // Unbind the framebuffer
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void GrabRenderPassSys()
-{
-    GrabRenderPass(engineState.window->width, engineState.window->height);
-}
-
-REGISTER_EDITOR_SYSTEM(GrabRenderPassSys);
-
 void BackgroundSpriteDraw(BackgroundSprite* sprite)
 {
     if (ImGui::CollapsingHeader("BackgroundSprite"))
     {
-        char texBuffer[128];
+        char texBuffer[250];
         strncpy_s(texBuffer, sprite->texturePath.c_str(),
                   sizeof(texBuffer));
         if (ImGui::InputText("BsTexturePath", texBuffer,
@@ -100,7 +59,7 @@ void BackgroundSpriteDraw(BackgroundSprite* sprite)
             sprite->texture = Utils::LoadTexture(texBuffer);
         }
 
-        char depthTexBuffer[128];
+        char depthTexBuffer[250];
         strncpy_s(depthTexBuffer, sprite->depthTexturePath.c_str(),
                   sizeof(depthTexBuffer));
         if (ImGui::InputText("BsDepthTexturePath", depthTexBuffer,
@@ -115,16 +74,16 @@ void BackgroundSpriteDraw(BackgroundSprite* sprite)
 
 nlohmann::json BackgroundSpriteSave(BackgroundSprite* sprite)
 {
-    return {{"TexturePath", sprite->texturePath},
-            {"DepthTexturePath", sprite->depthTexturePath}};
+    return {{"BsTexturePath", sprite->texturePath},
+            {"BsDepthTexturePath", sprite->depthTexturePath}};
 }
 
 void BackgroundSpriteLoad(BackgroundSprite*     sprite,
                           const nlohmann::json& j)
 {
-    sprite->texturePath = j["TexturePath"];
-    sprite->depthTexturePath = j["DepthTexturePath"];
+    sprite->texturePath = j["BsTexturePath"];
     sprite->texture = Utils::LoadTexture(sprite->texturePath.c_str());
+    sprite->depthTexturePath = j["BsDepthTexturePath"];
     sprite->depthTexture =
         Utils::LoadTexture(sprite->depthTexturePath.c_str());
 }

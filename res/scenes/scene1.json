@@ -403,18 +403,18 @@
     ],
     [
         {
-            "DepthTexturePath": "",
-            "TexturePath": "res/textures/wall.png",
+            "BsDepthTexturePath": "res/textures/wall_depth.png",
+            "BsTexturePath": "res/textures/wall.png",
             "type": "BackgroundSprite"
         },
         {
-            "EntName": "Wall",
+            "EntName": "Background",
             "type": "Name"
         },
         {
             "Position": [
                 0.0,
-                -1.3600000143051147,
+                0.0,
                 0.0
             ],
             "Rotation": [
@@ -423,8 +423,8 @@
                 0.0
             ],
             "Scale": [
-                9.90999984741211,
-                6.300000190734863,
+                3.8399999141693115,
+                1.600000023841858,
                 1.0
             ],
             "type": "Transform"
