@@ -320,7 +320,6 @@ void PlayerIKSys()
         else
         {
             ik->eyes->texture = ik->eyesTexture;
-            ik->eyes->texture = renderPassTexture;
         }
 
         ik->eyesTransform->position = ik->head->transform->position;

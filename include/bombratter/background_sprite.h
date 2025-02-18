@@ -16,3 +16,4 @@ inline unsigned int renderPassTexture;
 inline Shader backgroundShader;
 
 void BackgroundSpriteSys();
+void RenderQuadSys();

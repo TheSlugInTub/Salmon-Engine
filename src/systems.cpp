@@ -1,3 +1,4 @@
+#include "salmon/window.h"
 #include <salmon/components.h>
 #include <salmon/ecs.h>
 #include <salmon/engine.h>
@@ -55,10 +56,16 @@ void MeshRendererSys()
 
 void SpriteRendererSys()
 {
+    glBindFramebuffer(GL_FRAMEBUFFER, backgroundFBO);
+    glClear(GL_COLOR_BUFFER_BIT);
+
     for (EntityID ent : SceneView<SpriteRenderer>(engineState.scene))
     {
-        Renderer::RenderSprite(ent, engineState.projMat, engineState.camera->GetViewMatrix());
+        Renderer::RenderSprite(ent, engineState.projMat,
+                engineState.camera->GetViewMatrix());
     }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void RigidBody3DStartSys()
@@ -334,7 +341,6 @@ REGISTER_EDITOR_START_SYSTEM (AnimatorStartSys);
 REGISTER_EDITOR_SYSTEM (DeltaTimeSystem);
 REGISTER_SYSTEM        (AnimatorSys);
 REGISTER_EDITOR_SYSTEM (MeshRendererSys);
-REGISTER_EDITOR_SYSTEM (GrabRenderPassSys);
 REGISTER_EDITOR_SYSTEM (SpriteRendererSys);
 REGISTER_EDITOR_SYSTEM (BackgroundSpriteSys);
 REGISTER_SYSTEM        (RigidBody3DSys);
@@ -342,4 +348,4 @@ REGISTER_EDITOR_SYSTEM (ParticleSystemSys);
 REGISTER_EDITOR_SYSTEM (ButtonSys);
 REGISTER_EDITOR_SYSTEM (TextSys);
 REGISTER_EDITOR_SYSTEM (TilemapSys);
-REGISTER_EDITOR_SYSTEM (BackgroundSpriteSys);
+REGISTER_EDITOR_SYSTEM (RenderQuadSys);

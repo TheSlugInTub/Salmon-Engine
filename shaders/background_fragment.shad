@@ -4,11 +4,43 @@ out vec4 FragColor;
 in vec2 TexCoord;
 in vec3 FragPos;
 
-uniform sampler2D texture1;
+uniform sampler2D texture1;      // Background texture
+uniform sampler2D spritePass;    // Rendered sprites pass texture
+uniform sampler2D depthTexture;  // Depth information texture
+
+uniform float shadowIntensity = 0.5;    // How dark the shadows appear
+uniform float depthThreshold = 0.1;     // Minimum depth difference to cast shadow
+vec2 shadowOffset = vec2(0.1, 0.1);
 
 void main()
 {
+    // Sample the background texture
     vec4 texColor = texture(texture1, TexCoord);
-
-    FragColor = texColor;
+    
+    // Sample the sprite pass with offset for shadows
+    vec4 spriteColor = texture(spritePass, TexCoord - shadowOffset);
+    
+    // Sample the depth texture at the offset position
+    vec4 depthSample = texture(depthTexture, TexCoord - shadowOffset);
+    
+    // The depth value (closer = higher value)
+    float depth = depthSample.x;
+    
+    // Check if there's anything in the sprite pass (non-black pixel)
+    float shadowMask = 0.0;
+    if (length(spriteColor.rgb) > 0.0) {
+        // Calculate shadow based on depth
+        shadowMask = smoothstep(0.0, depthThreshold, depth);
+    }
+    
+    // Get the sprite at the current position (not offset) for actual rendering
+    vec4 currentSpriteColor = texture(spritePass, TexCoord);
+    
+    // Apply shadow to background texture only where there isn't a sprite
+    vec3 shadedColor = texColor.rgb;
+    if (length(currentSpriteColor.rgb) < 0.001) {  // If no sprite at current position
+        shadedColor *= (1.0 - (shadowMask * shadowIntensity));
+    }
+    
+    FragColor = vec4(shadedColor, texColor.a);
 }

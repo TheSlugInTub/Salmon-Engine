@@ -1,15 +1,52 @@
 #include <salmon/editor.h>
+#include <bombratter/background_sprite.h>
+#include <salmon/components.h>
 
 void BackgroundSpriteStartSys()
 {
     backgroundShader = Shader("shaders/background_vertex.shad",
                               "shaders/background_fragment.shad");
+
+    glGenFramebuffers(1, &backgroundFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, backgroundFBO);
+
+    glGenTextures(1, &renderPassTexture);
+    glBindTexture(GL_TEXTURE_2D, renderPassTexture);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, engineState.window->width,
+                 engineState.window->height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, NULL);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                           GL_TEXTURE_2D, renderPassTexture, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    backgroundShader.use();
+
+    backgroundShader.setVec2("screenSize", glm::vec2(engineState.window->width, engineState.window->height));
 }
 
 REGISTER_EDITOR_START_SYSTEM(BackgroundSpriteStartSys);
 
+void RenderQuadSys()
+{
+    Renderer::RenderQuad(
+        glm::vec2(engineState.window->width * 0.5f,   // Center X
+                  engineState.window->height * 0.5f), // Center Y
+        glm::vec2(engineState.window->width,          // Full width
+                  engineState.window->height),        // Full height
+        0.0f,                                         // No rotation
+        engineState.orthoProjMat, renderPassTexture, glm::vec4(1.0f));
+}
+
 void BackgroundSpriteSys()
 {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     for (EntityID ent :
          SceneView<BackgroundSprite>(engineState.scene))
     {
@@ -17,7 +54,10 @@ void BackgroundSpriteSys()
         auto trans = engineState.scene.Get<Transform>(ent);
 
         backgroundShader.use();
+
         backgroundShader.setTexture2D("texture1", bs->texture, 0);
+        backgroundShader.setTexture2D("spritePass", renderPassTexture, 1);
+        backgroundShader.setTexture2D("depthTexture", bs->depthTexture, 2);
 
         glm::mat4 transform = glm::mat4(1.0f);
 
