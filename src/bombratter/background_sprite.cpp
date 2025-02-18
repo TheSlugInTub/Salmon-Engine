@@ -1,6 +1,34 @@
 #include <salmon/editor.h>
 #include <bombratter/background_sprite.h>
 #include <salmon/components.h>
+#include <glm/gtx/string_cast.hpp>
+
+void CalculateBackgroundScreenMinMax(
+    glm::vec3 backgroundPosition, glm::vec3 backgroundScale,
+    glm::mat4 viewMatrix, glm::mat4 projectionMatrix,
+    glm::vec2 viewportSize, glm::vec2& minUV, glm::vec2& maxUV)
+{
+    // Transform the background's center position to clip space
+    glm::vec4 clipSpacePos = projectionMatrix * viewMatrix *
+                             glm::vec4(backgroundPosition, 1.0);
+
+    // Perspective divide to get NDC (normalized device coordinates)
+    glm::vec3 ndcPos = glm::vec3(clipSpacePos) / clipSpacePos.w;
+
+    // Convert NDC to screen-space UVs (0 to 1)
+    glm::vec2 screenUV = (glm::vec2(ndcPos) + 1.0f) * 0.5f;
+
+    // Calculate the background's size in screen space
+    // Assuming the background is a quad, we only care about the X and
+    // Y scale
+    glm::vec2 backgroundSize =
+        glm::vec2(backgroundScale.x, backgroundScale.y) /
+        viewportSize;
+
+    // Calculate min and max UVs
+    minUV = screenUV - backgroundSize * 0.5f;
+    maxUV = screenUV + backgroundSize * 0.5f;
+}
 
 void BackgroundSpriteStartSys()
 {
@@ -17,6 +45,10 @@ void BackgroundSpriteStartSys()
                  engineState.window->height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, NULL);
 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                    GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+                    GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -25,9 +57,13 @@ void BackgroundSpriteStartSys()
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    backgroundShader.use();
+    // for (EntityID ent :
+    //      SceneView<BackgroundSprite>(engineState.scene))
+    // {
+    //     auto bs = engineState.scene.Get<BackgroundSprite>(ent);
 
-    backgroundShader.setVec2("screenSize", glm::vec2(engineState.window->width, engineState.window->height));
+    //     backgroundShader.use();
+    // }
 }
 
 REGISTER_EDITOR_START_SYSTEM(BackgroundSpriteStartSys);
@@ -54,10 +90,27 @@ void BackgroundSpriteSys()
         auto trans = engineState.scene.Get<Transform>(ent);
 
         backgroundShader.use();
+        backgroundShader.setTexture2D("spritePass", renderPassTexture,
+                                      1);
 
+        glm::vec2 minUV = glm::vec2(0.0f), maxUV = glm::vec2(0.0f);
+
+        CalculateBackgroundScreenMinMax(
+            trans->position, trans->scale,
+            engineState.camera->GetViewMatrix(), engineState.projMat,
+            glm::vec2(engineState.window->width,
+                      engineState.window->height),
+            minUV, maxUV);
+
+        backgroundShader.setVec2("backgroundScreenMin", minUV);
+        backgroundShader.setVec2("backgroundScreenMax", maxUV);
+        backgroundShader.setVec2(
+            "viewportSize", glm::vec2(engineState.window->width,
+                                      engineState.window->height));
+        backgroundShader.setMat4("projection", engineState.projMat);
+        backgroundShader.setTexture2D("depthTexture",
+                                      bs->depthTexture, 2);
         backgroundShader.setTexture2D("texture1", bs->texture, 0);
-        backgroundShader.setTexture2D("spritePass", renderPassTexture, 1);
-        backgroundShader.setTexture2D("depthTexture", bs->depthTexture, 2);
 
         glm::mat4 transform = glm::mat4(1.0f);
 
@@ -77,7 +130,6 @@ void BackgroundSpriteSys()
         backgroundShader.setMat4("model", transform);
         backgroundShader.setMat4("view",
                                  engineState.camera->GetViewMatrix());
-        backgroundShader.setMat4("projection", engineState.projMat);
 
         glBindVertexArray(Renderer::VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
