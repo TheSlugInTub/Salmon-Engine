@@ -404,6 +404,10 @@
     [
         {
             "BsDepthTexturePath": "res/textures/wall_depth.png",
+            "BsDimensions": [
+                0.0,
+                0.0
+            ],
             "BsTexturePath": "res/textures/wall.png",
             "type": "BackgroundSprite"
         },

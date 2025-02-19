@@ -57,13 +57,22 @@ void BackgroundSpriteStartSys()
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // for (EntityID ent :
-    //      SceneView<BackgroundSprite>(engineState.scene))
-    // {
-    //     auto bs = engineState.scene.Get<BackgroundSprite>(ent);
+    for (EntityID ent :
+         SceneView<BackgroundSprite>(engineState.scene))
+    {
+        auto bs = engineState.scene.Get<BackgroundSprite>(ent);
 
-    //     backgroundShader.use();
-    // }
+        backgroundShader.use();
+        backgroundShader.setVec2(
+            "spritePassSize", glm::vec2(engineState.window->width,
+                                        engineState.window->height));
+        backgroundShader.setVec2(
+            "texture1Size",
+            glm::vec2(bs->dimensions.x, bs->dimensions.y));
+        backgroundShader.setMat4("projection", engineState.projMat);
+        backgroundShader.setMat4("spriteProjectionMatrix",
+                                 engineState.projMat);
+    }
 }
 
 REGISTER_EDITOR_START_SYSTEM(BackgroundSpriteStartSys);
@@ -90,31 +99,12 @@ void BackgroundSpriteSys()
         auto trans = engineState.scene.Get<Transform>(ent);
 
         backgroundShader.use();
+        backgroundShader.setTexture2D("texture1", bs->texture, 0);
         backgroundShader.setTexture2D("spritePass", renderPassTexture,
                                       1);
-
-        glm::vec2 minUV = glm::vec2(0.0f), maxUV = glm::vec2(0.0f);
-
-        CalculateBackgroundScreenMinMax(
-            trans->position, trans->scale,
-            engineState.camera->GetViewMatrix(), engineState.projMat,
-            glm::vec2(engineState.window->width,
-                      engineState.window->height),
-            minUV, maxUV);
-
-        backgroundShader.setVec2("backgroundScreenMin", minUV);
-        backgroundShader.setVec2("backgroundScreenMax", maxUV);
-        backgroundShader.setVec2(
-            "viewportSize", glm::vec2(engineState.window->width,
-                                      engineState.window->height));
-        backgroundShader.setMat4("projection", engineState.projMat);
         backgroundShader.setTexture2D("depthTexture",
                                       bs->depthTexture, 2);
-        backgroundShader.setTexture2D("texture1", bs->texture, 0);
 
-        backgroundShader.setMat4("spriteViewMatrix", engineState.camera->GetViewMatrix());
-        backgroundShader.setMat4("spriteProjectionMatrix", engineState.projMat);
-        
         glm::mat4 transform = glm::mat4(1.0f);
 
         // Matrix multiplication to calculate the transform.
@@ -150,8 +140,11 @@ void BackgroundSpriteDraw(BackgroundSprite* sprite)
                              sizeof(texBuffer),
                              ImGuiInputTextFlags_EnterReturnsTrue))
         {
+            glm::vec2 dim;
             sprite->texturePath = std::string(texBuffer);
-            sprite->texture = Utils::LoadTexture(texBuffer);
+            sprite->texture =
+                Utils::LoadTexture(texBuffer, true, dim);
+            sprite->dimensions = dim;
         }
 
         char depthTexBuffer[250];
@@ -170,7 +163,9 @@ void BackgroundSpriteDraw(BackgroundSprite* sprite)
 nlohmann::json BackgroundSpriteSave(BackgroundSprite* sprite)
 {
     return {{"BsTexturePath", sprite->texturePath},
-            {"BsDepthTexturePath", sprite->depthTexturePath}};
+            {"BsDepthTexturePath", sprite->depthTexturePath},
+            {"BsDimensions",
+             {sprite->dimensions.x, sprite->dimensions.y}}};
 }
 
 void BackgroundSpriteLoad(BackgroundSprite*     sprite,
@@ -181,6 +176,9 @@ void BackgroundSpriteLoad(BackgroundSprite*     sprite,
     sprite->depthTexturePath = j["BsDepthTexturePath"];
     sprite->depthTexture =
         Utils::LoadTexture(sprite->depthTexturePath.c_str());
+    if (j.contains("BsDimensions"))
+        sprite->dimensions = {j["BsDimensions"][0],
+                              j["BsDimensions"][1]};
 }
 
 REGISTER_COMPONENT(BackgroundSprite, BackgroundSpriteDraw,

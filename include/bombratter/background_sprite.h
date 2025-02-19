@@ -4,10 +4,12 @@
 
 struct BackgroundSprite
 {
-    unsigned int texture;
-    unsigned int depthTexture;
-    std::string  texturePath;
-    std::string  depthTexturePath;
+    unsigned int texture = 0;
+    unsigned int depthTexture = 0;
+    std::string  texturePath = {};
+    std::string  depthTexturePath = {};
+
+    glm::vec2 dimensions = {};
 };
 
 inline unsigned int backgroundFBO;

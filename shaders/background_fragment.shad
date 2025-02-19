@@ -3,24 +3,28 @@ out vec4 FragColor;
 
 in vec2 TexCoord;
 in vec3 FragPos;
+in mat4 ViewMatrix;
 
 uniform sampler2D texture1;          // Background texture
 uniform sampler2D spritePass;        // Rendered sprites pass texture
-uniform mat4 spriteViewMatrix;       // View matrix used for sprite pass rendering
+uniform sampler2D depthTexture;      // depthTexture
+
 uniform mat4 spriteProjectionMatrix; // Projection matrix used for sprite pass rendering
 
 uniform vec2 texture1Size = vec2(400.0, 300.0);
 uniform vec2 spritePassSize = vec2(1920.0, 1080.0);
-uniform float shadowIntensity = 0.5;
+uniform float shadowIntensity = 0.2;
 uniform vec2 shadowOffset = vec2(0.1, 0.1); // World-space offset for shadow
 
 void main()
 {
+    float depthPixel = texture(depthTexture, TexCoord).x;
+
     // Apply world-space shadow offset
-    vec3 shadowWorldPos = FragPos + vec3(shadowOffset.x, shadowOffset.y, 0.0);
+    vec3 shadowWorldPos = FragPos + vec3(shadowOffset.x, shadowOffset.y, 0.0) / depthPixel;
     
     // Transform to sprite pass clip space
-    vec4 clipPos = spriteProjectionMatrix * spriteViewMatrix * vec4(shadowWorldPos, 1.0);
+    vec4 clipPos = spriteProjectionMatrix * ViewMatrix * vec4(shadowWorldPos, 1.0);
     vec3 ndc = clipPos.xyz / clipPos.w;
     
     // Convert NDC to UV coordinates
