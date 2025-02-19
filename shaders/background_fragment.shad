@@ -7,7 +7,7 @@ in mat4 ViewMatrix;
 
 uniform sampler2D texture1;          // Background texture
 uniform sampler2D spritePass;        // Rendered sprites pass texture
-uniform sampler2D depthTexture;      // depthTexture
+uniform sampler2D depthTexture;      // Depth map
 
 uniform mat4 spriteProjectionMatrix; // Projection matrix used for sprite pass rendering
 
@@ -15,13 +15,17 @@ uniform vec2 texture1Size = vec2(400.0, 300.0);
 uniform vec2 spritePassSize = vec2(1920.0, 1080.0);
 uniform float shadowIntensity = 0.2;
 uniform vec2 shadowOffset = vec2(0.1, 0.1); // World-space offset for shadow
+uniform float depthScale = 1.0;     // Scale factor for depth-based offset
 
 void main()
 {
     float depthPixel = texture(depthTexture, TexCoord).x;
-
-    // Apply world-space shadow offset
-    vec3 shadowWorldPos = FragPos + vec3(shadowOffset.x, shadowOffset.y, 0.0) / depthPixel;
+ 
+    // Scale shadow offset based on quantized depth
+    vec2 scaledOffset = shadowOffset * (1.0 + depthPixel * depthScale);
+    
+    // Apply scaled world-space shadow offset
+    vec3 shadowWorldPos = FragPos + vec3(scaledOffset.x, scaledOffset.y, 0.0);
     
     // Transform to sprite pass clip space
     vec4 clipPos = spriteProjectionMatrix * ViewMatrix * vec4(shadowWorldPos, 1.0);
@@ -43,7 +47,8 @@ void main()
     // Determine if sprite is present
     float spritePresent = step(0.01, dot(spriteColor.rgb, vec3(1.0)));
     
-    // Apply shadow if sprite is present
-    vec4 finalColor = mix(backgroundColor, vec4(0.0), shadowIntensity * spritePresent);
+    // Apply shadow if sprite is present, with depth-based intensity
+    float depthBasedIntensity = shadowIntensity * (1.0 - depthPixel * 0.5);
+    vec4 finalColor = mix(backgroundColor, vec4(0.0), depthBasedIntensity * spritePresent);
     FragColor = finalColor;
 }
