@@ -4,39 +4,42 @@ out vec4 FragColor;
 in vec2 TexCoord;
 in vec3 FragPos;
 
-uniform sampler2D texture1;      // Background texture
-uniform sampler2D spritePass;    // Rendered sprites pass texture
-uniform sampler2D depthTexture;  // Depth information textur
+uniform sampler2D texture1;          // Background texture
+uniform sampler2D spritePass;        // Rendered sprites pass texture
+uniform mat4 spriteViewMatrix;       // View matrix used for sprite pass rendering
+uniform mat4 spriteProjectionMatrix; // Projection matrix used for sprite pass rendering
 
-uniform vec2 texture1Size = vec2(400.0, 300.0);       // Size of background texture (width, height)
-uniform vec2 spritePassSize = vec2(1920.0, 1080.0);     // Size of sprite pass texture (width, height)
-uniform float shadowIntensity = 0.5;    // How dark the shadows appear
-uniform vec2 shadowOffset = vec2(0.1, 0.1); // Shadow offset in screen UV space
+uniform vec2 texture1Size = vec2(400.0, 300.0);
+uniform vec2 spritePassSize = vec2(1920.0, 1080.0);
+uniform float shadowIntensity = 0.5;
+uniform vec2 shadowOffset = vec2(0.1, 0.1); // World-space offset for shadow
 
 void main()
 {
-    // Get the texel size for both textures
-    vec2 texel1Size = 1.0 / texture1Size;
-    vec2 spriteTexelSize = 1.0 / spritePassSize;
+    // Apply world-space shadow offset
+    vec3 shadowWorldPos = FragPos + vec3(shadowOffset.x, shadowOffset.y, 0.0);
     
-    // Calculate the equivalent position in the sprite pass texture
-    vec2 spriteUV = TexCoord * (texture1Size / spritePassSize);
+    // Transform to sprite pass clip space
+    vec4 clipPos = spriteProjectionMatrix * spriteViewMatrix * vec4(shadowWorldPos, 1.0);
+    vec3 ndc = clipPos.xyz / clipPos.w;
     
-    // Apply shadow offset in pixel-space (scaled by texture size ratio)
-    vec2 shadowCoord = TexCoord + (shadowOffset * (texture1Size / spritePassSize));
+    // Convert NDC to UV coordinates
+    vec2 spriteUV = ndc.xy * 0.5 + 0.5;
     
-    // Sample the textures
-    vec4 backgroundColor = texture(texture1, shadowCoord);
+    // Check if UV is within texture bounds
+    if (spriteUV.x < 0.0 || spriteUV.x > 1.0 || spriteUV.y < 0.0 || spriteUV.y > 1.0) {
+        FragColor = texture(texture1, TexCoord);
+        return;
+    }
+    
+    // Sample sprite pass and background
     vec4 spriteColor = texture(spritePass, spriteUV);
+    vec4 backgroundColor = texture(texture1, TexCoord);
     
-    // Check if there's a sprite at this position (anything not black)
+    // Determine if sprite is present
     float spritePresent = step(0.01, dot(spriteColor.rgb, vec3(1.0)));
     
     // Apply shadow if sprite is present
-    vec4 finalColor = backgroundColor;
-    if(spritePresent > 0.0) {
-        finalColor = mix(backgroundColor, vec4(0.0, 0.0, 0.0, 1.0), shadowIntensity);
-    }
-    
+    vec4 finalColor = mix(backgroundColor, vec4(0.0), shadowIntensity * spritePresent);
     FragColor = finalColor;
 }

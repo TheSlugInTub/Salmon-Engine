@@ -112,6 +112,9 @@ void BackgroundSpriteSys()
                                       bs->depthTexture, 2);
         backgroundShader.setTexture2D("texture1", bs->texture, 0);
 
+        backgroundShader.setMat4("spriteViewMatrix", engineState.camera->GetViewMatrix());
+        backgroundShader.setMat4("spriteProjectionMatrix", engineState.projMat);
+        
         glm::mat4 transform = glm::mat4(1.0f);
 
         // Matrix multiplication to calculate the transform.
