@@ -631,6 +631,7 @@ nlohmann::json TilemapSave(Tilemap* tilemap)
         nlohmann::json tileJson;
         tileJson["Transform"] = SerializeMat4(tilemap->tileTransforms[i]);
         tileJson["Texture"] = tilemap->tileTextureIndices[i];
+        tileJson["Layer"] = tilemap->tileLayers[i];
         tilesJ.push_back(tileJson);
     }
 
@@ -657,6 +658,13 @@ void TilemapLoad(Tilemap* tilemap, const nlohmann::json& j)
         {
             tilemap->tileTextureIndices.push_back(tileJson["Texture"]);
             tilemap->tileTransforms.push_back(DeserializeMat4(tileJson["Transform"]));
+            if (tileJson.contains("Layer"))
+            {
+                tilemap->tileLayers.push_back(tileJson["Layer"]);
+            }else
+            {
+                tilemap->tileLayers.push_back(0);
+            }
         }
     }
 

@@ -10,7 +10,7 @@
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 90.0f);
+Camera camera(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 90.0f);
 
 struct FBOTexture
 {
@@ -186,8 +186,6 @@ int main(int argc, char** argv)
     Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false, true);
     // glfwSwapInterval(1);
 
-    FBOTexture editorFBO(engineState.window->width, engineState.window->height);
-
     unsigned int lineTex = Utils::LoadTexture("res/textures/Line.png");
     unsigned int slugTex = Utils::LoadTexture("res/textures/Slugarius.png");
 
@@ -216,24 +214,12 @@ int main(int argc, char** argv)
     ImGuiLayer::Init();
     ImGuiLayer::EmbraceTheDarkness();
 
-    ImVec2 previousWindowSize;
-
     // Main loop
     // -----------
     while (!window.ShouldClose())
     {
-        editorFBO.Bind();
-
         // Start of frame
-        glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
-
-        // Main loop logic
-        // ---
-
-        Renderer::RenderTilemap(tilemap, engineState.projMat, engineState.camera->GetViewMatrix());
-
-        editorFBO.Unbind();
 
         // ImGui stuff
         ImGuiLayer::NewFrame();
@@ -245,24 +231,10 @@ int main(int argc, char** argv)
         DrawTileTray();
         TilemapDraw(&tilemap, layer);
 
-        ImGui::Begin("Tile Editor");
+        // Main loop logic
+        // ---
 
-        ImVec2 currentWindowSize = ImGui::GetWindowSize();
-        if (currentWindowSize != previousWindowSize)
-            editorFBO.Rescale(currentWindowSize.x, currentWindowSize.y);
-
-        const float windowWidth = ImGui::GetContentRegionAvail().x;
-        const float windowHeight = ImGui::GetContentRegionAvail().y;
-
-        glViewport(0, 0, windowWidth, windowHeight);
-        ImVec2 pos = ImGui::GetCursorScreenPos();
-
-        ImGui::GetWindowDrawList()->AddImage((void*)editorFBO.texture, ImVec2(pos.x, pos.y),
-                                             ImVec2(pos.x + windowWidth, pos.y + windowHeight),
-                                             ImVec2(0, 1), ImVec2(1, 0));
-        ImGui::End();
-
-        previousWindowSize = currentWindowSize;
+        Renderer::RenderTilemap(tilemap, engineState.projMat, engineState.camera->GetViewMatrix());
 
         // End of frame
         ImGuiLayer::EndFrame();
