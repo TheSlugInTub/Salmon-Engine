@@ -1,6 +1,5 @@
 #include <salmon/sprite_animation.h>
 #include <salmon/utils.h>
-#include <salmon/engine.h>
 
 void AnimationSys()
 {

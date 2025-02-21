@@ -75,6 +75,9 @@ void ResolveCollisions(const Tree& tree, std::vector<Manifold>& collisionResults
 // Returns the 2d cross product of two vectors
 float CrossProduct(const glm::vec2& a, const glm::vec2& b);
 
+// Update a collider, does the same as the ColliderSys
+void UpdateCollider(Collider* collider);
+
 // Conversion functions
 
 AABB ColAABBToABBB(const Collider& box);      // Returns bounding box encapsulating an AABB collider

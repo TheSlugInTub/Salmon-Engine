@@ -19,7 +19,7 @@ include_directories(
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.c)
 file(GLOB_RECURSE INCLUDESOURCES include/*.cpp include/*.c)
 
-# Comment to reload CMake, Counter: 37
+# Comment to reload CMake, Counter: 40
 
 # Add the executable
 add_executable(${PROJECT_NAME} 
@@ -33,20 +33,18 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE JPH_DEBUG_RENDERER)
 
 if(WIN32)
     target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${CMAKE_SOURCE_DIR}/../lib/glfw3.lib
-        ${CMAKE_SOURCE_DIR}/../lib/Jolt.lib
-        ${CMAKE_SOURCE_DIR}/../lib/assimp-vc143-mt.lib
-        ${CMAKE_SOURCE_DIR}/../lib/OpenAL32.lib
-        ${CMAKE_SOURCE_DIR}/../lib/freetype.lib
+        ${CMAKE_SOURCE_DIR}/lib/glfw3.lib
+        ${CMAKE_SOURCE_DIR}/lib/assimp-vc143-mt.lib
+        ${CMAKE_SOURCE_DIR}/lib/OpenAL32.lib
+        ${CMAKE_SOURCE_DIR}/lib/freetype.lib
     )
 endif()
 
 if(UNIX AND NOT APPLE)
     target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${CMAKE_SOURCE_DIR}/../lib/libglfw3.a
-        ${CMAKE_SOURCE_DIR}/../lib/libJolt.a
-        ${CMAKE_SOURCE_DIR}/../lib/libassimp.so
-        ${CMAKE_SOURCE_DIR}/../lib/libopenal.so
-        ${CMAKE_SOURCE_DIR}/../lib/libfreetype.a
+        ${CMAKE_SOURCE_DIR}/lib/libglfw3.a
+        ${CMAKE_SOURCE_DIR}/lib/libassimp.so
+        ${CMAKE_SOURCE_DIR}/lib/libopenal.so
+        ${CMAKE_SOURCE_DIR}/lib/libfreetype.a
     )
 endif()

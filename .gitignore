@@ -1,2 +1,4 @@
 bld
 .cache
+*.dll
+editor/bld

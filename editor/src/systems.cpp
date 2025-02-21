@@ -3,11 +3,11 @@
 #include <salmon/engine.h>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/ext.hpp>
-#include <iostream>
 #include <salmon/renderer.h>
 #include <GLFW/glfw3.h>
 #include <salmon/particle_system.h>
 #include <salmon/ui.h>
+#include <salmon/tilemap.h>
 
 void MeshRendererSys()
 {
@@ -24,7 +24,8 @@ void MeshRendererSys()
         glClear(GL_DEPTH_BUFFER_BIT);
 
         for (unsigned int i = 0; i < 6; ++i)
-            Renderer::depthShader.setMat4("shadowMatrices[" + std::to_string(i) + "]", light.shadowTransforms[i]);
+            Renderer::depthShader.setMat4("shadowMatrices[" + std::to_string(i) + "]",
+                                          light.shadowTransforms[i]);
         Renderer::depthShader.setFloat("farPlane", light.radius);
         Renderer::depthShader.setVec3("lightPos", light.position);
 
@@ -55,8 +56,7 @@ void SpriteRendererSys()
 {
     for (EntityID ent : SceneView<SpriteRenderer>(engineState.scene))
     {
-        Renderer::RenderSprite(ent, engineState.projMat,
-                               engineState.camera->GetViewMatrix());
+        Renderer::RenderSprite(ent, engineState.projMat, engineState.camera->GetViewMatrix());
     }
 }
 
@@ -70,21 +70,27 @@ void LightStartSys()
 
         light->shadowTransforms.clear();
 
-        glm::mat4 shadowProj =
-            glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, 1.0f, 25.0f);
+        glm::mat4 shadowProj = glm::perspective(
+            glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, 1.0f, 25.0f);
 
         light->shadowTransforms.push_back(
-            shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+            shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f),
+                                     glm::vec3(0.0f, -1.0f, 0.0f)));
         light->shadowTransforms.push_back(
-            shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+            shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f),
+                                     glm::vec3(0.0f, -1.0f, 0.0f)));
         light->shadowTransforms.push_back(
-            shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+            shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f),
+                                     glm::vec3(0.0f, 0.0f, 1.0f)));
         light->shadowTransforms.push_back(
-            shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+            shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f),
+                                     glm::vec3(0.0f, 0.0f, -1.0f)));
         light->shadowTransforms.push_back(
-            shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+            shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f),
+                                     glm::vec3(0.0f, -1.0f, 0.0f)));
         light->shadowTransforms.push_back(
-            shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+            shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f),
+                                     glm::vec3(0.0f, -1.0f, 0.0f)));
 
         glGenFramebuffers(1, &light->depthMapFBO);
 
@@ -94,8 +100,8 @@ void LightStartSys()
 
         for (unsigned int i = 0; i < 6; ++i)
         {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0,
-                         GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH,
+                         SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
         }
 
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -129,6 +135,7 @@ void AnimatorStartSys()
 
         animator->currentTime = 0.0f;
         animator->boneMatrices.reserve(200);
+        animator->model = &engineState.scene.Get<MeshRenderer>(ent)->model;
 
         for (int i = 0; i < 200; i++) animator->boneMatrices.push_back(glm::mat4(1.0f));
     }
@@ -156,15 +163,18 @@ void DeltaTimeSystem()
     lastFrame = currplayerFrame;
 }
 
+// DO NOT LET CLANG FORMAT ANYWHERE NEAR THIS BEAUTY 
+
 // Start systems
-REGISTER_START_SYSTEM(LightStartSys);
-REGISTER_START_SYSTEM(AnimatorStartSys);
+REGISTER_START_SYSTEM        (LightStartSys);
+REGISTER_EDITOR_START_SYSTEM (AnimatorStartSys);
 
 // Regular systems
-REGISTER_SYSTEM(DeltaTimeSystem);
-REGISTER_SYSTEM(AnimatorSys);
-REGISTER_SYSTEM(MeshRendererSys);
-REGISTER_SYSTEM(SpriteRendererSys);
-REGISTER_SYSTEM(ParticleSystemSys);
-REGISTER_SYSTEM(ButtonSys);
-REGISTER_SYSTEM(TextSys);
+REGISTER_EDITOR_SYSTEM (DeltaTimeSystem);
+REGISTER_SYSTEM        (AnimatorSys);
+REGISTER_EDITOR_SYSTEM (MeshRendererSys);
+REGISTER_EDITOR_SYSTEM (SpriteRendererSys);
+REGISTER_EDITOR_SYSTEM (ParticleSystemSys);
+REGISTER_EDITOR_SYSTEM (ButtonSys);
+REGISTER_EDITOR_SYSTEM (TextSys);
+REGISTER_EDITOR_SYSTEM (TilemapSys);

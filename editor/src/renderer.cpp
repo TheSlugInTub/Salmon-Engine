@@ -16,8 +16,7 @@
 namespace Renderer
 {
 
-// This function is run at the very start of the program
-void Init(bool depth, bool ui)
+void InitShaders()
 {
     defaultShader = Shader("shaders/3d_vertex.shad", "shaders/3d_fragment.shad");
     lineShader = Shader("shaders/line_vertex.shad", "shaders/line_fragment.shad");
@@ -26,6 +25,11 @@ void Init(bool depth, bool ui)
     twoShader = Shader("shaders/2d_vertex.shad", "shaders/2d_fragment.shad");
     parShader = Shader("shaders/particle_vertex.shad", "shaders/particle_fragment.shad");
     textShader = Shader("shaders/text_vertex.shad", "shaders/text_fragment.shad");
+    tileShader = Shader("shaders/tile_vertex.shad", "shaders/tile_fragment.shad");
+}
+
+void Init2D()
+{
     stbi_set_flip_vertically_on_load(true);
 
     /*
@@ -63,7 +67,10 @@ void Init(bool depth, bool ui)
     // texture attribute
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+}
 
+void InitParticles()
+{
     particleMatrices.reserve(MAX_PARTICLES);
 
     glGenBuffers(1, &instancedVBO);
@@ -94,16 +101,44 @@ void Init(bool depth, bool ui)
     glEnableVertexAttribArray(6);
     glVertexAttribDivisor(6, 1); // Color updates per instance
     glBindVertexArray(0);
+}
+
+void InitTilemaps()
+{
+    // Instanced tilemap rendering
+    glGenBuffers(1, &tileVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, tileVBO);
+
+    glBufferData(GL_ARRAY_BUFFER, MAX_TILES * sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
+    // Enable instanced attributes (mat4 takes 4 vec4 attributes)
+    glBindVertexArray(VAO);
+    for (int i = 0; i < 4; i++)
+    {
+        glVertexAttribPointer(9 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4),
+                              (void*)(i * sizeof(glm::vec4)));
+        glEnableVertexAttribArray(9 + i);
+        glVertexAttribDivisor(9 + i, 1); // Instance divisor for instancing
+    }
+    // Add texture index attribute
+    glGenBuffers(1, &tileIndexVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, tileIndexVBO);
+
+    glBufferData(GL_ARRAY_BUFFER, MAX_TILES * sizeof(float), nullptr, GL_STATIC_DRAW);
+
+    glBindVertexArray(VAO);
+    glVertexAttribPointer(13, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+    glEnableVertexAttribArray(13);
+    glVertexAttribDivisor(13, 1);
 
     glBindVertexArray(0);
+}
 
+void InitText()
+{
     // Font rendering
-    if (ui)
+    if (FT_Init_FreeType(&ft))
     {
-        if (FT_Init_FreeType(&ft))
-        {
-            std::cerr << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
-        }
+        std::cerr << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
     }
     glGenVertexArrays(1, &textVAO);
     glGenBuffers(1, &textVBO);
@@ -114,7 +149,10 @@ void Init(bool depth, bool ui)
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+}
 
+void Init(bool depth)
+{
     // Enable the DEPTH_TEST, basically just so faces don't draw on top of eachother in weird ways
     if (depth)
     {
@@ -439,6 +477,32 @@ void RenderQuad(glm::vec2 position, glm::vec2 scale, float rotation, const glm::
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void RenderTilemap(const Tilemap& tilemap, const glm::mat4& projection, const glm::mat4& view)
+{
+    if (tilemap.tileTransforms.size() == 0)
+        return;
+
+    // Update instance transformation data
+    glBindBuffer(GL_ARRAY_BUFFER, tileVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, tilemap.tileTransforms.size() * sizeof(glm::mat4),
+                    tilemap.tileTransforms.data());
+    glBindBuffer(GL_ARRAY_BUFFER, tileIndexVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, tilemap.tileTextureIndices.size() * sizeof(float),
+                    tilemap.tileTextureIndices.data());
+
+    tileShader.use();
+    for (size_t i = 0; i < tilemap.editorTiles.size(); ++i)
+    {
+        tileShader.setTexture2D("textures[" + std::to_string(i) + "]", tilemap.editorTiles[i], i);
+    }
+
+    // Setting all the uniforms.
+    tileShader.setMat4("view", view);
+    tileShader.setMat4("projection", projection);
+    glBindVertexArray(VAO);
+    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, tilemap.tileTransforms.size());
 }
 
 } // namespace Renderer

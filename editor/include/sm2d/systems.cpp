@@ -1,5 +1,3 @@
-#include <cfloat>
-#include <cmath>
 #include <sm2d/types.h>
 #include <sm2d/colliders.h>
 #include <salmon/ecs.h>
@@ -7,10 +5,25 @@
 #include <sm2d/functions.h>
 #include <glm/gtx/string_cast.hpp>
 #include <salmon/clock.h>
-#include <salmon/renderer.h>
 
 namespace sm2d
 {
+
+void RigidbodyStartSys()
+{
+    for (EntityID ent : SceneView<Rigidbody>(engineState.scene))
+    {
+        auto rigid = engineState.scene.Get<Rigidbody>(ent);
+
+        if (rigid->transform == nullptr)
+        {
+            if (auto trans = engineState.scene.Get<Transform>(ent))
+            {
+                rigid->transform = trans;
+            }
+        }
+    }
+}
 
 void RigidbodySys()
 {
@@ -27,11 +40,13 @@ void RigidbodySys()
 
         rigid->linearVelocity += rigid->force / rigid->mass * engineState.deltaTime;
         rigid->linearVelocity *= glm::pow(rigid->linearDamping, engineState.deltaTime);
+
         rigid->transform->position.x += rigid->linearVelocity.x * engineState.deltaTime;
         rigid->transform->position.y += rigid->linearVelocity.y * engineState.deltaTime;
 
         rigid->angularVelocity += rigid->torque / rigid->mass * engineState.deltaTime;
         rigid->angularVelocity *= glm::pow(rigid->angularDamping, engineState.deltaTime);
+        
         rigid->transform->rotation.z += rigid->angularVelocity * engineState.deltaTime;
 
         if (rigid->angularVelocity > 0.05f || glm::length(rigid->linearVelocity) > 0.01f)
@@ -48,11 +63,28 @@ void RigidbodySys()
     }
 }
 
+// PLEASE TURN THIS OFF WHEN YOU CAN, THIS FUNCTION IS AN ABSOLUTE CATASTROPHE
 void DebugSys()
 {
     for (EntityID ent : SceneView<Collider>(engineState.scene))
     {
         auto collider = engineState.scene.Get<Collider>(ent);
+
+        if (collider->body == nullptr)
+        {
+            if (auto rigid = engineState.scene.Get<Rigidbody>(ent))
+            {
+                collider->body = rigid;
+
+                if (rigid->transform == nullptr)
+                {
+                    if (auto trans = engineState.scene.Get<Transform>(ent))
+                    {
+                        rigid->transform = trans;
+                    }
+                }
+            }
+        }
 
         if (collider->type == ColliderType::sm2d_AABB)
         {
@@ -79,6 +111,11 @@ void DebugSys()
         }
         else if (collider->type == ColliderType::sm2d_Polygon)
         {
+            UpdatePolygon(*collider);
+            if (collider->polygon.worldPoints.size() != 0)
+            {
+                collider->polygon.center = ComputePolygonCenter(collider->polygon); 
+            }
             std::vector<glm::vec3> threedpoints;
             for (auto& point : collider->polygon.worldPoints)
             {
@@ -131,6 +168,14 @@ void ColliderSys()
     {
         auto collider = engineState.scene.Get<Collider>(ent);
 
+        if (collider->body == nullptr)
+        {
+            if (auto bod = engineState.scene.Get<Rigidbody>(ent))
+            {
+                collider->body = bod;
+            }
+        }
+
         if (collider->body->type == BodyType::sm2d_Static || !collider->body->awake)
         {
             continue;
@@ -160,9 +205,10 @@ void ColliderSys()
 }
 
 REGISTER_START_SYSTEM(ColliderStartSys);
+REGISTER_START_SYSTEM(RigidbodyStartSys);
 
-// REGISTER_SYSTEM(DebugSys);
 REGISTER_SYSTEM(RigidbodySys);
 REGISTER_SYSTEM(ColliderSys);
+REGISTER_EDITOR_SYSTEM(DebugSys);
 
 } // namespace sm2d

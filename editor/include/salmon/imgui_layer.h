@@ -14,4 +14,6 @@ void EndFrame();
 // Terminates ImGui (Only call at end of program)
 void Terminate();
 
+void EmbraceTheDarkness();
+
 } // namespace ImGuiLayer

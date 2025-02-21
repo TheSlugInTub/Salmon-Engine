@@ -24,6 +24,7 @@ struct ColCircle
 
 enum ColliderType
 {
+    sm2d_None = 0,
     sm2d_AABB,
     sm2d_Circle,
     sm2d_Polygon
@@ -31,15 +32,14 @@ enum ColliderType
 
 struct Collider
 {
-    ColliderType type;
-    union
-    {
-        ColAABB    aabb;
-        ColCircle  circle;
-        ColPolygon polygon;
-    };
-    Rigidbody* body;
-    int        treeIndex = -1; // Index in the AABB tree
+    ColliderType type = ColliderType::sm2d_None;
+    ColAABB      aabb;
+    ColCircle    circle;
+    ColPolygon   polygon;
+    Rigidbody*   body = nullptr;
+    int          treeIndex = -1; // Index in the AABB tree
+
+    int bodyIndex = 0; // Ignore this, it's only for the editor
 
     Collider(ColliderType type, const ColAABB& aabb, Rigidbody* body)
        : type(type), aabb(aabb), body(body)
@@ -55,9 +55,10 @@ struct Collider
     }
 
     ~Collider() {} // This is just here so the compiler doesn't yell at me
+    Collider() {}
 };
 
-struct Manifold 
+struct Manifold
 {
     bool      colliding;        // Are they colliding?
     glm::vec2 collisionNormal;  // Direction of the collision used for impulse calculation

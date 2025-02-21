@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <vector>
+#include <string>
 
 struct Particle
 {
@@ -46,6 +47,7 @@ struct ParticleSystem
     bool         billboarded;  // Determines whether the sprites are billboarded or not
 
     std::vector<Particle> particles;
+    std::string texturePath;
 };
 
 void ParticleSystemSys();
