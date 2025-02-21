@@ -1,4 +1,6 @@
+#include "imgui/imgui.h"
 #include "salmon/utils.h"
+#include "salmon/window.h"
 #include <salmon/salmon.h>
 #include <salmon/tilemap.h>
 #include <filesystem>
@@ -9,6 +11,53 @@ const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 90.0f);
+
+struct FBOTexture
+{
+    FBOTexture(int width, int height)
+    {
+        glGenFramebuffers(1, &FBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    void Bind() { glBindFramebuffer(GL_FRAMEBUFFER, FBO); }
+
+    void Unbind() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
+
+    void Rescale(int width, int height)
+    {
+        glDeleteTextures(1, &texture);
+
+        // Create color attachment texture
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        // Bind framebuffer and attach textures
+        glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    }
+
+    unsigned int texture;
+    unsigned int FBO;
+};
 
 std::vector<std::pair<std::string, unsigned int>> tiles;
 std::vector<std::string>                          tileNames;
@@ -137,6 +186,8 @@ int main(int argc, char** argv)
     Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false, true);
     // glfwSwapInterval(1);
 
+    FBOTexture editorFBO(engineState.window->width, engineState.window->height);
+
     unsigned int lineTex = Utils::LoadTexture("res/textures/Line.png");
     unsigned int slugTex = Utils::LoadTexture("res/textures/Slugarius.png");
 
@@ -165,12 +216,26 @@ int main(int argc, char** argv)
     ImGuiLayer::Init();
     ImGuiLayer::EmbraceTheDarkness();
 
+    ImVec2 previousWindowSize;
+
     // Main loop
     // -----------
     while (!window.ShouldClose())
     {
+        editorFBO.Bind();
+
         // Start of frame
+        glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
+
+        // Main loop logic
+        // ---
+
+        Renderer::RenderTilemap(tilemap, engineState.projMat, engineState.camera->GetViewMatrix());
+
+        editorFBO.Unbind();
+
+        // ImGui stuff
         ImGuiLayer::NewFrame();
 
         UpdateEditorSystems();
@@ -180,10 +245,24 @@ int main(int argc, char** argv)
         DrawTileTray();
         TilemapDraw(&tilemap, layer);
 
-        // Main loop logic
-        // ---
+        ImGui::Begin("Tile Editor");
 
-        Renderer::RenderTilemap(tilemap, engineState.projMat, engineState.camera->GetViewMatrix());
+        ImVec2 currentWindowSize = ImGui::GetWindowSize();
+        if (currentWindowSize != previousWindowSize)
+            editorFBO.Rescale(currentWindowSize.x, currentWindowSize.y);
+
+        const float windowWidth = ImGui::GetContentRegionAvail().x;
+        const float windowHeight = ImGui::GetContentRegionAvail().y;
+
+        glViewport(0, 0, windowWidth, windowHeight);
+        ImVec2 pos = ImGui::GetCursorScreenPos();
+
+        ImGui::GetWindowDrawList()->AddImage((void*)editorFBO.texture, ImVec2(pos.x, pos.y),
+                                             ImVec2(pos.x + windowWidth, pos.y + windowHeight),
+                                             ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::End();
+
+        previousWindowSize = currentWindowSize;
 
         // End of frame
         ImGuiLayer::EndFrame();
