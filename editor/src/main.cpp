@@ -1,7 +1,8 @@
-#include "salmon/shader.h"
 #include "salmon/utils.h"
 #include <salmon/salmon.h>
 #include <salmon/tilemap.h>
+#include <filesystem>
+#include <fstream>
 
 // settings
 const unsigned int SCR_WIDTH = 1920;
@@ -15,7 +16,78 @@ std::vector<std::string>                          tileNames;
 Tilemap     tilemap(glm::vec2(1.0f, 1.0f));
 inline int  selectedTileIndex = -1;
 inline char buffer[128];
+inline char saveFile[128] = "heay.json";
 inline int  layer;
+
+void           TilemapDraw(Tilemap* tilemap, int layer);
+nlohmann::json TilemapSave(Tilemap* tilemap);
+void           TilemapLoad(Tilemap* tilemap, const nlohmann::json& j);
+
+void SaveFile(const std::string& file)
+{
+    std::filesystem::path directory = "res/scenes";
+    std::filesystem::create_directories(directory);
+    std::filesystem::path filePath = directory / file;
+
+    nlohmann::json j = {};
+
+    j.push_back(TilemapSave(&tilemap));
+
+    nlohmann::json tileJ = nlohmann::json::array();
+
+    for (int i = 0; i < tiles.size(); ++i) { tileJ.push_back(tiles[i].first); }
+
+    nlohmann::json tilePadding = {};
+    tilePadding["tiles"] = tileJ;
+    j.push_back(tilePadding);
+
+    std::ofstream ffile(filePath);
+    ffile << j.dump(4);
+}
+
+void LoadFile(const char* file)
+{
+    std::filesystem::path directory = "res/scenes";
+    std::filesystem::path filePath = directory / file;
+
+    std::ifstream ffile(filePath);
+    if (!ffile.is_open())
+    {
+        std::cerr << "Failed to open file: " << file << '\n';
+        return;
+    }
+
+    nlohmann::json j;
+    ffile >> j;
+
+    int i = 0;
+
+    tilemap.editorTiles.clear();
+    tilemap.tileTransforms.clear();
+    tilemap.tileLayers.clear();
+    tilemap.tileTextureIndices.clear();
+    tiles.clear();
+
+    for (nlohmann::json& tileJ : j)
+    {
+        if (i == 0)
+        {
+            TilemapLoad(&tilemap, tileJ);
+
+            i++;
+        }
+        else
+        {
+            for (const std::string& tileJson : tileJ["tiles"])
+            {
+                tiles.push_back(std::pair<std::string, unsigned int>(
+                    tileJson, Utils::LoadTexture(tileJson.c_str())));
+            }
+        }
+    }
+
+    ffile.close();
+}
 
 void DrawTilesMenu()
 {
@@ -32,8 +104,7 @@ void DrawTilesMenu()
         }
         if (tiles[i].second != 2000)
         {
-            if (ImGui::ImageButton((ImTextureID)(intptr_t)tiles[i].second,
-                                   ImVec2(64, 64)))
+            if (ImGui::ImageButton((ImTextureID)(intptr_t)tiles[i].second, ImVec2(64, 64)))
             {
                 selectedTileIndex = (int)i;
             }
@@ -48,13 +119,18 @@ void DrawTileTray()
     ImGui::Begin("Tray");
 
     ImGui::InputInt("Layer", &layer);
+    ImGui::InputText("Save File", saveFile, sizeof(saveFile), ImGuiInputTextFlags_EnterReturnsTrue);
+    if (ImGui::Button("Save"))
+    {
+        SaveFile(saveFile);
+    }
+    if (ImGui::Button("Load"))
+    {
+        LoadFile(saveFile);
+    }
 
     ImGui::End();
 }
-
-void           TilemapDraw(Tilemap* tilemap, int layer);
-nlohmann::json TilemapSave(Tilemap* tilemap);
-void           TilemapLoad(Tilemap* tilemap, const nlohmann::json& j);
 
 int main(int argc, char** argv)
 {

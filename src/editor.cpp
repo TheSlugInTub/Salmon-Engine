@@ -139,6 +139,8 @@ void SaveScene(const std::string& filename)
 
     std::ofstream file(filePath);
     file << j.dump(4);
+
+    file.close();
 }
 
 void LoadScene(const std::string& filename)
@@ -163,6 +165,8 @@ void LoadScene(const std::string& filename)
     ComponentRegistry::Instance().LoadAll(j);
 
     StartEditorStartSystems();
+
+    file.close();
 }
 
 void DrawTray()
