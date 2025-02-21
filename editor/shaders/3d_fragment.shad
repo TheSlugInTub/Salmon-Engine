@@ -1,0 +1,81 @@
+#version 330 core
+out vec4 FragColor;
+
+in vec2 TexCoords;
+in vec3 FragPos;
+in vec3 Normal;
+
+const int MAX_LIGHTS = 10;
+
+uniform sampler2D texture_diffuse;
+uniform samplerCube depthMaps[MAX_LIGHTS];
+
+struct Light
+{
+    vec3 pos;
+    vec4 color;
+    float intensity;
+    float radius;
+    bool on;
+    bool castShadows;
+};
+
+uniform Light lights[MAX_LIGHTS];
+
+float ShadowCalculation(vec3 fragToLight, vec3 normal, int lightIndex)
+{
+    // Sample depth from cube map
+    float closestDepth = texture(depthMaps[lightIndex], fragToLight).r * lights[lightIndex].radius;
+
+    // Get current linear depth
+    float currentDepth = length(fragToLight);
+
+    // Use a small bias for shadow acne prevention
+    float lightDirDotNormal = dot(normalize(fragToLight), normalize(normal));
+    float angleBias = clamp(0.05 * (1.0 - lightDirDotNormal), 0.0, 0.05);
+
+    // Shadow factor calculation
+    float shadow = (currentDepth - (0.5 + angleBias)) > closestDepth ? 1.0 : 0.0;
+    
+    return shadow;
+}
+
+void main()
+{    
+    vec4 texColor = texture(texture_diffuse, TexCoords);
+    vec3 ambient = vec3(0.1) * texColor.rgb;
+    vec3 diffuse = vec3(0.0);
+    vec3 norm = normalize(Normal);
+
+    float shadowFactor = 1.0;
+
+    for (int i = 0; i < MAX_LIGHTS; ++i) {
+        if (lights[i].on) {
+            vec3 lightDir = normalize(lights[i].pos - FragPos);
+            float distance = length(lights[i].pos - FragPos);
+
+            // Precompute attenuation
+            float attenuation = 1.0 - min(distance / lights[i].radius, 1.0);
+
+            // Avoid calculating shadow if light is too parallel
+            float normDotLightDir = dot(norm, lightDir);
+            if (normDotLightDir > 0.1 && lights[i].castShadows) {
+                vec3 fragToLight = FragPos - lights[i].pos;
+                float shadow = ShadowCalculation(fragToLight, norm, i);
+                shadowFactor *= (1.0 - shadow * 0.5); // Factor for shadow darkness
+            }
+
+            // Diffuse lighting
+            float diff = max(normDotLightDir, 0.0);
+            diffuse += diff * lights[i].color.rgb * lights[i].intensity * attenuation;
+        }
+    }
+
+    // Avoid excessive clamping, apply shadow if fully occluded
+    shadowFactor = max(shadowFactor, 0.5);
+
+    // Final lighting
+    vec3 lighting = clamp(ambient + diffuse, 0.23, 10.0) * shadowFactor;
+
+    FragColor = vec4(lighting * texColor.rgb, texColor.a);
+}

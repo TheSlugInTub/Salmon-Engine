@@ -38,7 +38,7 @@ void RigidbodySys()
 
         if (rigid->applyGravity)
         {
-            rigid->force.y += -3.5f * rigid->mass; // GRAVITAS
+            rigid->force.y += -4.5f * rigid->mass; // GRAVITAS
         }
 
         rigid->linearVelocity +=

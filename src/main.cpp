@@ -52,6 +52,9 @@ int main(int argc, char** argv)
         colResults.clear();
         sm2d::GetCollisionsInTree(sm2d::bvh, colResults);
         sm2d::ResolveCollisions(sm2d::bvh, colResults);
+        colResults.clear();
+        sm2d::GetCollisionsInTree(sm2d::bvh, colResults);
+        sm2d::ResolveCollisions(sm2d::bvh, colResults);
 
         // for (auto& node : sm2d::bvh.nodes)
         // {
