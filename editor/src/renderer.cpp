@@ -495,7 +495,8 @@ void RenderTilemap(const Tilemap& tilemap, const glm::mat4& projection, const gl
     tileShader.use();
     for (size_t i = 0; i < tilemap.editorTiles.size(); ++i)
     {
-        tileShader.setTexture2D("textures[" + std::to_string(i) + "]", tilemap.editorTiles[i], i);
+        tileShader.setTexture2D("textures[" + std::to_string(i) + "]",
+                                tilemap.editorTiles[i].texture, i);
     }
 
     // Setting all the uniforms.

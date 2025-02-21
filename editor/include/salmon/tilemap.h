@@ -2,6 +2,12 @@
 
 #include <salmon/components.h>
 
+struct Tile 
+{
+    unsigned int texture;
+    std::string texturePath;
+};
+
 struct Tilemap
 {
     glm::vec2 scale = glm::vec2(1.0f);
@@ -11,8 +17,8 @@ struct Tilemap
         tileTextureIndices; // Index in editorTiles (needs to be float cuz of 
                             // OpenGL, could be an int but i think it's faster
                             // to deal with floats)
-    std::vector<unsigned int> editorTiles;     // Tiles you add in the editor
-    std::vector<std::string>  editorTilePaths; // Tile paths you add in the editor
+    std::vector<Tile> editorTiles;     // Tiles you add in the editor
+    std::vector<int> tileLayers;
 };
 
 void TilemapSys();

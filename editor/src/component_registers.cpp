@@ -1,5 +1,5 @@
-#include "salmon/renderer.h"
-#include "salmon/utils.h"
+#include <salmon/renderer.h>
+#include <salmon/utils.h>
 #include <sm2d/functions.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui/imgui.h>
@@ -9,7 +9,7 @@
 #include <salmon/particle_system.h>
 #include <salmon/sprite_animation.h>
 #include <salmon/tilemap.h>
-#include <winsock.h>
+#include <glm/gtx/string_cast.hpp>
 
 // -------------------
 
@@ -522,57 +522,75 @@ void SpriteAnimatorLoad(SpriteAnimator* sprite, nlohmann::json j)
 // -------------------
 
 // Buffer used to input a tile texture to add to the list of tiles
-char tileBuffer[128];
-int  selectedTileIndex = -1;
+inline char tileBuffer[128];
+inline int  selectedTileIndex = -1;
 
-void TilemapDraw(Tilemap* tilemap)
+void TilemapDraw(Tilemap* tilemap, int layer)
 {
-    if (ImGui::CollapsingHeader("Tilemap"))
+    ImGui::Begin("Tilemap");
+
+    ImGui::DragFloat2("Tilemap Scale", glm::value_ptr(tilemap->scale));
+    if (ImGui::InputText("New tile texture", tileBuffer, sizeof(tileBuffer),
+                         ImGuiInputTextFlags_EnterReturnsTrue))
     {
-        if (ImGui::InputText("New tile texture", tileBuffer, sizeof(tileBuffer),
-                             ImGuiInputTextFlags_EnterReturnsTrue))
-        {
-            tilemap->editorTiles.push_back(Utils::LoadTexture(tileBuffer));
-            tilemap->editorTilePaths.push_back(tileBuffer);
-            strcpy(tileBuffer, "");
-        }
+        tilemap->editorTiles.push_back(Tile(Utils::LoadTexture(tileBuffer), tileBuffer));
+        strcpy(tileBuffer, "");
+    }
 
-        for (size_t i = 0; i < tilemap->editorTiles.size(); ++i)
+    for (size_t i = 0; i < tilemap->editorTiles.size(); ++i)
+    {
+        if (ImGui::ImageButton((ImTextureID)(intptr_t)tilemap->editorTiles[i].texture,
+                               ImVec2(64, 64)))
         {
-            if (ImGui::ImageButton((ImTextureID)(intptr_t)tilemap->editorTiles[i], ImVec2(64, 64)))
-            {
-                selectedTileIndex = (int)i;
-            }
-        }
-
-        glm::vec2 mousePos = engineState.camera->ScreenToWorld2D(
-            glm::vec2(Input::GetMouseInputHorizontal(), Input::GetMouseInputVertical()));
-        bool mouse = Input::GetMouseButtonDown(MouseKey::LeftClick);
-        bool rightMouse = Input::GetMouseButtonDown(MouseKey::RightClick);
-
-        glm::vec3              roundedPos = glm::vec3(glm::round(mousePos), 0.0f);
-        std::vector<glm::vec3> mousePosVec = {glm::vec3(mousePos, 0.0f)};
-        Renderer::RenderLine(mousePosVec, engineState.projMat, engineState.camera->GetViewMatrix(),
-                             glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-
-        if (mouse && selectedTileIndex < tilemap->editorTiles.size())
-        {
-            tilemap->tileTransforms.push_back(
-                Utils::Make2DTransform(roundedPos, 0.0f, tilemap->scale));
-            tilemap->tileTextureIndices.push_back((float)selectedTileIndex);
-        }
-        if (rightMouse)
-        {
-            for (int i = 0; i < tilemap->tileTransforms.size(); i++)
-            {
-                if (Utils::GetPositionOfMat4(tilemap->tileTransforms[i]) == roundedPos) 
-                {
-                    tilemap->tileTransforms.erase(tilemap->tileTransforms.begin() + i);
-                    tilemap->tileTextureIndices.erase(tilemap->tileTextureIndices.begin() + i);
-                }
-            }
+            selectedTileIndex = (int)i;
         }
     }
+
+    glm::vec2 mousePos = engineState.camera->ScreenToWorld2D(
+        glm::vec2(Input::GetMouseInputHorizontal(), Input::GetMouseInputVertical()));
+    bool mouseDown = Input::GetMouseButton(MouseKey::LeftClick); // Changed to GetMouseButton for
+                                                                 // continuous detection
+    bool rightMouseDown = Input::GetMouseButton(MouseKey::RightClick);
+
+    // Adjust grid snapping based on tilemap->scale
+    glm::vec2 gridPos = glm::round(mousePos / tilemap->scale) * tilemap->scale;
+    glm::vec3 roundedPos = glm::vec3(gridPos, 0.0f);
+
+    std::vector<glm::vec3> mousePosVec = {glm::vec3(mousePos, 0.0f)};
+    Renderer::RenderLine(mousePosVec, engineState.projMat, engineState.camera->GetViewMatrix(),
+                         glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+
+    // Check if a tile already exists at the current position
+    static int currentTile = 0;
+    bool       tileExists = false;
+    for (int i = 0; i < tilemap->tileTransforms.size(); ++i)
+    {
+        if (Utils::GetPositionOfMat4(tilemap->tileTransforms[i]) == roundedPos)
+        {
+            currentTile = i;
+            tileExists = true;
+            break;
+        }
+    }
+
+    if (mouseDown && selectedTileIndex < tilemap->editorTiles.size() && !tileExists &&
+        !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
+    {
+        tilemap->tileTransforms.push_back(Utils::Make2DTransform(roundedPos, 0.0f, tilemap->scale));
+        tilemap->tileTextureIndices.push_back((float)selectedTileIndex);
+        tilemap->tileLayers.push_back(layer);
+    }
+
+    // For right-click deletion, we'll also support holding the
+    // button
+    if (rightMouseDown && tileExists && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
+    {
+        tilemap->tileTransforms.erase(tilemap->tileTransforms.begin() + currentTile);
+        tilemap->tileTextureIndices.erase(tilemap->tileTextureIndices.begin() + currentTile);
+        tilemap->tileLayers.erase(tilemap->tileLayers.begin() + currentTile);;
+    }
+
+    ImGui::End();
 }
 
 nlohmann::json SerializeMat4(const glm::mat4& matrix)
@@ -620,7 +638,7 @@ nlohmann::json TilemapSave(Tilemap* tilemap)
     for (int i = 0; i < tilemap->editorTiles.size(); ++i)
     {
         nlohmann::json tileJson;
-        tileJson["TexturePath"] = tilemap->editorTilePaths[i];
+        tileJson["TexturePath"] = tilemap->editorTiles[i].texturePath;
         editTilesJ.push_back(tileJson);
     }
 
@@ -652,8 +670,8 @@ void TilemapLoad(Tilemap* tilemap, const nlohmann::json& j)
             {
                 texturePath = editTileJson["TexturePath"].get<std::string>();
             }
-            tilemap->editorTiles.emplace_back(Utils::LoadTexture(texturePath.c_str()));
-            tilemap->editorTilePaths.emplace_back(texturePath);
+            tilemap->editorTiles.emplace_back(
+                Tile(Utils::LoadTexture(texturePath.c_str()), texturePath));
         }
     }
 }
@@ -670,4 +688,3 @@ REGISTER_COMPONENT(ParticleSystem, ParticleSystemDraw, ParticleSystemSave, Parti
 REGISTER_COMPONENT(Rigidbody, RigidbodyDraw, RigidbodySave, RigidbodyLoad);
 REGISTER_COMPONENT(Light, LightDraw, LightSave, LightLoad);
 REGISTER_COMPONENT(Collider, ColliderDraw, ColliderSave, ColliderLoad);
-REGISTER_COMPONENT(Tilemap, TilemapDraw, TilemapSave, TilemapLoad);

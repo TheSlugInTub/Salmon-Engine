@@ -85,7 +85,7 @@ glm::mat4 Make2DTransform(const glm::vec3& position, float rotation,
 
 glm::vec3 GetPositionOfMat4(const glm::mat4& mat)
 {
-    return glm::vec3(mat[0][3], mat[1][3], mat[2][3]);
+    return glm::vec3(mat[3]);
 }
 
 } // namespace Utils
