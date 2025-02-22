@@ -1,4 +1,3 @@
-#include "salmon/utils.h"
 #include <salmon/salmon.h>
 #include <salmon/tilemap.h>
 #include <filesystem>
@@ -16,10 +15,10 @@ int levelWidth = 1280;
 int levelHeight = 960;
 
 std::vector<glm::vec3> screenPoints = {
-    glm::vec3(levelWidth / 16, levelHeight / 16, 0.0f),
-    glm::vec3(-levelWidth / 16, levelHeight / 16, 0.0f),
-    glm::vec3(-levelWidth / 16, -levelHeight / 16, 0.0f),
-    glm::vec3(levelWidth / 16, -levelHeight / 16, 0.0f)};
+    glm::vec3( levelWidth / 16 / 2,   levelHeight / 16 / 2, 0.0f),
+    glm::vec3(-levelWidth / 16 / 2,  levelHeight / 16 / 2, 0.0f),
+    glm::vec3(-levelWidth / 16 / 2, -levelHeight / 16 / 2, 0.0f),
+    glm::vec3( levelWidth / 16 / 2,  -levelHeight / 16 / 2, 0.0f)};
 
 struct FBOTexture
 {
@@ -79,13 +78,12 @@ struct PrefTile
     glm::vec2      dimensions = {};
     unsigned char* data = nullptr;
 
-    PrefTile(const std::string& path) : texturePath(path) 
+    PrefTile(const std::string& path) : texturePath(path)
     {
         glGenTextures(1, &texture);
 
         int width, height, nrComponents;
-        data = 
-            stbi_load(path.c_str(), &width, &height, &nrComponents, 0);
+        data = stbi_load(path.c_str(), &width, &height, &nrComponents, 0);
         if (data)
         {
             GLenum format;
@@ -117,7 +115,6 @@ struct PrefTile
         {
             std::cout << "Texture failed to load at path: " << path << '\n';
         }
-
     }
 };
 
@@ -249,10 +246,10 @@ void DrawTileTray()
     if (ImGui::DragInt("Width", &levelWidth) ||
         ImGui::DragInt("Height", &levelHeight))
     {
-        screenPoints = {glm::vec3(levelWidth / 16, levelHeight / 16, 0.0f),
-                        glm::vec3(-levelWidth / 16, levelHeight / 16, 0.0f),
-                        glm::vec3(-levelWidth / 16, -levelHeight / 16, 0.0f),
-                        glm::vec3(levelWidth / 16, -levelHeight / 16, 0.0f)};
+        screenPoints = {glm::vec3(levelWidth / 16 / 2, levelHeight / 16 / 2, 0.0f),
+                        glm::vec3(-levelWidth / 16 / 2, levelHeight / 16 / 2, 0.0f),
+                        glm::vec3(-levelWidth / 16 / 2, -levelHeight / 16 / 2, 0.0f),
+                        glm::vec3(levelWidth / 16 / 2, -levelHeight / 16 / 2, 0.0f)};
     }
     ImGui::InputText("Render File", renderFile, sizeof(renderFile),
                      ImGuiInputTextFlags_EnterReturnsTrue);
@@ -324,14 +321,14 @@ void RenderScene()
         }
     }
 
+    stbi_flip_vertically_on_write(true);
+
     // Write the final image to PNG
     auto err = stbi_write_png(renderFile, levelWidth, levelHeight, CHANNELS,
-                   outputBuffer.data(), levelWidth * CHANNELS);
+                              outputBuffer.data(), levelWidth * CHANNELS);
 
     if (!err)
         std::cout << "You done messed big time bruv!\n";
-    else
-        std::cout << "You were a good man Arthur.\n";
 }
 
 int main(int argc, char** argv)

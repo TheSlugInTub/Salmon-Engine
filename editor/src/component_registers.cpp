@@ -527,6 +527,9 @@ inline int  selectedTileIndex = -1;
 
 void TilemapDraw(Tilemap* tilemap, int layer)
 {
+    static bool isBoxFilling = false;
+    static glm::vec2 boxStartPos;
+    
     ImGui::Begin("Tilemap");
 
     ImGui::DragFloat2("Tilemap Scale", glm::value_ptr(tilemap->scale));
@@ -548,21 +551,85 @@ void TilemapDraw(Tilemap* tilemap, int layer)
 
     glm::vec2 mousePos = engineState.camera->ScreenToWorld2D(
         glm::vec2(Input::GetMouseInputHorizontal(), Input::GetMouseInputVertical()));
-    bool mouseDown = Input::GetMouseButton(MouseKey::MiddleClick); // Changed to GetMouseButton for
-                                                                 // continuous detection
+    bool mouseDown = Input::GetMouseButton(MouseKey::MiddleClick);
     bool rightMouseDown = Input::GetMouseButton(MouseKey::RightClick);
 
+    // Handle box fill with P key
+    bool pKeyDown = Input::GetKey(Key::P);
+    
     // Adjust grid snapping based on tilemap->scale
     glm::vec2 gridPos = glm::round(mousePos / tilemap->scale) * tilemap->scale;
     glm::vec3 roundedPos = glm::vec3(gridPos, 0.0f);
 
-    std::vector<glm::vec3> mousePosVec = {glm::vec3(mousePos, 0.0f)};
-    Renderer::RenderLine(mousePosVec, engineState.projMat, engineState.camera->GetViewMatrix(),
-                         glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    // Start box fill when P is first pressed
+    if (pKeyDown && !isBoxFilling && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
+    {
+        isBoxFilling = true;
+        boxStartPos = gridPos;
+    }
+    // End box fill when P is released
+    else if (!pKeyDown && isBoxFilling)
+    {
+        isBoxFilling = false;
+    }
 
-    // Check if a tile already exists at the current position
+    // Draw preview box and fill tiles when box filling
+    if (isBoxFilling)
+    {
+        // Calculate box bounds
+        glm::vec2 minPos = glm::min(boxStartPos, gridPos);
+        glm::vec2 maxPos = glm::max(boxStartPos, gridPos);
+
+        // Draw box preview
+        std::vector<glm::vec3> boxLines = {
+            glm::vec3(minPos.x, minPos.y, 0.0f),
+            glm::vec3(maxPos.x, minPos.y, 0.0f),
+            glm::vec3(maxPos.x, maxPos.y, 0.0f),
+            glm::vec3(minPos.x, maxPos.y, 0.0f),
+            glm::vec3(minPos.x, minPos.y, 0.0f)
+        };
+        Renderer::RenderLine(boxLines, engineState.projMat, engineState.camera->GetViewMatrix(),
+                           glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+
+        // Fill tiles within box
+        for (float x = minPos.x; x <= maxPos.x; x += tilemap->scale.x)
+        {
+            for (float y = minPos.y; y <= maxPos.y; y += tilemap->scale.y)
+            {
+                glm::vec3 tilePos = glm::vec3(x, y, 0.0f);
+                
+                // Check if a tile already exists at this position
+                bool tileExists = false;
+                for (const auto& transform : tilemap->tileTransforms)
+                {
+                    if (Utils::GetPositionOfMat4(transform) == tilePos)
+                    {
+                        tileExists = true;
+                        break;
+                    }
+                }
+
+                // Place new tile if none exists and we have a valid selected tile
+                if (!tileExists && selectedTileIndex < tilemap->editorTiles.size())
+                {
+                    tilemap->tileTransforms.push_back(Utils::Make2DTransform(tilePos, 0.0f, tilemap->scale));
+                    tilemap->tileTextureIndices.push_back((float)selectedTileIndex);
+                    tilemap->tileLayers.push_back(layer);
+                }
+            }
+        }
+    }
+    else
+    {
+        // Draw regular mouse position indicator
+        std::vector<glm::vec3> mousePosVec = {glm::vec3(mousePos, 0.0f)};
+        Renderer::RenderLine(mousePosVec, engineState.projMat, engineState.camera->GetViewMatrix(),
+                           glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    }
+
+    // Regular single tile placement and deletion logic
     static int currentTile = 0;
-    bool       tileExists = false;
+    bool tileExists = false;
     for (int i = 0; i < tilemap->tileTransforms.size(); ++i)
     {
         if (Utils::GetPositionOfMat4(tilemap->tileTransforms[i]) == roundedPos)
@@ -574,20 +641,18 @@ void TilemapDraw(Tilemap* tilemap, int layer)
     }
 
     if (mouseDown && selectedTileIndex < tilemap->editorTiles.size() && !tileExists &&
-        !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
+        !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !isBoxFilling)
     {
         tilemap->tileTransforms.push_back(Utils::Make2DTransform(roundedPos, 0.0f, tilemap->scale));
         tilemap->tileTextureIndices.push_back((float)selectedTileIndex);
         tilemap->tileLayers.push_back(layer);
     }
 
-    // For right-click deletion, we'll also support holding the
-    // button
     if (rightMouseDown && tileExists && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
     {
         tilemap->tileTransforms.erase(tilemap->tileTransforms.begin() + currentTile);
         tilemap->tileTextureIndices.erase(tilemap->tileTextureIndices.begin() + currentTile);
-        tilemap->tileLayers.erase(tilemap->tileLayers.begin() + currentTile);;
+        tilemap->tileLayers.erase(tilemap->tileLayers.begin() + currentTile);
     }
 
     ImGui::End();
