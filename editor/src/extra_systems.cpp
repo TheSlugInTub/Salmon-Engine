@@ -6,17 +6,23 @@
 void CameraMoveSys()
 {
     if (glfwGetKey(engineState.window->window, GLFW_KEY_W) == GLFW_PRESS)
-        engineState.camera->ProcessKeyboard(CameraMovement::UP, engineState.deltaTime);
+        engineState.camera->ProcessKeyboard(CameraMovement::UP,
+                                            engineState.deltaTime * 9.0f);
     if (glfwGetKey(engineState.window->window, GLFW_KEY_S) == GLFW_PRESS)
-        engineState.camera->ProcessKeyboard(CameraMovement::DOWN, engineState.deltaTime);
+        engineState.camera->ProcessKeyboard(CameraMovement::DOWN,
+                                            engineState.deltaTime * 9.0f);
     if (glfwGetKey(engineState.window->window, GLFW_KEY_A) == GLFW_PRESS)
-        engineState.camera->ProcessKeyboard(CameraMovement::LEFT, engineState.deltaTime);
+        engineState.camera->ProcessKeyboard(CameraMovement::LEFT,
+                                            engineState.deltaTime * 9.0f);
     if (glfwGetKey(engineState.window->window, GLFW_KEY_D) == GLFW_PRESS)
-        engineState.camera->ProcessKeyboard(CameraMovement::RIGHT, engineState.deltaTime);
+        engineState.camera->ProcessKeyboard(CameraMovement::RIGHT,
+                                            engineState.deltaTime * 9.0f);
     if (glfwGetKey(engineState.window->window, GLFW_KEY_E) == GLFW_PRESS)
-        engineState.camera->ProcessKeyboard(CameraMovement::FORWARD, engineState.deltaTime);
+        engineState.camera->ProcessKeyboard(CameraMovement::FORWARD,
+                                            engineState.deltaTime * 9.0f);
     if (glfwGetKey(engineState.window->window, GLFW_KEY_Q) == GLFW_PRESS)
-        engineState.camera->ProcessKeyboard(CameraMovement::BACKWARD, engineState.deltaTime);
+        engineState.camera->ProcessKeyboard(CameraMovement::BACKWARD,
+                                            engineState.deltaTime * 9.0f);
 }
 
 void CameraLookSys()
@@ -40,7 +46,10 @@ void CameraLookSys()
 
         // Calculate the offset from the last position
         float xoffset = static_cast<float>(xpos) - lastX;
-        float yoffset = lastY - static_cast<float>(ypos); // Reversed since y-coordinates go from bottom to top
+        float yoffset =
+            lastY -
+            static_cast<float>(
+                ypos); // Reversed since y-coordinates go from bottom to top
 
         // Update the last position
         lastX = static_cast<float>(xpos);
@@ -52,4 +61,4 @@ void CameraLookSys()
 }
 
 REGISTER_EDITOR_SYSTEM(CameraMoveSys);
-REGISTER_EDITOR_SYSTEM(CameraLookSys);
+// REGISTER_EDITOR_SYSTEM(CameraLookSys);

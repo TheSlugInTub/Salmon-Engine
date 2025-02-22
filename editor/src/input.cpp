@@ -93,7 +93,8 @@ bool GetMouseButtonDown(MouseKey mouseKey)
 
     int glfwMouseButton = mouseKeyMap[mouseKey];
     mouseButtonStatePrev[mouseKey] = mouseButtonState[mouseKey];
-    mouseButtonState[mouseKey] = glfwGetMouseButton(engineState.window->window, glfwMouseButton) == GLFW_PRESS;
+    mouseButtonState[mouseKey] =
+        glfwGetMouseButton(engineState.window->window, glfwMouseButton) == GLFW_PRESS;
 
     return mouseButtonState[mouseKey] && !mouseButtonStatePrev[mouseKey];
 }

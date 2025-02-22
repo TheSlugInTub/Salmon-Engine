@@ -548,7 +548,7 @@ void TilemapDraw(Tilemap* tilemap, int layer)
 
     glm::vec2 mousePos = engineState.camera->ScreenToWorld2D(
         glm::vec2(Input::GetMouseInputHorizontal(), Input::GetMouseInputVertical()));
-    bool mouseDown = Input::GetMouseButton(MouseKey::LeftClick); // Changed to GetMouseButton for
+    bool mouseDown = Input::GetMouseButton(MouseKey::MiddleClick); // Changed to GetMouseButton for
                                                                  // continuous detection
     bool rightMouseDown = Input::GetMouseButton(MouseKey::RightClick);
 
