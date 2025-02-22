@@ -15,7 +15,7 @@ inline unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 // Amount of particles the renderer initiates in the OpenGL buffer
 inline const int MAX_PARTICLES = 1000;
 // Amount of tiles the renderer initiates in the OpenGL buffer
-inline const int MAX_TILES = 1000;
+inline const int MAX_TILES = 100000;
 inline const int MAX_UNIQUE_TILE_TEXTURES = 1000;
 
 struct Transform;

@@ -25,9 +25,10 @@ void TransformDraw(Transform* trans)
 
 nlohmann::json TransformSave(Transform* trans)
 {
-    return {{"Position", {trans->position.x, trans->position.y, trans->position.z}},
-            {"Rotation", {trans->rotation.x, trans->rotation.y, trans->rotation.z}},
-            {"Scale", {trans->scale.x, trans->scale.y, trans->scale.z}}};
+    return {
+        {"Position", {trans->position.x, trans->position.y, trans->position.z}},
+        {"Rotation", {trans->rotation.x, trans->rotation.y, trans->rotation.z}},
+        {"Scale", {trans->scale.x, trans->scale.y, trans->scale.z}}};
 }
 
 void TransformLoad(Transform* trans, const nlohmann::json& j)
@@ -75,16 +76,19 @@ void SpriteRendererDraw(SpriteRenderer* sprite)
 
 nlohmann::json SpriteRendererSave(SpriteRenderer* sprite)
 {
-    return {{"TexturePath", sprite->texturePath},
-            {"Color", {sprite->color.x, sprite->color.y, sprite->color.z, sprite->color.w}},
-            {"Billboard", sprite->billboard}};
+    return {
+        {"TexturePath", sprite->texturePath},
+        {"Color",
+         {sprite->color.x, sprite->color.y, sprite->color.z, sprite->color.w}},
+        {"Billboard", sprite->billboard}};
 }
 
 void SpriteRendererLoad(SpriteRenderer* sprite, const nlohmann::json& j)
 {
     sprite->texturePath = j["TexturePath"];
     sprite->billboard = j["Billboard"];
-    sprite->color = {j["Color"][0], j["Color"][1], j["Color"][2], j["Color"][3]};
+    sprite->color = {j["Color"][0], j["Color"][1], j["Color"][2],
+                     j["Color"][3]};
     sprite->texture = Utils::LoadTexture(sprite->texturePath.c_str());
 }
 
@@ -109,8 +113,8 @@ void MeshRendererDraw(MeshRenderer* mesh)
                              ImGuiInputTextFlags_EnterReturnsTrue))
         {
             mesh->modelPath = std::string(modelBuffer);
-            mesh->model =
-                Model(mesh->modelPath, mesh->model.gammaCorrection, mesh->model.extractTexture);
+            mesh->model = Model(mesh->modelPath, mesh->model.gammaCorrection,
+                                mesh->model.extractTexture);
         }
         ImGui::Checkbox("GammaCorrection", &mesh->model.gammaCorrection);
         ImGui::Checkbox("ExtractTexture", &mesh->model.extractTexture);
@@ -133,7 +137,8 @@ void MeshRendererLoad(MeshRenderer* mesh, const nlohmann::json& j)
     mesh->texturePath = j["TexturePath"];
     mesh->color = {j["Color"][0], j["Color"][1], j["Color"][2], j["Color"][3]};
     mesh->texture = Utils::LoadTexture(mesh->texturePath.c_str());
-    mesh->model = Model(mesh->modelPath, mesh->model.gammaCorrection, mesh->model.extractTexture);
+    mesh->model = Model(mesh->modelPath, mesh->model.gammaCorrection,
+                        mesh->model.extractTexture);
 }
 
 // -------------------
@@ -155,10 +160,13 @@ void AnimatorDraw(Animator* anim)
             if (anim->currentAnimation == nullptr)
                 delete anim->currentAnimation;
             anim->animationPath = std::string(animBuffer);
-            anim->currentAnimation = new Animation(anim->animationPath, anim->model);
+            anim->currentAnimation =
+                new Animation(anim->animationPath, anim->model);
         }
-        ImGui::Text("If you want to play multiple animations, please make Animation objects in "
-                    "systems and assign them to the currentAnimation of the Animator.");
+        ImGui::Text(
+            "If you want to play multiple animations, please make Animation "
+            "objects in "
+            "systems and assign them to the currentAnimation of the Animator.");
     }
 }
 
@@ -188,7 +196,8 @@ void ParticleSystemDraw(ParticleSystem* ps)
     {
         char texBuffer[128];
         strncpy_s(texBuffer, ps->texturePath.c_str(), sizeof(texBuffer));
-        if (ImGui::InputText("ParticleTexturePath", texBuffer, sizeof(texBuffer),
+        if (ImGui::InputText("ParticleTexturePath", texBuffer,
+                             sizeof(texBuffer),
                              ImGuiInputTextFlags_EnterReturnsTrue))
         {
             ps->texturePath = std::string(texBuffer);
@@ -199,19 +208,23 @@ void ParticleSystemDraw(ParticleSystem* ps)
         ImGui::Checkbox("Looping", &ps->looping);
         ImGui::Checkbox("Billboarded", &ps->billboarded);
 
-        ImGui::DragFloat3("Starting Position", glm::value_ptr(ps->startingPosition));
-        ImGui::DragFloat3("Starting Rotation", glm::value_ptr(ps->startingRotation));
+        ImGui::DragFloat3("Starting Position",
+                          glm::value_ptr(ps->startingPosition));
+        ImGui::DragFloat3("Starting Rotation",
+                          glm::value_ptr(ps->startingRotation));
         ImGui::DragFloat3("Starting Size", glm::value_ptr(ps->startingSize));
 
         ImGui::ColorEdit4("Starting Color", glm::value_ptr(ps->startingColor));
         ImGui::ColorEdit4("Color Over Time", glm::value_ptr(ps->colorOverTime));
 
         ImGui::DragFloat("Size Over Time", &ps->sizeOverTime, 0.1f);
-        ImGui::DragFloat3("Rotation Over Time", glm::value_ptr(ps->rotationOverTime));
+        ImGui::DragFloat3("Rotation Over Time",
+                          glm::value_ptr(ps->rotationOverTime));
 
         ImGui::DragFloat3("Force", glm::value_ptr(ps->force));
         ImGui::DragFloat("Force Magnitude", &ps->forceMagnitude, 0.1f);
-        ImGui::DragFloat3("Force Randomness", glm::value_ptr(ps->forceRandomness));
+        ImGui::DragFloat3("Force Randomness",
+                          glm::value_ptr(ps->forceRandomness));
         ImGui::DragFloat("Force Over Time", &ps->forceOverTime, 0.1f);
 
         ImGui::DragFloat3("Gravity", glm::value_ptr(ps->gravity));
@@ -230,20 +243,27 @@ nlohmann::json ParticleSystemSave(ParticleSystem* ps)
         {"Looping", ps->looping},
         {"Billboarded", ps->billboarded},
         {"StartingPosition",
-         {ps->startingPosition.x, ps->startingPosition.y, ps->startingPosition.z}},
+         {ps->startingPosition.x, ps->startingPosition.y,
+          ps->startingPosition.z}},
         {"StartingRotation",
-         {ps->startingRotation.x, ps->startingRotation.y, ps->startingRotation.z}},
-        {"StartingSize", {ps->startingSize.x, ps->startingSize.y, ps->startingSize.z}},
+         {ps->startingRotation.x, ps->startingRotation.y,
+          ps->startingRotation.z}},
+        {"StartingSize",
+         {ps->startingSize.x, ps->startingSize.y, ps->startingSize.z}},
         {"StartingColor",
-         {ps->startingColor.r, ps->startingColor.g, ps->startingColor.b, ps->startingColor.a}},
+         {ps->startingColor.r, ps->startingColor.g, ps->startingColor.b,
+          ps->startingColor.a}},
         {"ColorOverTime",
-         {ps->colorOverTime.r, ps->colorOverTime.g, ps->colorOverTime.b, ps->colorOverTime.a}},
+         {ps->colorOverTime.r, ps->colorOverTime.g, ps->colorOverTime.b,
+          ps->colorOverTime.a}},
         {"SizeOverTime", ps->sizeOverTime},
         {"RotationOverTime",
-         {ps->rotationOverTime.x, ps->rotationOverTime.y, ps->rotationOverTime.z}},
+         {ps->rotationOverTime.x, ps->rotationOverTime.y,
+          ps->rotationOverTime.z}},
         {"Force", {ps->force.x, ps->force.y, ps->force.z}},
         {"ForceMagnitude", ps->forceMagnitude},
-        {"ForceRandomness", {ps->forceRandomness.x, ps->forceRandomness.y, ps->forceRandomness.z}},
+        {"ForceRandomness",
+         {ps->forceRandomness.x, ps->forceRandomness.y, ps->forceRandomness.z}},
         {"ForceOverTime", ps->forceOverTime},
         {"Gravity", {ps->gravity.x, ps->gravity.y, ps->gravity.z}},
         {"ParticleLifetime", ps->particleLifetime},
@@ -262,11 +282,12 @@ void ParticleSystemLoad(ParticleSystem* ps, const nlohmann::json& j)
                             j["StartingPosition"][2]};
     ps->startingRotation = {j["StartingRotation"][0], j["StartingRotation"][1],
                             j["StartingRotation"][2]};
-    ps->startingSize = {j["StartingSize"][0], j["StartingSize"][1], j["StartingSize"][2]};
-    ps->startingColor = {j["StartingColor"][0], j["StartingColor"][1], j["StartingColor"][2],
-                         j["StartingColor"][3]};
-    ps->colorOverTime = {j["ColorOverTime"][0], j["ColorOverTime"][1], j["ColorOverTime"][2],
-                         j["ColorOverTime"][3]};
+    ps->startingSize = {j["StartingSize"][0], j["StartingSize"][1],
+                        j["StartingSize"][2]};
+    ps->startingColor = {j["StartingColor"][0], j["StartingColor"][1],
+                         j["StartingColor"][2], j["StartingColor"][3]};
+    ps->colorOverTime = {j["ColorOverTime"][0], j["ColorOverTime"][1],
+                         j["ColorOverTime"][2], j["ColorOverTime"][3]};
     ps->sizeOverTime = j["SizeOverTime"];
     ps->rotationOverTime = {j["RotationOverTime"][0], j["RotationOverTime"][1],
                             j["RotationOverTime"][2]};
@@ -293,7 +314,8 @@ void LightDraw(Light* light)
         ImGui::DragFloat3("Light Position", glm::value_ptr(light->position));
         ImGui::ColorEdit4("Light Color", glm::value_ptr(light->color));
         ImGui::DragFloat("Radius", &light->radius, 0.1f, 0.0f, 100.0f);
-        ImGui::DragFloat("Inner Radius", &light->innerRadius, 0.1f, 0.0f, light->radius);
+        ImGui::DragFloat("Inner Radius", &light->innerRadius, 0.1f, 0.0f,
+                         light->radius);
         ImGui::DragFloat("Intensity", &light->intensity, 0.1f, 0.0f, 10.0f);
         ImGui::Checkbox("Cast Shadows", &light->castShadows);
     }
@@ -301,12 +323,14 @@ void LightDraw(Light* light)
 
 nlohmann::json LightSave(Light* light)
 {
-    return {{"Position", {light->position.x, light->position.y, light->position.z}},
-            {"Color", {light->color.r, light->color.g, light->color.b, light->color.a}},
-            {"Radius", light->radius},
-            {"InnerRadius", light->innerRadius},
-            {"Intensity", light->intensity},
-            {"CastShadows", light->castShadows}};
+    return {
+        {"Position", {light->position.x, light->position.y, light->position.z}},
+        {"Color",
+         {light->color.r, light->color.g, light->color.b, light->color.a}},
+        {"Radius", light->radius},
+        {"InnerRadius", light->innerRadius},
+        {"Intensity", light->intensity},
+        {"CastShadows", light->castShadows}};
 }
 
 void LightLoad(Light* light, const nlohmann::json& j)
@@ -333,13 +357,17 @@ void RigidbodyDraw(sm2d::Rigidbody* rb)
         }
 
         ImGui::DragFloat("Mass", &rb->mass, 0.1f, 0.0f, 1000.0f);
-        ImGui::DragFloat("Linear Damping", &rb->linearDamping, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("Angular Damping", &rb->angularDamping, 0.01f, 0.0f, 1.0f);
+        ImGui::DragFloat("Linear Damping", &rb->linearDamping, 0.01f, 0.0f,
+                         1.0f);
+        ImGui::DragFloat("Angular Damping", &rb->angularDamping, 0.01f, 0.0f,
+                         1.0f);
         ImGui::DragFloat("Restitution", &rb->restitution, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("Moment of Inertia", &rb->momentOfInertia, 0.1f, 0.0f, 1000.0f);
+        ImGui::DragFloat("Moment of Inertia", &rb->momentOfInertia, 0.1f, 0.0f,
+                         1000.0f);
         ImGui::Checkbox("Fixed Rotation", &rb->fixedRotation);
         ImGui::Checkbox("Awake", &rb->awake);
-        ImGui::DragFloat2("Linear Velocity", glm::value_ptr(rb->linearVelocity), 0.1f);
+        ImGui::DragFloat2("Linear Velocity", glm::value_ptr(rb->linearVelocity),
+                          0.1f);
         ImGui::DragFloat("Angular Velocity", &rb->angularVelocity, 0.1f);
         ImGui::DragFloat2("Force", glm::value_ptr(rb->force), 0.1f);
         ImGui::DragFloat("Torque", &rb->torque, 0.1f);
@@ -388,7 +416,8 @@ void ColliderDraw(sm2d::Collider* col)
     if (ImGui::CollapsingHeader("Collider"))
     {
         int colTypeValue = static_cast<int>(col->type);
-        if (ImGui::SliderInt("ColliderType2D", &colTypeValue, 0, static_cast<int>(3)))
+        if (ImGui::SliderInt("ColliderType2D", &colTypeValue, 0,
+                             static_cast<int>(3)))
         {
             col->type = static_cast<sm2d::ColliderType>(colTypeValue);
         }
@@ -396,7 +425,9 @@ void ColliderDraw(sm2d::Collider* col)
         switch (col->type)
         {
             case sm2d::sm2d_AABB:
-                ImGui::DragFloat2("Half Widths", glm::value_ptr(col->aabb.halfwidths), 0.1f, 0.0f);
+                ImGui::DragFloat2("Half Widths",
+                                  glm::value_ptr(col->aabb.halfwidths), 0.1f,
+                                  0.0f);
                 break;
 
             case sm2d::sm2d_Circle:
@@ -406,7 +437,8 @@ void ColliderDraw(sm2d::Collider* col)
             case sm2d::sm2d_Polygon:
                 ImGui::DragFloat("Threshold", &dragThreshold);
                 glm::vec2 mousePos = engineState.camera->ScreenToWorld2D(
-                    glm::vec2(Input::GetMouseInputHorizontal(), Input::GetMouseInputVertical()));
+                    glm::vec2(Input::GetMouseInputHorizontal(),
+                              Input::GetMouseInputVertical()));
 
                 bool mouse = Input::GetMouseButton(MouseKey::LeftClick);
                 bool hovering = false;
@@ -414,10 +446,13 @@ void ColliderDraw(sm2d::Collider* col)
                 for (size_t i = 0; i < col->polygon.points.size(); i++)
                 {
                     std::string label = "Point " + std::to_string(i);
-                    ImGui::DragFloat2(label.c_str(), glm::value_ptr(col->polygon.points[i]), 0.1f);
-                    float distance =
-                        glm::distance(mousePos, col->polygon.points[i] +
-                                                    glm::vec2(col->body->transform->position));
+                    ImGui::DragFloat2(label.c_str(),
+                                      glm::value_ptr(col->polygon.points[i]),
+                                      0.1f);
+                    float distance = glm::distance(
+                        mousePos,
+                        col->polygon.points[i] +
+                            glm::vec2(col->body->transform->position));
                     if (distance <= dragThreshold && !mouse)
                     {
                         dragIndex = i;
@@ -467,7 +502,10 @@ nlohmann::json ColliderSave(sm2d::Collider* col)
         case sm2d::sm2d_Polygon:
             j["Center"] = {col->polygon.center.x, col->polygon.center.y};
             std::vector<std::vector<float>> points;
-            for (const auto& point : col->polygon.points) { points.push_back({point.x, point.y}); }
+            for (const auto& point : col->polygon.points)
+            {
+                points.push_back({point.x, point.y});
+            }
             j["Points"] = points;
             break;
     }
@@ -506,7 +544,8 @@ void SpriteAnimatorDraw(SpriteAnimator* sprite)
 {
     if (ImGui::CollapsingHeader("SpriteAnimator"))
     {
-        ImGui::Text("Please add animations to the sprite animator through systems.");
+        ImGui::Text(
+            "Please add animations to the sprite animator through systems.");
     }
 }
 
@@ -527,42 +566,45 @@ inline int  selectedTileIndex = -1;
 
 void TilemapDraw(Tilemap* tilemap, int layer)
 {
-    static bool isBoxFilling = false;
+    static bool      isBoxFilling = false;
     static glm::vec2 boxStartPos;
-    
+
     ImGui::Begin("Tilemap");
 
     ImGui::DragFloat2("Tilemap Scale", glm::value_ptr(tilemap->scale));
     if (ImGui::InputText("New tile texture", tileBuffer, sizeof(tileBuffer),
                          ImGuiInputTextFlags_EnterReturnsTrue))
     {
-        tilemap->editorTiles.push_back(Tile(Utils::LoadTexture(tileBuffer), tileBuffer));
+        tilemap->editorTiles.push_back(
+            Tile(Utils::LoadTexture(tileBuffer), tileBuffer));
         strcpy(tileBuffer, "");
     }
 
     for (size_t i = 0; i < tilemap->editorTiles.size(); ++i)
     {
-        if (ImGui::ImageButton((ImTextureID)(intptr_t)tilemap->editorTiles[i].texture,
-                               ImVec2(64, 64)))
+        if (ImGui::ImageButton(
+                (ImTextureID)(intptr_t)tilemap->editorTiles[i].texture,
+                ImVec2(64, 64)))
         {
             selectedTileIndex = (int)i;
         }
     }
 
-    glm::vec2 mousePos = engineState.camera->ScreenToWorld2D(
-        glm::vec2(Input::GetMouseInputHorizontal(), Input::GetMouseInputVertical()));
-    bool mouseDown = Input::GetMouseButton(MouseKey::MiddleClick);
-    bool rightMouseDown = Input::GetMouseButton(MouseKey::RightClick);
+    glm::vec2 mousePos = engineState.camera->ScreenToWorld2D(glm::vec2(
+        Input::GetMouseInputHorizontal(), Input::GetMouseInputVertical()));
+    bool      mouseDown = Input::GetMouseButton(MouseKey::MiddleClick);
+    bool      rightMouseDown = Input::GetMouseButton(MouseKey::RightClick);
 
     // Handle box fill with P key
     bool pKeyDown = Input::GetKey(Key::P);
-    
+
     // Adjust grid snapping based on tilemap->scale
     glm::vec2 gridPos = glm::round(mousePos / tilemap->scale) * tilemap->scale;
     glm::vec3 roundedPos = glm::vec3(gridPos, 0.0f);
 
     // Start box fill when P is first pressed
-    if (pKeyDown && !isBoxFilling && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
+    if (pKeyDown && !isBoxFilling &&
+        !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
     {
         isBoxFilling = true;
         boxStartPos = gridPos;
@@ -573,63 +615,9 @@ void TilemapDraw(Tilemap* tilemap, int layer)
         isBoxFilling = false;
     }
 
-    // Draw preview box and fill tiles when box filling
-    if (isBoxFilling)
-    {
-        // Calculate box bounds
-        glm::vec2 minPos = glm::min(boxStartPos, gridPos);
-        glm::vec2 maxPos = glm::max(boxStartPos, gridPos);
-
-        // Draw box preview
-        std::vector<glm::vec3> boxLines = {
-            glm::vec3(minPos.x, minPos.y, 0.0f),
-            glm::vec3(maxPos.x, minPos.y, 0.0f),
-            glm::vec3(maxPos.x, maxPos.y, 0.0f),
-            glm::vec3(minPos.x, maxPos.y, 0.0f),
-            glm::vec3(minPos.x, minPos.y, 0.0f)
-        };
-        Renderer::RenderLine(boxLines, engineState.projMat, engineState.camera->GetViewMatrix(),
-                           glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-
-        // Fill tiles within box
-        for (float x = minPos.x; x <= maxPos.x; x += tilemap->scale.x)
-        {
-            for (float y = minPos.y; y <= maxPos.y; y += tilemap->scale.y)
-            {
-                glm::vec3 tilePos = glm::vec3(x, y, 0.0f);
-                
-                // Check if a tile already exists at this position
-                bool tileExists = false;
-                for (const auto& transform : tilemap->tileTransforms)
-                {
-                    if (Utils::GetPositionOfMat4(transform) == tilePos)
-                    {
-                        tileExists = true;
-                        break;
-                    }
-                }
-
-                // Place new tile if none exists and we have a valid selected tile
-                if (!tileExists && selectedTileIndex < tilemap->editorTiles.size())
-                {
-                    tilemap->tileTransforms.push_back(Utils::Make2DTransform(tilePos, 0.0f, tilemap->scale));
-                    tilemap->tileTextureIndices.push_back((float)selectedTileIndex);
-                    tilemap->tileLayers.push_back(layer);
-                }
-            }
-        }
-    }
-    else
-    {
-        // Draw regular mouse position indicator
-        std::vector<glm::vec3> mousePosVec = {glm::vec3(mousePos, 0.0f)};
-        Renderer::RenderLine(mousePosVec, engineState.projMat, engineState.camera->GetViewMatrix(),
-                           glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-    }
-
     // Regular single tile placement and deletion logic
     static int currentTile = 0;
-    bool tileExists = false;
+    bool       tileExists = false;
     for (int i = 0; i < tilemap->tileTransforms.size(); ++i)
     {
         if (Utils::GetPositionOfMat4(tilemap->tileTransforms[i]) == roundedPos)
@@ -640,18 +628,95 @@ void TilemapDraw(Tilemap* tilemap, int layer)
         }
     }
 
-    if (mouseDown && selectedTileIndex < tilemap->editorTiles.size() && !tileExists &&
-        !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !isBoxFilling)
+    // Draw preview box and fill tiles when box filling
+    if (isBoxFilling)
     {
-        tilemap->tileTransforms.push_back(Utils::Make2DTransform(roundedPos, 0.0f, tilemap->scale));
+        // Calculate box bounds
+        glm::vec2 minPos = glm::min(boxStartPos, gridPos);
+        glm::vec2 maxPos = glm::max(boxStartPos, gridPos);
+
+        // Draw box preview
+        std::vector<glm::vec3> boxLines = {glm::vec3(minPos.x, minPos.y, 0.0f),
+                                           glm::vec3(maxPos.x, minPos.y, 0.0f),
+                                           glm::vec3(maxPos.x, maxPos.y, 0.0f),
+                                           glm::vec3(minPos.x, maxPos.y, 0.0f),
+                                           glm::vec3(minPos.x, minPos.y, 0.0f)};
+        Renderer::RenderLine(boxLines, engineState.projMat,
+                             engineState.camera->GetViewMatrix(),
+                             glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+
+        // Fill tiles within box
+        for (float x = minPos.x; x <= maxPos.x; x += tilemap->scale.x)
+        {
+            for (float y = minPos.y; y <= maxPos.y; y += tilemap->scale.y)
+            {
+                glm::vec3 tilePos = glm::vec3(x, y, 0.0f);
+
+                // Check if a tile already exists at this position
+                bool tileExists = false;
+                int  tileIndex = 0;
+                for (int i = 0; i < tilemap->tileTransforms.size(); ++i)
+                {
+                    if (Utils::GetPositionOfMat4(tilemap->tileTransforms[i]) ==
+                        tilePos)
+                    {
+                        tileIndex = i;
+                        tileExists = true;
+                        break;
+                    }
+                }
+
+                // Place new tile if none exists and we have a valid selected
+                // tile
+                if (!tileExists &&
+                    selectedTileIndex < tilemap->editorTiles.size() &&
+                    Input::GetKey(Key::O))
+                {
+                    tilemap->tileTransforms.push_back(
+                        Utils::Make2DTransform(tilePos, 0.0f, tilemap->scale));
+                    tilemap->tileTextureIndices.push_back(
+                        (float)selectedTileIndex);
+                    tilemap->tileLayers.push_back(layer);
+                }
+
+                if (tileExists && Input::GetKey(Key::Delete))
+                {
+                    tilemap->tileTransforms.erase(
+                        tilemap->tileTransforms.begin() + tileIndex);
+                    tilemap->tileTextureIndices.erase(
+                        tilemap->tileTextureIndices.begin() + tileIndex);
+                    tilemap->tileLayers.erase(tilemap->tileLayers.begin() +
+                                              tileIndex);
+                }
+            }
+        }
+    }
+    else
+    {
+        // Draw regular mouse position indicator
+        std::vector<glm::vec3> mousePosVec = {glm::vec3(mousePos, 0.0f)};
+        Renderer::RenderLine(mousePosVec, engineState.projMat,
+                             engineState.camera->GetViewMatrix(),
+                             glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    }
+
+    if (mouseDown && selectedTileIndex < tilemap->editorTiles.size() &&
+        !tileExists && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) &&
+        !isBoxFilling)
+    {
+        tilemap->tileTransforms.push_back(
+            Utils::Make2DTransform(roundedPos, 0.0f, tilemap->scale));
         tilemap->tileTextureIndices.push_back((float)selectedTileIndex);
         tilemap->tileLayers.push_back(layer);
     }
 
-    if (rightMouseDown && tileExists && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
+    if (rightMouseDown && tileExists &&
+        !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
     {
-        tilemap->tileTransforms.erase(tilemap->tileTransforms.begin() + currentTile);
-        tilemap->tileTextureIndices.erase(tilemap->tileTextureIndices.begin() + currentTile);
+        tilemap->tileTransforms.erase(tilemap->tileTransforms.begin() +
+                                      currentTile);
+        tilemap->tileTextureIndices.erase(tilemap->tileTextureIndices.begin() +
+                                          currentTile);
         tilemap->tileLayers.erase(tilemap->tileLayers.begin() + currentTile);
     }
 
@@ -661,10 +726,11 @@ void TilemapDraw(Tilemap* tilemap, int layer)
 nlohmann::json SerializeMat4(const glm::mat4& matrix)
 {
     // Flatten the matrix into a 16-element array
-    std::array<float, 16> elements = {matrix[0][0], matrix[0][1], matrix[0][2], matrix[0][3],
-                                      matrix[1][0], matrix[1][1], matrix[1][2], matrix[1][3],
-                                      matrix[2][0], matrix[2][1], matrix[2][2], matrix[2][3],
-                                      matrix[3][0], matrix[3][1], matrix[3][2], matrix[3][3]};
+    std::array<float, 16> elements = {
+        matrix[0][0], matrix[0][1], matrix[0][2], matrix[0][3],
+        matrix[1][0], matrix[1][1], matrix[1][2], matrix[1][3],
+        matrix[2][0], matrix[2][1], matrix[2][2], matrix[2][3],
+        matrix[3][0], matrix[3][1], matrix[3][2], matrix[3][3]};
     // Serialize the array to JSON
     return nlohmann::json(elements);
 }
@@ -681,7 +747,10 @@ glm::mat4 DeserializeMat4(const nlohmann::json& js)
     glm::mat4 matrix;
     for (int i = 0; i < 4; ++i)
     {
-        for (int j = 0; j < 4; ++j) { matrix[i][j] = js[i * 4 + j].get<float>(); }
+        for (int j = 0; j < 4; ++j)
+        {
+            matrix[i][j] = js[i * 4 + j].get<float>();
+        }
     }
     return matrix;
 }
@@ -722,11 +791,13 @@ void TilemapLoad(Tilemap* tilemap, const nlohmann::json& j)
         for (const auto& tileJson : j["tiles"])
         {
             tilemap->tileTextureIndices.push_back(tileJson["Texture"]);
-            tilemap->tileTransforms.push_back(DeserializeMat4(tileJson["Transform"]));
+            tilemap->tileTransforms.push_back(
+                DeserializeMat4(tileJson["Transform"]));
             if (tileJson.contains("Layer"))
             {
                 tilemap->tileLayers.push_back(tileJson["Layer"]);
-            }else
+            }
+            else
             {
                 tilemap->tileLayers.push_back(0);
             }
@@ -739,7 +810,8 @@ void TilemapLoad(Tilemap* tilemap, const nlohmann::json& j)
         for (const auto& editTileJson : j["editorTiles"])
         {
             std::string texturePath;
-            if (editTileJson.contains("TexturePath") && editTileJson["TexturePath"].is_string())
+            if (editTileJson.contains("TexturePath") &&
+                editTileJson["TexturePath"].is_string())
             {
                 texturePath = editTileJson["TexturePath"].get<std::string>();
             }
@@ -754,10 +826,13 @@ void TilemapLoad(Tilemap* tilemap, const nlohmann::json& j)
 using namespace sm2d;
 REGISTER_COMPONENT(Name, NameDraw, NameSave, NameLoad);
 REGISTER_COMPONENT(Transform, TransformDraw, TransformSave, TransformLoad);
-REGISTER_COMPONENT(SpriteRenderer, SpriteRendererDraw, SpriteRendererSave, SpriteRendererLoad);
-REGISTER_COMPONENT(MeshRenderer, MeshRendererDraw, MeshRendererSave, MeshRendererLoad);
+REGISTER_COMPONENT(SpriteRenderer, SpriteRendererDraw, SpriteRendererSave,
+                   SpriteRendererLoad);
+REGISTER_COMPONENT(MeshRenderer, MeshRendererDraw, MeshRendererSave,
+                   MeshRendererLoad);
 REGISTER_COMPONENT(Animator, AnimatorDraw, AnimatorSave, AnimatorLoad);
-REGISTER_COMPONENT(ParticleSystem, ParticleSystemDraw, ParticleSystemSave, ParticleSystemLoad);
+REGISTER_COMPONENT(ParticleSystem, ParticleSystemDraw, ParticleSystemSave,
+                   ParticleSystemLoad);
 REGISTER_COMPONENT(Rigidbody, RigidbodyDraw, RigidbodySave, RigidbodyLoad);
 REGISTER_COMPONENT(Light, LightDraw, LightSave, LightLoad);
 REGISTER_COMPONENT(Collider, ColliderDraw, ColliderSave, ColliderLoad);
