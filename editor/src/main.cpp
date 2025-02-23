@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fstream>
 #include <salmon/stb_image_write.h>
+#include <thread>
 
 // settings
 const unsigned int SCR_WIDTH = 1920;
@@ -15,10 +16,10 @@ int levelWidth = 1280;
 int levelHeight = 960;
 
 std::vector<glm::vec3> screenPoints = {
-    glm::vec3( levelWidth / 16 / 2,   levelHeight / 16 / 2, 0.0f),
-    glm::vec3(-levelWidth / 16 / 2,  levelHeight / 16 / 2, 0.0f),
+    glm::vec3(levelWidth / 16 / 2, levelHeight / 16 / 2, 0.0f),
+    glm::vec3(-levelWidth / 16 / 2, levelHeight / 16 / 2, 0.0f),
     glm::vec3(-levelWidth / 16 / 2, -levelHeight / 16 / 2, 0.0f),
-    glm::vec3( levelWidth / 16 / 2,  -levelHeight / 16 / 2, 0.0f)};
+    glm::vec3(levelWidth / 16 / 2, -levelHeight / 16 / 2, 0.0f)};
 
 struct FBOTexture
 {
@@ -246,10 +247,11 @@ void DrawTileTray()
     if (ImGui::DragInt("Width", &levelWidth) ||
         ImGui::DragInt("Height", &levelHeight))
     {
-        screenPoints = {glm::vec3(levelWidth / 16 / 2, levelHeight / 16 / 2, 0.0f),
-                        glm::vec3(-levelWidth / 16 / 2, levelHeight / 16 / 2, 0.0f),
-                        glm::vec3(-levelWidth / 16 / 2, -levelHeight / 16 / 2, 0.0f),
-                        glm::vec3(levelWidth / 16 / 2, -levelHeight / 16 / 2, 0.0f)};
+        screenPoints = {
+            glm::vec3(levelWidth / 16 / 2, levelHeight / 16 / 2, 0.0f),
+            glm::vec3(-levelWidth / 16 / 2, levelHeight / 16 / 2, 0.0f),
+            glm::vec3(-levelWidth / 16 / 2, -levelHeight / 16 / 2, 0.0f),
+            glm::vec3(levelWidth / 16 / 2, -levelHeight / 16 / 2, 0.0f)};
     }
     ImGui::InputText("Render File", renderFile, sizeof(renderFile),
                      ImGuiInputTextFlags_EnterReturnsTrue);
@@ -283,25 +285,50 @@ void RenderScene()
     for (int i = 0; i < tilemap.tileTextureIndices.size(); ++i)
     {
         // Get the corresponding prefab tile
-        const PrefTile& pref = tiles[tilemap.tileTextureIndices[i]];
+        PrefTile* pref = &tiles[0];
 
         glm::vec2 tilePos = Utils::GetPositionOfMat4(tilemap.tileTransforms[i]);
         // Offset position so minimum coordinate is at 0,0
         tilePos.x -= minPos.x;
         tilePos.y -= minPos.y;
 
+        // switch ((int)tilemap.tileTextureIndices[i])
+        // {
+        //     case 0:
+        //     {
+        //         for (int i = 0; i < tilemap.tileTextureIndices.size(); ++i) 
+        //         {
+
+        //         }
+
+        //         break;
+        //     }
+        //     case 1:
+        //     {
+        //         break;
+        //     }
+        //     case 2:
+        //     {
+        //         break;
+        //     }
+        //     case 3:
+        //     {
+        //         break;
+        //     }
+        // }
+
         // Calculate pixel positions
-        int tilePixelX = static_cast<int>(tilePos.x * pref.dimensions.x);
-        int tilePixelY = static_cast<int>(tilePos.y * pref.dimensions.y);
+        int tilePixelX = static_cast<int>(tilePos.x * pref->dimensions.x);
+        int tilePixelY = static_cast<int>(tilePos.y * pref->dimensions.y);
 
         // Copy tile data to output buffer
-        for (int y = 0; y < static_cast<int>(pref.dimensions.y); y++)
+        for (int y = 0; y < static_cast<int>(pref->dimensions.y); y++)
         {
-            for (int x = 0; x < static_cast<int>(pref.dimensions.x); x++)
+            for (int x = 0; x < static_cast<int>(pref->dimensions.x); x++)
             {
                 // Calculate source and destination positions
                 int srcPos =
-                    (y * static_cast<int>(pref.dimensions.x) + x) * CHANNELS;
+                    (y * static_cast<int>(pref->dimensions.x) + x) * CHANNELS;
                 int destX = tilePixelX + x;
                 int destY = tilePixelY + y;
 
@@ -315,7 +342,7 @@ void RenderScene()
                 // Copy RGBA values
                 for (int c = 0; c < CHANNELS; c++)
                 {
-                    outputBuffer[destPos + c] = pref.data[srcPos + c];
+                    outputBuffer[destPos + c] = pref->data[srcPos + c];
                 }
             }
         }

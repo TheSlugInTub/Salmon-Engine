@@ -46,6 +46,5 @@ The pallette layout for a level's red channel looks like this:
 65 - 14th terrain shade
 70 - 15th terrain shade
 75 - 16th terrain shade
-80 - 17th terrain shade
 255 - Skybox
 200 - Plants
