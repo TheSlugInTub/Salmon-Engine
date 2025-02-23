@@ -28,7 +28,7 @@ vec4 MapColor(vec4 backgroundColor)
         float colorIndex = min(floor(rgbCol / 5.0), 15.0);
         
         // Use row 1 (second row) instead of row 2 (third row)
-        return texelFetch(paletteTexture, ivec2(colorIndex, 15), 0);
+        return texelFetch(paletteTexture, ivec2(colorIndex, 14), 0);
     }
     
     return backgroundColor;
