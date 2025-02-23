@@ -21,13 +21,10 @@ uniform float depthScale = 1.0;     // Scale factor for depth-based offset
 vec4 MapColor(vec4 backgroundColor) 
 {
     float rgbCol = floor(backgroundColor.x * 255.0);
-
-    if (rgbCol < 80.0) 
+    
+    if (rgbCol < 80.0 && rgbCol > 1.0)
     {  
-        // Ensure index stays within texture bounds (0-15)
-        float colorIndex = min(floor(rgbCol / 5.0), 15.0);
-        
-        // Use row 1 (second row) instead of row 2 (third row)
+        float colorIndex = floor(rgbCol / 5.0);
         return texelFetch(paletteTexture, ivec2(colorIndex, 14), 0);
     }
     
@@ -53,7 +50,7 @@ void main()
     
     // Check if UV is within texture bounds
     if (spriteUV.x < 0.0 || spriteUV.x > 1.0 || spriteUV.y < 0.0 || spriteUV.y > 1.0) {
-        FragColor = texture(texture1, TexCoord);
+        FragColor = MapColor(texture(texture1, TexCoord));
         return;
     }
     
