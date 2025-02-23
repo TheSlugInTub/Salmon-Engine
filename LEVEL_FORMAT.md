@@ -30,21 +30,21 @@ The third row is a single pixel of blackness.
 The pallette layout for a level's red channel looks like this:
 
 0 - Black 
-1 - 1st terrain shade
-5 - 2nd terrain shade
-10 - 3rd terrain shade
-15 - 4th terrain shade
-20 - 5th terrain shade
-25 - 6th terrain shade
-30 - 7th terrain shade
-35 - 8th terrain shade
-40 - 9th terrain shade
-45 - 10th terrain shade
-50 - 11th terrain shade
-55 - 12th terrain shade
-60 - 13th terrain shade
-65 - 14th terrain shade
-70 - 15th terrain shade
-75 - 16th terrain shade
+5 - 1st terrain shade
+10 - 2nd terrain shade
+15 - 3rd terrain shade
+20 - 4th terrain shade
+25 - 5th terrain shade
+30 - 6th terrain shade
+35 - 7th terrain shade
+40 - 8th terrain shade
+45 - 9th terrain shade
+50 - 10th terrain shade
+55 - 11th terrain shade
+60 - 12th terrain shade
+65 - 13th terrain shade
+70 - 14th terrain shade
+75 - 15th terrain shade
+80 - 16th terrain shade
 255 - Skybox
 200 - Plants

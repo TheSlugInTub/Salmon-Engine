@@ -104,6 +104,8 @@ void BackgroundSpriteSys()
                                       1);
         backgroundShader.setTexture2D("depthTexture",
                                       bs->depthTexture, 2);
+        backgroundShader.setTexture2D("paletteTexture",
+                                      bs->paletteTexture, 3);
 
         glm::mat4 transform = glm::mat4(1.0f);
 
@@ -157,6 +159,18 @@ void BackgroundSpriteDraw(BackgroundSprite* sprite)
             sprite->depthTexturePath = std::string(depthTexBuffer);
             sprite->depthTexture = Utils::LoadTexture(depthTexBuffer);
         }
+
+        char palTexBuffer[250];
+        strncpy_s(palTexBuffer, sprite->paletteTexturePath.c_str(),
+                  sizeof(palTexBuffer));
+        if (ImGui::InputText("BsPalTexturePath", palTexBuffer,
+                             sizeof(palTexBuffer),
+                             ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            sprite->paletteTexturePath = std::string(palTexBuffer);
+            sprite->paletteTexture =
+                Utils::LoadTexture(palTexBuffer);
+        }
     }
 }
 
@@ -164,6 +178,7 @@ nlohmann::json BackgroundSpriteSave(BackgroundSprite* sprite)
 {
     return {{"BsTexturePath", sprite->texturePath},
             {"BsDepthTexturePath", sprite->depthTexturePath},
+            {"BsPalletteTexturePath", sprite->paletteTexturePath},
             {"BsDimensions",
              {sprite->dimensions.x, sprite->dimensions.y}}};
 }
@@ -176,6 +191,12 @@ void BackgroundSpriteLoad(BackgroundSprite*     sprite,
     sprite->depthTexturePath = j["BsDepthTexturePath"];
     sprite->depthTexture =
         Utils::LoadTexture(sprite->depthTexturePath.c_str());
+    if (j.contains("BsPalletteTexturePath"))
+    {
+        sprite->paletteTexturePath = j["BsPalletteTexturePath"];
+        sprite->paletteTexture =
+            Utils::LoadTexture(sprite->paletteTexturePath.c_str());
+    }
     if (j.contains("BsDimensions"))
         sprite->dimensions = {j["BsDimensions"][0],
                               j["BsDimensions"][1]};

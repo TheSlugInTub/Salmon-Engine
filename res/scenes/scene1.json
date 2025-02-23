@@ -403,12 +403,13 @@
     ],
     [
         {
-            "BsDepthTexturePath": "res/textures/wall_depth.png",
+            "BsDepthTexturePath": "editor/stockade_depth.png",
             "BsDimensions": [
-                0.0,
-                0.0
+                1280.0,
+                960.0
             ],
-            "BsTexturePath": "res/textures/wall.png",
+            "BsPalletteTexturePath": "res/textures/pallettes/stockade_pallette.png",
+            "BsTexturePath": "editor/stockade.png",
             "type": "BackgroundSprite"
         },
         {
@@ -417,8 +418,8 @@
         },
         {
             "Position": [
-                0.30000001192092896,
-                -2.359999895095825,
+                0.0,
+                0.0,
                 0.0
             ],
             "Rotation": [
@@ -427,8 +428,8 @@
                 0.0
             ],
             "Scale": [
-                8.819999694824219,
-                4.119999885559082,
+                6.0,
+                6.0,
                 1.0
             ],
             "type": "Transform"

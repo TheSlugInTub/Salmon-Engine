@@ -8,6 +8,7 @@ in mat4 ViewMatrix;
 uniform sampler2D texture1;          // Background texture
 uniform sampler2D spritePass;        // Rendered sprites pass texture
 uniform sampler2D depthTexture;      // Depth map
+uniform sampler2D paletteTexture;    // Pallete to fill colours with
 
 uniform mat4 spriteProjectionMatrix; // Projection matrix used for sprite pass rendering
 
@@ -16,6 +17,22 @@ uniform vec2 spritePassSize = vec2(1920.0, 1080.0);
 uniform float shadowIntensity = 0.2;
 uniform vec2 shadowOffset = vec2(0.1, 0.1); // World-space offset for shadow
 uniform float depthScale = 1.0;     // Scale factor for depth-based offset
+
+vec4 MapColor(vec4 backgroundColor) 
+{
+    float rgbCol = floor(backgroundColor.x * 255.0);
+
+    if (rgbCol < 80.0) 
+    {  
+        // Ensure index stays within texture bounds (0-15)
+        float colorIndex = min(floor(rgbCol / 5.0), 15.0);
+        
+        // Use row 1 (second row) instead of row 2 (third row)
+        return texelFetch(paletteTexture, ivec2(colorIndex, 15), 0);
+    }
+    
+    return backgroundColor;
+}
 
 void main()
 {
@@ -42,7 +59,7 @@ void main()
     
     // Sample sprite pass and background
     vec4 spriteColor = texture(spritePass, spriteUV);
-    vec4 backgroundColor = texture(texture1, TexCoord);
+    vec4 backgroundColor = MapColor(texture(texture1, TexCoord));
     
     // Determine if sprite is present
     float spritePresent = step(0.01, dot(spriteColor.rgb, vec3(1.0)));

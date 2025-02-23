@@ -17,7 +17,7 @@ namespace Utils
 
 // Loads a texture using stb_image and returns an OpenGL texture
 // identifier
-unsigned int LoadTexture(const char* path, bool flip = true);
+unsigned int LoadTexture(const char* path, bool flip = true, bool glFloat = false);
 // Loads a texture using stb_image and returns an OpenGL texture
 // identifier and also modifies vec2 of dimensions
 unsigned int LoadTexture(const char* path, bool flip,
