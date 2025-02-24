@@ -1,3 +1,4 @@
+#include "salmon/utils.h"
 #include <salmon/salmon.h>
 #include <salmon/tilemap.h>
 #include <filesystem>
@@ -207,7 +208,7 @@ void DrawTilesMenu()
 {
     ImGui::Begin("Tiles");
 
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 13; i++)
     {
         strncpy_s(buffer, tiles[i].texturePath.c_str(), sizeof(buffer));
         if (ImGui::InputText(tileNames[i].c_str(), buffer, sizeof(buffer),
@@ -263,6 +264,62 @@ void DrawTileTray()
     ImGui::End();
 }
 
+#define DIR_UP                0
+#define DIR_DOWN              1
+#define DIR_LEFT              2
+#define DIR_RIGHT             3
+#define DIR_UP_LEFT           4
+#define DIR_UP_RIGHT          5
+#define DIR_DOWN_LEFT         6
+#define DIR_DOWN_RIGHT        7
+#define DIR_UP_LEFT_CORNER    8
+#define DIR_UP_RIGHT_CORNER   9
+#define DIR_DOWN_LEFT_CORNER  10
+#define DIR_DOWN_RIGHT_CORNER 11
+
+int GetWallTileTextureIndex(const unsigned char* directions) {
+    // Check for corner cases first (most specific)
+    if (directions[DIR_UP] && directions[DIR_RIGHT] && !directions[DIR_UP_RIGHT])
+        return DIR_UP_RIGHT_CORNER;  // NURC
+    
+    if (directions[DIR_UP] && directions[DIR_LEFT] && !directions[DIR_UP_LEFT])
+        return DIR_UP_LEFT_CORNER;   // NULC
+    
+    if (directions[DIR_DOWN] && directions[DIR_RIGHT] && !directions[DIR_DOWN_RIGHT])
+        return DIR_DOWN_RIGHT_CORNER; // NDRC
+    
+    if (directions[DIR_DOWN] && directions[DIR_LEFT] && !directions[DIR_DOWN_LEFT])
+        return DIR_DOWN_LEFT_CORNER;  // NDLC
+    
+    // Check for two-direction cases
+    if (directions[DIR_DOWN] && directions[DIR_RIGHT])
+        return DIR_DOWN_RIGHT;        // NDR
+    
+    if (directions[DIR_DOWN] && directions[DIR_LEFT])
+        return DIR_DOWN_LEFT;         // NDL
+    
+    if (directions[DIR_UP] && directions[DIR_RIGHT])
+        return DIR_UP_RIGHT;          // NUR
+    
+    if (directions[DIR_UP] && directions[DIR_LEFT])
+        return DIR_UP_LEFT;           // NUL
+    
+    // Check for single-direction cases
+    if (directions[DIR_UP])
+        return DIR_UP;                // NU
+    
+    if (directions[DIR_DOWN])
+        return DIR_DOWN;              // ND
+    
+    if (directions[DIR_LEFT])
+        return DIR_LEFT;              // NL
+    
+    if (directions[DIR_RIGHT])
+        return DIR_RIGHT;             // NR
+    
+    return 12;  // Default tile index
+}
+
 void RenderScene()
 {
     const int    CHANNELS = 4;
@@ -285,37 +342,83 @@ void RenderScene()
     for (int i = 0; i < tilemap.tileTextureIndices.size(); ++i)
     {
         // Get the corresponding prefab tile
-        PrefTile* pref = &tiles[0];
+        PrefTile* pref = nullptr;
 
         glm::vec2 tilePos = Utils::GetPositionOfMat4(tilemap.tileTransforms[i]);
         // Offset position so minimum coordinate is at 0,0
         tilePos.x -= minPos.x;
         tilePos.y -= minPos.y;
 
-        // switch ((int)tilemap.tileTextureIndices[i])
-        // {
-        //     case 0:
-        //     {
-        //         for (int i = 0; i < tilemap.tileTextureIndices.size(); ++i) 
-        //         {
+        int tileTexture = (int)tilemap.tileTextureIndices[i];
 
-        //         }
+        switch (tileTexture)
+        {
+            case 0: // Terrain tile
+            {
+                // up, down, left, right
+                // up left corner, up right cornver, down
+                // left corner, down right corner
 
-        //         break;
-        //     }
-        //     case 1:
-        //     {
-        //         break;
-        //     }
-        //     case 2:
-        //     {
-        //         break;
-        //     }
-        //     case 3:
-        //     {
-        //         break;
-        //     }
-        // }
+                unsigned char directions[8] = {
+                    false, false, false, false, false, false, false, false,
+                };
+
+                for (int j = 0; j < tilemap.tileTextureIndices.size(); ++j)
+                {
+                    glm::vec2 jTilePos = glm::vec2(
+                        Utils::GetPositionOfMat4(tilemap.tileTransforms[i]));
+
+                    if (jTilePos == (tilePos + glm::vec2(1.0f, 0.0f)))
+                    {
+                        directions[DIR_RIGHT] = true;
+                    }
+                    if (jTilePos == (tilePos + glm::vec2(-1.0f, 0.0f)))
+                    {
+                        directions[DIR_LEFT] = true;
+                    }
+                    if (jTilePos == (tilePos + glm::vec2(0.0f, 1.0f)))
+                    {
+                        directions[DIR_UP] = true;
+                    }
+                    if (jTilePos == (tilePos + glm::vec2(0.0f, -1.0f)))
+                    {
+                        directions[DIR_DOWN] = true;
+                    }
+                    if (jTilePos == (tilePos + glm::vec2(1.0f, 1.0f)))
+                    {
+                        directions[DIR_UP_RIGHT] = true;
+                    }
+                    if (jTilePos == (tilePos + glm::vec2(1.0f, -1.0f)))
+                    {
+                        directions[DIR_DOWN_RIGHT] = true;
+                    }
+                    if (jTilePos == (tilePos + glm::vec2(-1.0f, 1.0f)))
+                    {
+                        directions[DIR_UP_LEFT] = true;
+                    }
+                    if (jTilePos == (tilePos + glm::vec2(-1.0f, -1.0f)))
+                    {
+                        directions[DIR_DOWN_LEFT] = true;
+                    }
+
+                    pref = &tiles[GetWallTileTextureIndex(directions)];
+                }
+
+                break;
+            }
+            case 1:
+            {
+                break;
+            }
+            case 2:
+            {
+                break;
+            }
+            case 3:
+            {
+                break;
+            }
+        }
 
         // Calculate pixel positions
         int tilePixelX = static_cast<int>(tilePos.x * pref->dimensions.x);
@@ -367,10 +470,23 @@ int main(int argc, char** argv)
     unsigned int slugTex = Utils::LoadTexture("res/textures/Slugarius.png");
 
     tileNames.resize(100, "");
-    tiles.resize(100, PrefTile(""));
+    PrefTile defaultTile("");
+    defaultTile.texture = 2000;
+    tiles.resize(100, defaultTile);
 
-    tileNames[0] = "Wall Tile";
-    tileNames[1] = "Default Wall Tile";
+    tileNames[0] = "Wall Tile No Up Tile";
+    tileNames[1] = "Wall Tile No Down Tile";
+    tileNames[2] = "Wall Tile No Left Tile";
+    tileNames[3] = "Wall Tile No Right Tile";
+    tileNames[4] = "Wall Tile No Up Left Tile";
+    tileNames[5] = "Wall Tile No Up Right Tile";
+    tileNames[6] = "Wall Tile No Down Left Tile";
+    tileNames[7] = "Wall Tile No Down Right Tile";
+    tileNames[8] = "Wall Tile No Up Left Corner Tile";
+    tileNames[9] = "Wall Tile No Up Right Corner Tile";
+    tileNames[10] = "Wall Tile No Down Left Corner Tile";
+    tileNames[11] = "Wall Tile No Down Right Corner Tile";
+    tileNames[12] = "Default Wall Tile";
 
     tilemap.editorTiles.push_back(
         Tile(Utils::LoadTexture("res/textures/black.png"),
