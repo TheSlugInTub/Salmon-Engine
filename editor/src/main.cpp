@@ -276,7 +276,7 @@ void DrawTileTray()
 #define DIR_UP_RIGHT_CORNER   9
 #define DIR_DOWN_LEFT_CORNER  10
 #define DIR_DOWN_RIGHT_CORNER 11
-#define DIR_NONE              0
+#define DIR_NONE              12
 
 int GetWallTileTextureIndex(const std::array<bool, 8>& directions)
 {
@@ -303,29 +303,29 @@ int GetWallTileTextureIndex(const std::array<bool, 8>& directions)
         return DIR_DOWN_LEFT_CORNER; // NDLC
 
     // Check for two-direction cases
-    if (directions[DIR_DOWN] && directions[DIR_RIGHT])
+    if (!directions[DIR_DOWN] && !directions[DIR_RIGHT])
         return DIR_DOWN_RIGHT; // NDR
 
-    if (directions[DIR_DOWN] && directions[DIR_LEFT])
+    if (!directions[DIR_DOWN] && !directions[DIR_LEFT])
         return DIR_DOWN_LEFT; // NDL
 
-    if (directions[DIR_UP] && directions[DIR_RIGHT])
+    if (!directions[DIR_UP] && !directions[DIR_RIGHT])
         return DIR_UP_RIGHT; // NUR
 
-    if (directions[DIR_UP] && directions[DIR_LEFT])
+    if (!directions[DIR_UP] && !directions[DIR_LEFT])
         return DIR_UP_LEFT; // NUL
 
     // Check for single-direction cases
-    if (directions[DIR_UP])
+    if (!directions[DIR_UP])
         return DIR_UP; // NU
 
-    if (directions[DIR_DOWN])
+    if (!directions[DIR_DOWN])
         return DIR_DOWN; // ND
 
-    if (directions[DIR_LEFT])
+    if (!directions[DIR_LEFT])
         return DIR_LEFT; // NL
 
-    if (directions[DIR_RIGHT])
+    if (!directions[DIR_RIGHT])
         return DIR_RIGHT; // NR
 
     return 12; // Default tile index
