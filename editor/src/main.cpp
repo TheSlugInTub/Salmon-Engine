@@ -1,9 +1,9 @@
-#include "salmon/utils.h"
 #include <salmon/salmon.h>
 #include <salmon/tilemap.h>
 #include <filesystem>
 #include <fstream>
 #include <salmon/stb_image_write.h>
+#include <glm/gtx/string_cast.hpp>
 #include <thread>
 
 // settings
@@ -277,47 +277,51 @@ void DrawTileTray()
 #define DIR_DOWN_LEFT_CORNER  10
 #define DIR_DOWN_RIGHT_CORNER 11
 
-int GetWallTileTextureIndex(const unsigned char* directions) {
+int GetWallTileTextureIndex(const std::array<bool, 8>& directions)
+{
     // Check for corner cases first (most specific)
-    if (directions[DIR_UP] && directions[DIR_RIGHT] && !directions[DIR_UP_RIGHT])
-        return DIR_UP_RIGHT_CORNER;  // NURC
-    
+    if (directions[DIR_UP] && directions[DIR_RIGHT] &&
+        !directions[DIR_UP_RIGHT])
+        return DIR_UP_RIGHT_CORNER; // NURC
+
     if (directions[DIR_UP] && directions[DIR_LEFT] && !directions[DIR_UP_LEFT])
-        return DIR_UP_LEFT_CORNER;   // NULC
-    
-    if (directions[DIR_DOWN] && directions[DIR_RIGHT] && !directions[DIR_DOWN_RIGHT])
+        return DIR_UP_LEFT_CORNER; // NULC
+
+    if (directions[DIR_DOWN] && directions[DIR_RIGHT] &&
+        !directions[DIR_DOWN_RIGHT])
         return DIR_DOWN_RIGHT_CORNER; // NDRC
-    
-    if (directions[DIR_DOWN] && directions[DIR_LEFT] && !directions[DIR_DOWN_LEFT])
-        return DIR_DOWN_LEFT_CORNER;  // NDLC
-    
+
+    if (directions[DIR_DOWN] && directions[DIR_LEFT] &&
+        !directions[DIR_DOWN_LEFT])
+        return DIR_DOWN_LEFT_CORNER; // NDLC
+
     // Check for two-direction cases
     if (directions[DIR_DOWN] && directions[DIR_RIGHT])
-        return DIR_DOWN_RIGHT;        // NDR
-    
+        return DIR_DOWN_RIGHT; // NDR
+
     if (directions[DIR_DOWN] && directions[DIR_LEFT])
-        return DIR_DOWN_LEFT;         // NDL
-    
+        return DIR_DOWN_LEFT; // NDL
+
     if (directions[DIR_UP] && directions[DIR_RIGHT])
-        return DIR_UP_RIGHT;          // NUR
-    
+        return DIR_UP_RIGHT; // NUR
+
     if (directions[DIR_UP] && directions[DIR_LEFT])
-        return DIR_UP_LEFT;           // NUL
-    
+        return DIR_UP_LEFT; // NUL
+
     // Check for single-direction cases
     if (directions[DIR_UP])
-        return DIR_UP;                // NU
-    
+        return DIR_UP; // NU
+
     if (directions[DIR_DOWN])
-        return DIR_DOWN;              // ND
-    
+        return DIR_DOWN; // ND
+
     if (directions[DIR_LEFT])
-        return DIR_LEFT;              // NL
-    
+        return DIR_LEFT; // NL
+
     if (directions[DIR_RIGHT])
-        return DIR_RIGHT;             // NR
-    
-    return 12;  // Default tile index
+        return DIR_RIGHT; // NR
+
+    return 12; // Default tile index
 }
 
 void RenderScene()
@@ -359,14 +363,14 @@ void RenderScene()
                 // up left corner, up right cornver, down
                 // left corner, down right corner
 
-                unsigned char directions[8] = {
-                    false, false, false, false, false, false, false, false,
-                };
-
                 for (int j = 0; j < tilemap.tileTextureIndices.size(); ++j)
                 {
+                    std::array<bool, 8> directions = {
+                        false, false, false, false, false, false, false, false,
+                    };
+
                     glm::vec2 jTilePos = glm::vec2(
-                        Utils::GetPositionOfMat4(tilemap.tileTransforms[i]));
+                        Utils::GetPositionOfMat4(tilemap.tileTransforms[j]));
 
                     if (jTilePos == (tilePos + glm::vec2(1.0f, 0.0f)))
                     {
@@ -402,6 +406,12 @@ void RenderScene()
                     }
 
                     pref = &tiles[GetWallTileTextureIndex(directions)];
+
+                    if (GetWallTileTextureIndex(directions) > 12)
+                    {
+                        std::cout << "Size: " << pref->texturePath << '\n';
+                        std::cout << "Yikers!\n";
+                    }
                 }
 
                 break;
