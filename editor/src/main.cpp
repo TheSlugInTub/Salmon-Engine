@@ -276,9 +276,16 @@ void DrawTileTray()
 #define DIR_UP_RIGHT_CORNER   9
 #define DIR_DOWN_LEFT_CORNER  10
 #define DIR_DOWN_RIGHT_CORNER 11
+#define DIR_NONE              0
 
 int GetWallTileTextureIndex(const std::array<bool, 8>& directions)
 {
+    if (directions[DIR_UP] && directions[DIR_RIGHT] && directions[DIR_DOWN] &&
+        directions[DIR_LEFT] && directions[DIR_UP_LEFT] &&
+        directions[DIR_UP_RIGHT] && directions[DIR_DOWN_LEFT] &&
+        directions[DIR_DOWN_RIGHT])
+        return DIR_NONE;
+
     // Check for corner cases first (most specific)
     if (directions[DIR_UP] && directions[DIR_RIGHT] &&
         !directions[DIR_UP_RIGHT])
@@ -362,15 +369,18 @@ void RenderScene()
                 // up, down, left, right
                 // up left corner, up right cornver, down
                 // left corner, down right corner
+                std::array<bool, 8> directions = {
+                    false, false, false, false, false, false, false, false,
+                };
 
                 for (int j = 0; j < tilemap.tileTextureIndices.size(); ++j)
                 {
-                    std::array<bool, 8> directions = {
-                        false, false, false, false, false, false, false, false,
-                    };
 
                     glm::vec2 jTilePos = glm::vec2(
                         Utils::GetPositionOfMat4(tilemap.tileTransforms[j]));
+
+                    jTilePos.x -= minPos.x;
+                    jTilePos.y -= minPos.y;
 
                     if (jTilePos == (tilePos + glm::vec2(1.0f, 0.0f)))
                     {
