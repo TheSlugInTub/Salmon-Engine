@@ -178,7 +178,6 @@ void LoadFile(const char* file)
 
     int i = 0;
 
-    tilemap.editorTiles.clear();
     tilemap.tileTransforms.clear();
     tilemap.tileLayers.clear();
     tilemap.tileTextureIndices.clear();
@@ -208,7 +207,7 @@ void DrawTilesMenu()
 {
     ImGui::Begin("Tiles");
 
-    for (int i = 0; i < 13; i++)
+    for (int i = 0; i < 14; i++)
     {
         strncpy_s(buffer, tiles[i].texturePath.c_str(), sizeof(buffer));
         if (ImGui::InputText(tileNames[i].c_str(), buffer, sizeof(buffer),
@@ -375,6 +374,8 @@ void RenderScene()
 
                 for (int j = 0; j < tilemap.tileTextureIndices.size(); ++j)
                 {
+                    if (tilemap.tileTextureIndices[j] != 0)
+                        continue;
 
                     glm::vec2 jTilePos = glm::vec2(
                         Utils::GetPositionOfMat4(tilemap.tileTransforms[j]));
@@ -416,18 +417,13 @@ void RenderScene()
                     }
 
                     pref = &tiles[GetWallTileTextureIndex(directions)];
-
-                    if (GetWallTileTextureIndex(directions) > 12)
-                    {
-                        std::cout << "Size: " << pref->texturePath << '\n';
-                        std::cout << "Yikers!\n";
-                    }
                 }
 
                 break;
             }
             case 1:
             {
+                pref = &tiles[13];
                 break;
             }
             case 2:
@@ -507,10 +503,14 @@ int main(int argc, char** argv)
     tileNames[10] = "Wall Tile No Down Left Corner Tile";
     tileNames[11] = "Wall Tile No Down Right Corner Tile";
     tileNames[12] = "Default Wall Tile";
+    tileNames[13] = "Background Tile";
 
     tilemap.editorTiles.push_back(
         Tile(Utils::LoadTexture("res/textures/black.png"),
              "res/textures/black.png"));
+    tilemap.editorTiles.push_back(
+        Tile(Utils::LoadTexture("res/textures/grey.png"),
+             "res/textures/grey.png"));
 
     Scene scene;
 

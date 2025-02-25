@@ -804,21 +804,21 @@ void TilemapLoad(Tilemap* tilemap, const nlohmann::json& j)
         }
     }
 
-    // Deserialize editorTiles
-    if (j.contains("editorTiles") && j["editorTiles"].is_array())
-    {
-        for (const auto& editTileJson : j["editorTiles"])
-        {
-            std::string texturePath;
-            if (editTileJson.contains("TexturePath") &&
-                editTileJson["TexturePath"].is_string())
-            {
-                texturePath = editTileJson["TexturePath"].get<std::string>();
-            }
-            tilemap->editorTiles.emplace_back(
-                Tile(Utils::LoadTexture(texturePath.c_str()), texturePath));
-        }
-    }
+    // // Deserialize editorTiles
+    // if (j.contains("editorTiles") && j["editorTiles"].is_array())
+    // {
+    //     for (const auto& editTileJson : j["editorTiles"])
+    //     {
+    //         std::string texturePath;
+    //         if (editTileJson.contains("TexturePath") &&
+    //             editTileJson["TexturePath"].is_string())
+    //         {
+    //             texturePath = editTileJson["TexturePath"].get<std::string>();
+    //         }
+    //         tilemap->editorTiles.emplace_back(
+    //             Tile(Utils::LoadTexture(texturePath.c_str()), texturePath));
+    //     }
+    // }
 }
 
 // -------------------

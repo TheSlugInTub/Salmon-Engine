@@ -22,10 +22,15 @@ vec4 MapColor(vec4 backgroundColor)
 {
     float rgbCol = floor(backgroundColor.x * 255.0);
     
-    if (rgbCol < 80.0 && rgbCol > 1.0)
+    if (rgbCol <= 80.0 && rgbCol > 1.0)
     {  
         float colorIndex = floor(rgbCol / 5.0);
         return texelFetch(paletteTexture, ivec2(colorIndex, 14), 0);
+    }
+    else if (rgbCol <= 160.0 && rgbCol > 80.0)
+    {  
+        float colorIndex = floor((rgbCol - 80) / 5.0);
+        return texelFetch(paletteTexture, ivec2(colorIndex, 13), 0);
     }
     
     return backgroundColor;
