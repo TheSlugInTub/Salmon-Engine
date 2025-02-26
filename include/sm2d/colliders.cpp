@@ -401,11 +401,47 @@ Manifold TestColAABBPolygon(Collider& aabb, Collider& poly)
 
 Manifold TestColCirclePolygon(const Collider& circle, const Collider& poly)
 {
-    // FIXME
-    Manifold result;
-    result.colliding = false;
+    Manifold manifold = {};
+    manifold.objectA = const_cast<Collider*>(&circle);
+    manifold.objectB = const_cast<Collider*>(&poly);
 
-    return result;
+    // Get circle center in world space
+    glm::vec2 circleCenter = glm::vec2(circle.body->transform->position);
+    float circleRadius = circle.circle.radius;
+
+    // Find the closest point on the polygon to the circle center
+    glm::vec2 closestPoint = FindClosestPointOnPolygon(poly.polygon, circleCenter);
+    
+    // Vector from closest point to circle center
+    glm::vec2 normal = circleCenter - closestPoint;
+    float distance = glm::length(normal);
+    
+    // If distance is less than radius, we have a collision
+    if (distance <= circleRadius)
+    {
+        manifold.colliding = true;
+        
+        // Important: For stability, we want the normal pointing from A to B
+        // In this case, from polygon to circle
+        if (distance > 0.0001f)
+        {
+            manifold.collisionNormal = -normal / distance; // Note the negative sign
+        }
+        else
+        {
+            // If circle center is on polygon, use polygon's face normal
+            size_t closest_vertex = FindClosestVertex(circleCenter, poly.polygon.worldPoints);
+            size_t next_vertex = (closest_vertex + 1) % poly.polygon.worldPoints.size();
+            glm::vec2 edge = poly.polygon.worldPoints[next_vertex] - poly.polygon.worldPoints[closest_vertex];
+            manifold.collisionNormal = glm::normalize(glm::vec2(edge.y, -edge.x));
+        }
+        
+        // Adjust penetration depth and contact point
+        manifold.penetrationDepth = circleRadius - distance;
+        manifold.contactPoint = circleCenter - manifold.collisionNormal * circleRadius;
+    }
+    
+    return manifold;
 }
 
 } // namespace sm2d

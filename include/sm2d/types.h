@@ -37,8 +37,8 @@ struct Rigidbody
 
     float mass = 1.0f;
     bool  awake = true; // Is the body's broadphase AABB gonna get updated or not? also skip the
-                       // solver if this is false, this is set true when hasMoved is false and the
-                       // collisions have transferred from last frame
+                        // solver if this is false, this is set true when hasMoved is false and the
+                        // collisions have transferred from last frame
 
     float linearDamping = 0.98f;  // Linear velocity gets exponentiated by this every frame
     float angularDamping = 0.98f; // Angular velocity gets exponentiated by this every frame
@@ -48,7 +48,12 @@ struct Rigidbody
     bool  fixedRotation = false;  // If this is true, the body won't rotate
     float momentOfInertia = 0.5f; // The closer to zero this is, the easier it is to be rotated
 
-    void* userData = nullptr; // Put whatever you want in here, useful for marking tags
+    int  userData = 0; // Put whatever you want in here, useful for marking tags
+    bool applyGravity = true;
+    
+    bool alwaysAwake = false; // The body will never fall asleep if this is true
+
+    Rigidbody* resLink; // resLink will receive the same resolution as this body
 
     glm::vec2 linearVelocity = glm::vec2(0.0f); // Rate of change of position
     float     angularVelocity = 0.0f;           // In radians
@@ -56,7 +61,7 @@ struct Rigidbody
     glm::vec2 force = glm::vec2(0.0f); // Net force
     float     torque = 0.0f;           // In radians
 
-    bool hasMoved = false; // If it has moved in the last frame
+    bool hasMoved = true; // If it has moved in the last frame
 };
 
 struct Node
