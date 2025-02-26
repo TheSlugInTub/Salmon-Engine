@@ -13,6 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Add the include directory so that it is available globally
 include_directories(
     include
+    tracy/public
 )
 
 # Gather all source files recursively
@@ -21,11 +22,15 @@ file(GLOB_RECURSE INCLUDESOURCES include/*.cpp include/*.c)
 
 # Comment to reload CMake, Counter: 43
 
+option( TRACY_ENABLE "" ON)
+add_subdirectory(tracy)
+
 # Add the executable
 add_executable(${PROJECT_NAME} 
     ${SOURCES}
     ${INCLUDESOURCES}
-    )
+    tracy/public/TracyClient.cpp
+)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -38,6 +43,7 @@ if(WIN32)
         ${CMAKE_SOURCE_DIR}/lib/assimp-vc143-mt.lib
         ${CMAKE_SOURCE_DIR}/lib/OpenAL32.lib
         ${CMAKE_SOURCE_DIR}/lib/freetype.lib
+        Tracy::TracyClient
     )
 endif()
 
@@ -48,5 +54,6 @@ if(UNIX AND NOT APPLE)
         ${CMAKE_SOURCE_DIR}/lib/libassimp.so
         ${CMAKE_SOURCE_DIR}/lib/libopenal.so
         ${CMAKE_SOURCE_DIR}/lib/libfreetype.a
+        Tracy::TracyClient
     )
 endif()

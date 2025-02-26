@@ -156,11 +156,6 @@ void PlayerIKStartSys()
 
 REGISTER_START_SYSTEM(PlayerIKStartSys);
 
-std::string FPS;
-auto        lastTime = std::chrono::high_resolution_clock::now();
-int         frameCount = 0;
-float       fps = 0.0f;
-
 float MoveTowards(float current, float target, float maxDelta)
 {
     if (std::abs(target - current) <= maxDelta)
@@ -568,28 +563,6 @@ void PlayerIKDraw(PlayerIK* ik)
         ImGui::DragFloat2("CrawlingHandRoot2", glm::value_ptr(ik->crawlingHandRoot[1]));
         
         ImGui::DragFloat("MaxCrawlSpeed", &ik->maxCrawlSpeed);
-
-        // Update FPS every second
-        auto currentTime = std::chrono::high_resolution_clock::now();
-
-        std::chrono::duration<float> elapsed = currentTime - lastTime;
-        lastTime = currentTime;
-        frameCount++;
-        static float timeAccumulator = 0.0f;
-        timeAccumulator += elapsed.count();
-        if (timeAccumulator >= 0.1f)
-        {
-            fps = frameCount / timeAccumulator;
-
-            // Reset counters
-            frameCount = 0;
-            timeAccumulator = 0.0f;
-
-            // Update the FPS string
-            FPS = std::to_string(fps);
-
-            engineState.window->SetTitle(FPS.c_str());
-        }
     }
 }
 

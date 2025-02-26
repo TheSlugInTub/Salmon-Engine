@@ -7,6 +7,11 @@ const unsigned int SCR_HEIGHT = 1080;
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 90.0f);
 
+std::string FPS;
+auto        lastTime = std::chrono::high_resolution_clock::now();
+int         frameCount = 0;
+float       fps = 0.0f;
+
 int main(int argc, char** argv)
 {
     Window window("Prism", SCR_WIDTH, SCR_HEIGHT, false, true);
@@ -55,6 +60,28 @@ int main(int argc, char** argv)
         colResults.clear();
         sm2d::GetCollisionsInTree(sm2d::bvh, colResults);
         sm2d::ResolveCollisions(sm2d::bvh, colResults);
+
+        // Update FPS every second
+        auto currentTime = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<float> elapsed = currentTime - lastTime;
+        lastTime = currentTime;
+        frameCount++;
+        static float timeAccumulator = 0.0f;
+        timeAccumulator += elapsed.count();
+        if (timeAccumulator >= 0.1f)
+        {
+            fps = frameCount / timeAccumulator;
+
+            // Reset counters
+            frameCount = 0;
+            timeAccumulator = 0.0f;
+
+            // Update the FPS string
+            FPS = std::to_string(fps);
+
+            engineState.window->SetTitle(FPS.c_str());
+        }
 
         // for (auto& node : sm2d::bvh.nodes)
         // {
