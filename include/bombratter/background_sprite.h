@@ -11,7 +11,7 @@ struct BackgroundSprite
     std::string  depthTexturePath = {};
     std::string  paletteTexturePath = {};
 
-    unsigned char* data;
+    unsigned char* data = nullptr;
     glm::vec2 dimensions = {};
 };
 

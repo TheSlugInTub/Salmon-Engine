@@ -62,7 +62,6 @@ void BackgroundSpriteStartSys()
          SceneView<BackgroundSprite>(engineState.scene))
     {
         auto bs = engineState.scene.Get<BackgroundSprite>(ent);
-        auto trans = engineState.scene.Get<Transform>(ent);
 
         backgroundShader.use();
         backgroundShader.setVec2(
@@ -74,184 +73,203 @@ void BackgroundSpriteStartSys()
         backgroundShader.setMat4("projection", engineState.projMat);
         backgroundShader.setMat4("spriteProjectionMatrix",
                                  engineState.projMat);
+    }
+}
 
-        glm::vec2 tileSize = bs->dimensions / glm::vec2(trans->scale);
-        int       tilesX = static_cast<int>(trans->scale.x);
-        int       tilesY = static_cast<int>(trans->scale.y);
+struct Rect
+{
+    glm::vec2 center = {}, halfWidths = {};
+};
 
-        // Create a 2D grid to mark which tiles are colliders
-        std::vector<std::vector<bool>> colliderGrid(
-            tilesY, std::vector<bool>(tilesX, false));
+bool IsCollisionPixel(unsigned char* data, int width, int x, int y)
+{
+    int idx = (y * width + x) *
+              4;           // Assuming RGBA format (4 bytes per pixel)
+    return data[idx] < 80; // Check if red channel < 80
+}
 
-        // Step 1: Identify tiles with red channel < 80
+// Helper to check if an entire tile is a collider
+bool IsTileCollider(unsigned char* data, int width, int tileX,
+                    int tileY, int tileSize)
+{
+    // Check at least one pixel in the tile
+    for (int y = 0; y < tileSize; y++)
+    {
+        for (int x = 0; x < tileSize; x++)
+        {
+            int pixelX = tileX * tileSize + x;
+            int pixelY = tileY * tileSize + y;
+            if (IsCollisionPixel(data, width, pixelX, pixelY))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// Convert grid coordinates to a unique key for the set
+size_t CoordToKey(int x, int y)
+{
+    return (static_cast<size_t>(y) << 32) | static_cast<size_t>(x);
+}
+
+// Merges adjacent tiles into larger rectangles
+std::vector<Rect>
+MergeTiles(const std::unordered_set<size_t>& collisionTiles,
+           int gridWidth, int gridHeight, float tileWorldSize,
+           glm::vec2 worldPos)
+{
+    // Create a 2D grid representation
+    std::vector<std::vector<bool>> grid(
+        gridHeight, std::vector<bool>(gridWidth, false));
+
+    // Fill the grid
+    for (size_t key : collisionTiles)
+    {
+        int x = key & 0xFFFFFFFF;
+        int y = key >> 32;
+        if (x < gridWidth && y < gridHeight)
+        {
+            grid[y][x] = true;
+        }
+    }
+
+    std::vector<Rect>              mergedRects;
+    std::vector<std::vector<bool>> visited(
+        gridHeight, std::vector<bool>(gridWidth, false));
+
+    // Try to merge tiles horizontally and vertically
+    for (int y = 0; y < gridHeight; y++)
+    {
+        for (int x = 0; x < gridWidth; x++)
+        {
+            if (!grid[y][x] || visited[y][x])
+                continue;
+
+            // Start with a single tile
+            int width = 1;
+            int height = 1;
+
+            // Extend horizontally as far as possible
+            while (x + width < gridWidth && grid[y][x + width] &&
+                   !visited[y][x + width])
+            {
+                width++;
+            }
+
+            // Try to extend vertically
+            bool canExtendVertically = true;
+            while (canExtendVertically && y + height < gridHeight)
+            {
+                // Check if we can add an entire row
+                for (int i = 0; i < width; i++)
+                {
+                    if (!grid[y + height][x + i] ||
+                        visited[y + height][x + i])
+                    {
+                        canExtendVertically = false;
+                        break;
+                    }
+                }
+
+                if (canExtendVertically)
+                {
+                    height++;
+                }
+            }
+
+            // Mark all cells in this rectangle as visited
+            for (int j = 0; j < height; j++)
+            {
+                for (int i = 0; i < width; i++)
+                {
+                    visited[y + j][x + i] = true;
+                }
+            }
+
+            // Calculate world position for this rectangle
+            float worldX =
+                worldPos.x + (x + width / 2.0f) * tileWorldSize;
+            float worldY =
+                worldPos.y + (y + height / 2.0f) * tileWorldSize;
+
+            // Add the merged rectangle
+            Rect rect;
+            rect.center = glm::vec2(worldX, worldY);
+            rect.halfWidths =
+                glm::vec2(width * tileWorldSize / 2.0f,
+                          height * tileWorldSize / 2.0f);
+            mergedRects.push_back(rect);
+        }
+    }
+
+    return mergedRects;
+}
+
+void BackgroundSpriteCollidersStartSys()
+{
+    for (EntityID ent :
+         SceneView<BackgroundSprite>(engineState.scene))
+    {
+        auto bs = engineState.scene.Get<BackgroundSprite>(ent);
+        auto trans = engineState.scene.Get<Transform>(ent);
+
+        const int TILE_SIZE = 16; // 16x16 tiles
+
+        int width = bs->dimensions.x;
+        int height = bs->dimensions.y;
+
+        // Calculate number of tiles in each dimension
+        int tilesX = width / TILE_SIZE;
+        int tilesY = height / TILE_SIZE;
+
+        // Calculate world-space tile size
+        float tileWorldSizeX = trans->scale.x / tilesX;
+        float tileWorldSizeY = trans->scale.y / tilesY;
+        float tileWorldSize = tileWorldSizeX; // Assuming square tiles
+                                              // in world space
+
+        // Set to store coordinates of collision tiles
+        std::unordered_set<size_t> collisionTiles;
+
+        // Scan all tiles
         for (int tileY = 0; tileY < tilesY; tileY++)
         {
             for (int tileX = 0; tileX < tilesX; tileX++)
             {
-                bool isCollider = false;
-
-                // Check all pixels in this tile
-                for (int y = 0; y < tileSize.y && !isCollider; y++)
+                if (IsTileCollider(bs->data, width, tileX, tileY,
+                                   TILE_SIZE))
                 {
-                    for (int x = 0; x < tileSize.x && !isCollider;
-                         x++)
-                    {
-                        // Calculate the pixel position in the image
-                        int pixelX = tileX * tileSize.x + x;
-                        int pixelY = tileY * tileSize.y + y;
-
-                        // Calculate pixel index in the data array
-                        // (assuming RGBA format)
-                        int pixelIndex =
-                            (pixelY *
-                                 static_cast<int>(bs->dimensions.x) +
-                             pixelX) *
-                            4;
-
-                        // Check if the red channel is less than 80
-                        if (bs->data[pixelIndex] <= 80)
-                        {
-                            isCollider = true;
-                        }
-                    }
-                }
-
-                colliderGrid[tileY][tileX] = isCollider;
-            }
-        }
-
-        // Step 2: Merge adjacent colliders using a connected
-        // component algorithm
-        std::vector<std::vector<int>> labelGrid(
-            tilesY, std::vector<int>(tilesX, 0));
-        int nextLabel = 1;
-
-        // First pass: assign initial labels
-        std::map<int, std::vector<glm::ivec2>> labelToTiles;
-
-        for (int y = 0; y < tilesY; y++)
-        {
-            for (int x = 0; x < tilesX; x++)
-            {
-                if (colliderGrid[y][x])
-                {
-                    std::vector<int> neighborLabels;
-
-                    // Check neighbors (4-connected)
-                    if (x > 0 && colliderGrid[y][x - 1])
-                    {
-                        neighborLabels.push_back(labelGrid[y][x - 1]);
-                    }
-                    if (y > 0 && colliderGrid[y - 1][x])
-                    {
-                        neighborLabels.push_back(labelGrid[y - 1][x]);
-                    }
-
-                    if (neighborLabels.empty())
-                    {
-                        // New component
-                        labelGrid[y][x] = nextLabel++;
-                    }
-                    else
-                    {
-                        // Join existing component
-                        int smallestLabel =
-                            *std::min_element(neighborLabels.begin(),
-                                              neighborLabels.end());
-                        labelGrid[y][x] = smallestLabel;
-                    }
-
-                    // Track tiles for each label
-                    labelToTiles[labelGrid[y][x]].push_back(
-                        glm::ivec2(x, y));
+                    collisionTiles.insert(CoordToKey(tileX, tileY));
                 }
             }
         }
 
-        // Second pass: resolve label equivalences and ensure adjacent
-        // tiles have the same label
-        for (int y = 0; y < tilesY; y++)
-        {
-            for (int x = 0; x < tilesX; x++)
-            {
-                if (!colliderGrid[y][x])
-                    continue;
+        // auto tiles = MergeTiles(collisionTiles, tilesX, tilesY,
+        //                         tileWorldSize, trans->position);
 
-                // Check right and down neighbors for connected
-                // components
-                if (x < tilesX - 1 && colliderGrid[y][x + 1] &&
-                    labelGrid[y][x] != labelGrid[y][x + 1])
-                {
-                    int oldLabel = labelGrid[y][x + 1];
-                    int newLabel = labelGrid[y][x];
-
-                    // Merge labels
-                    for (auto& labeledTile : labelToTiles[oldLabel])
-                    {
-                        labelGrid[labeledTile.y][labeledTile.x] =
-                            newLabel;
-                        labelToTiles[newLabel].push_back(labeledTile);
-                    }
-                    labelToTiles.erase(oldLabel);
-                }
-
-                if (y < tilesY - 1 && colliderGrid[y + 1][x] &&
-                    labelGrid[y][x] != labelGrid[y + 1][x])
-                {
-                    int oldLabel = labelGrid[y + 1][x];
-                    int newLabel = labelGrid[y][x];
-
-                    // Merge labels
-                    for (auto& labeledTile : labelToTiles[oldLabel])
-                    {
-                        labelGrid[labeledTile.y][labeledTile.x] =
-                            newLabel;
-                        labelToTiles[newLabel].push_back(labeledTile);
-                    }
-                    labelToTiles.erase(oldLabel);
-                }
-            }
-        }
-
-        // Step 3: Create box colliders for each connected component
-        for (const auto& [label, tiles] : labelToTiles)
-        {
-            // Find bounds of this connected component
-            int minX = tilesX, minY = tilesY, maxX = 0, maxY = 0;
-
-            for (const auto& tile : tiles)
-            {
-                minX = std::min(minX, tile.x);
-                minY = std::min(minY, tile.y);
-                maxX = std::max(maxX, tile.x);
-                maxY = std::max(maxY, tile.y);
-            }
-
-            // Calculate center and half-widths for the box collider
-            glm::vec2 center =
-                glm::vec2((minX + maxX + 1) * tileSize.x / 2.0f,
-                          (minY + maxY + 1) * tileSize.y / 2.0f);
-
-            glm::vec2 halfWidths =
-                glm::vec2((maxX - minX + 1) * tileSize.x / 2.0f,
-                          (maxY - minY + 1) * tileSize.y / 2.0f);
-
-            EntityID colEnt = engineState.scene.AddEntity();
-            auto colTrans = engineState.scene.AssignParam<Transform>(
-                colEnt, glm::vec3(center, 0.0f), glm::vec3(0.0f),
-                glm::vec3(halfWidths.x, halfWidths.y, 0.0f));
-            auto colRigid =
-                engineState.scene.AssignParam<sm2d::Rigidbody>(
-                    colEnt, sm2d::BodyType::sm2d_Dynamic, colTrans,
-                    1.0f, false, 0.98f, 0.98f, 0.1f, true, 0.5f, 0,
-                    false, false);
-            engineState.scene.AssignParam<sm2d::Collider>(
-                colEnt, sm2d::ColliderType::sm2d_AABB,
-                sm2d::ColAABB(halfWidths), colRigid, false);
-        }
+        // for (Rect& rect : tiles)
+        // {
+        //     EntityID colEnt = engineState.scene.AddEntity();
+        //     engineState.scene.AssignParam<Name>(colEnt,
+        //                                         "TileCollider");
+        //     auto colTrans = engineState.scene.AssignParam<Transform>(
+        //         colEnt, glm::vec3(rect.center, 0.0f), glm::vec3(0.0f),
+        //         glm::vec3(rect.halfWidths.x, rect.halfWidths.y, 0.0f));
+        //     auto colRigid =
+        //         engineState.scene.AssignParam<sm2d::Rigidbody>(
+        //             colEnt, sm2d::BodyType::sm2d_Static, colTrans,
+        //             1.0f, false, 0.98f, 0.98f, 0.1f, true, 0.5f, 0,
+        //             false, false);
+        //     engineState.scene.AssignParam<sm2d::Collider>(
+        //         colEnt, sm2d::ColliderType::sm2d_AABB,
+        //         sm2d::ColAABB(rect.halfWidths), colRigid, false);
+        // }
     }
 }
 
+REGISTER_START_SYSTEM(BackgroundSpriteCollidersStartSys);
 REGISTER_EDITOR_START_SYSTEM(BackgroundSpriteStartSys);
 
 void RenderQuadSys()
@@ -362,7 +380,6 @@ void BackgroundSpriteDraw(BackgroundSprite* sprite)
                 std::cout << "Texture failed to load at path: "
                           << sprite->texturePath << '\n';
             }
-            sprite->dimensions = dim;
         }
 
         char depthTexBuffer[250];
@@ -423,6 +440,8 @@ void BackgroundSpriteLoad(BackgroundSprite*     sprite,
                 format = GL_RGB;
             else if (nrComponents == 4)
                 format = GL_RGBA;
+
+            std::cout << "nrComponents: " << nrComponents << '\n';
 
             glBindTexture(GL_TEXTURE_2D, sprite->paletteTexture);
             glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0,
