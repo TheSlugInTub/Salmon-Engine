@@ -38,6 +38,7 @@ if(WIN32)
         ${CMAKE_SOURCE_DIR}/lib/assimp-vc143-mt.lib
         ${CMAKE_SOURCE_DIR}/lib/OpenAL32.lib
         ${CMAKE_SOURCE_DIR}/lib/freetype.lib
+        ${CMAKE_SOURCE_DIR}/lib/box2d.lib
     )
 endif()
 
@@ -48,5 +49,6 @@ if(UNIX AND NOT APPLE)
         ${CMAKE_SOURCE_DIR}/lib/libassimp.so
         ${CMAKE_SOURCE_DIR}/lib/libopenal.so
         ${CMAKE_SOURCE_DIR}/lib/libfreetype.a
+        ${CMAKE_SOURCE_DIR}/lib/libbox2d.a
     )
 endif()

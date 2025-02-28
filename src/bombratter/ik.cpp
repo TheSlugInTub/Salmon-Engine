@@ -30,7 +30,7 @@ void PlayerIKStartSys()
         ik->groundSensor[0] =
             engineState.scene.AssignParam<sm2d::Collider>(
                 sen1, sm2d::ColliderType::sm2d_AABB,
-                sm2d::ColAABB(glm::vec2(0.17f, 0.13f)), rigid, true);
+                sm2d::ColAABB(glm::vec2(0.15f, 0.06f)), rigid, true);
 
         EntityID sen2 = engineState.scene.AddEntity();
         engineState.scene.AssignParam<Name>(sen2, "Sen2");
@@ -45,7 +45,7 @@ void PlayerIKStartSys()
         ik->groundSensor[1] =
             engineState.scene.AssignParam<sm2d::Collider>(
                 sen2, sm2d::ColliderType::sm2d_AABB,
-                sm2d::ColAABB(glm::vec2(0.17f, 0.13f)), rigid2, true);
+                sm2d::ColAABB(glm::vec2(0.15f, 0.06f)), rigid2, true);
 
         EntityID itemSen = engineState.scene.AddEntity();
         engineState.scene.AssignParam<Name>(itemSen, "ItemSen");
@@ -74,7 +74,7 @@ void PlayerIKStartSys()
         auto legEntBody =
             engineState.scene.AssignParam<sm2d::Rigidbody>(
                 legEnt, sm2d::BodyType::sm2d_Dynamic, legEntTrans,
-                1.0f, true, 0.98f, 0.98f, 0.1f, true, 1.0f, 255, true,
+                1.0f, true, 0.6f, 0.6f, 0.1f, true, 1.0f, 255, true,
                 true);
 
         ik->legCollider =
@@ -323,7 +323,10 @@ void PlayerIKSys()
         {
             if (Input::GetKeyDown(Key::Z))
             {
-                ik->legCollider->body->linearVelocity.y += ik->jumpSpeed * engineState.deltaTime;
+                ik->legCollider->body->linearVelocity.y = 0.0f;
+                ik->body[0]->linearVelocity.y = 0.0f;
+                ik->body[1]->linearVelocity.y = 0.0f;
+                ik->legCollider->body->force.y += ik->jumpSpeed;
             }
 
             if (Input::GetKeyDown(Key::Up))
@@ -361,8 +364,10 @@ void PlayerIKSys()
             case PlayerState::Crawling:
             {
                 ik->speed = ik->maxCrawlSpeed;
-                ik->handIK[0].points[0] = ik->crawlingHandRoot[0] + bodyPos;
-                ik->handIK[1].points[0] = ik->crawlingHandRoot[1] + bodyPos;
+                ik->handIK[0].points[0] =
+                    ik->crawlingHandRoot[0] + bodyPos;
+                ik->handIK[1].points[0] =
+                    ik->crawlingHandRoot[1] + bodyPos;
                 break;
             }
         }
@@ -555,13 +560,17 @@ void PlayerIKDraw(PlayerIK* ik)
 
         ImGui::Checkbox("HandHold1", &ik->handHold[0]);
         ImGui::Checkbox("HandHold2", &ik->handHold[1]);
-        
-        ImGui::DragFloat2("CrawlingLegRoot1", glm::value_ptr(ik->crawlingLegRoot[0]));
-        ImGui::DragFloat2("CrawlingLegRoot2", glm::value_ptr(ik->crawlingLegRoot[1]));
-        
-        ImGui::DragFloat2("CrawlingHandRoot1", glm::value_ptr(ik->crawlingHandRoot[0]));
-        ImGui::DragFloat2("CrawlingHandRoot2", glm::value_ptr(ik->crawlingHandRoot[1]));
-        
+
+        ImGui::DragFloat2("CrawlingLegRoot1",
+                          glm::value_ptr(ik->crawlingLegRoot[0]));
+        ImGui::DragFloat2("CrawlingLegRoot2",
+                          glm::value_ptr(ik->crawlingLegRoot[1]));
+
+        ImGui::DragFloat2("CrawlingHandRoot1",
+                          glm::value_ptr(ik->crawlingHandRoot[0]));
+        ImGui::DragFloat2("CrawlingHandRoot2",
+                          glm::value_ptr(ik->crawlingHandRoot[1]));
+
         ImGui::DragFloat("MaxCrawlSpeed", &ik->maxCrawlSpeed);
     }
 }
