@@ -78,134 +78,8 @@ void BackgroundSpriteStartSys()
 
 struct Rect
 {
-    glm::vec2 center = {}, halfWidths = {};
+    int x, y, width, height;
 };
-
-bool IsCollisionPixel(unsigned char* data, int width, int x, int y)
-{
-    int idx = (y * width + x) *
-              4;           // Assuming RGBA format (4 bytes per pixel)
-    return data[idx] < 80; // Check if red channel < 80
-}
-
-// Helper to check if an entire tile is a collider
-bool IsTileCollider(unsigned char* data, int width, int tileX,
-                    int tileY, int tileSize)
-{
-    // Check at least one pixel in the tile
-    for (int y = 0; y < tileSize; y++)
-    {
-        for (int x = 0; x < tileSize; x++)
-        {
-            int pixelX = tileX * tileSize + x;
-            int pixelY = tileY * tileSize + y;
-            if (IsCollisionPixel(data, width, pixelX, pixelY))
-            {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-// Convert grid coordinates to a unique key for the set
-size_t CoordToKey(int x, int y)
-{
-    return (static_cast<size_t>(y) << 32) | static_cast<size_t>(x);
-}
-
-// Merges adjacent tiles into larger rectangles
-std::vector<Rect>
-MergeTiles(const std::unordered_set<size_t>& collisionTiles,
-           int gridWidth, int gridHeight, float tileWorldSize,
-           glm::vec2 worldPos)
-{
-    // Create a 2D grid representation
-    std::vector<std::vector<bool>> grid(
-        gridHeight, std::vector<bool>(gridWidth, false));
-
-    // Fill the grid
-    for (size_t key : collisionTiles)
-    {
-        int x = key & 0xFFFFFFFF;
-        int y = key >> 32;
-        if (x < gridWidth && y < gridHeight)
-        {
-            grid[y][x] = true;
-        }
-    }
-
-    std::vector<Rect>              mergedRects;
-    std::vector<std::vector<bool>> visited(
-        gridHeight, std::vector<bool>(gridWidth, false));
-
-    // Try to merge tiles horizontally and vertically
-    for (int y = 0; y < gridHeight; y++)
-    {
-        for (int x = 0; x < gridWidth; x++)
-        {
-            if (!grid[y][x] || visited[y][x])
-                continue;
-
-            // Start with a single tile
-            int width = 1;
-            int height = 1;
-
-            // Extend horizontally as far as possible
-            while (x + width < gridWidth && grid[y][x + width] &&
-                   !visited[y][x + width])
-            {
-                width++;
-            }
-
-            // Try to extend vertically
-            bool canExtendVertically = true;
-            while (canExtendVertically && y + height < gridHeight)
-            {
-                // Check if we can add an entire row
-                for (int i = 0; i < width; i++)
-                {
-                    if (!grid[y + height][x + i] ||
-                        visited[y + height][x + i])
-                    {
-                        canExtendVertically = false;
-                        break;
-                    }
-                }
-
-                if (canExtendVertically)
-                {
-                    height++;
-                }
-            }
-
-            // Mark all cells in this rectangle as visited
-            for (int j = 0; j < height; j++)
-            {
-                for (int i = 0; i < width; i++)
-                {
-                    visited[y + j][x + i] = true;
-                }
-            }
-
-            // Calculate world position for this rectangle
-            float worldX =
-                worldPos.x + (x + width / 2.0f) * tileWorldSize;
-            float worldY =
-                worldPos.y + (y + height / 2.0f) * tileWorldSize;
-
-            // Add the merged rectangle
-            Rect rect;
-            rect.center = glm::vec2(worldX, worldY);
-            rect.halfWidths =
-                glm::vec2(width * tileWorldSize / 2.0f,
-                          height * tileWorldSize / 2.0f);
-            mergedRects.push_back(rect);
-        }
-    }
-
-    return mergedRects;
-}
 
 void BackgroundSpriteCollidersStartSys()
 {
@@ -217,8 +91,8 @@ void BackgroundSpriteCollidersStartSys()
 
         const int TILE_SIZE = 16; // 16x16 tiles
 
-        int width = bs->dimensions.x;
-        int height = bs->dimensions.y;
+        int width = (int)bs->dimensions.x;
+        int height = (int)bs->dimensions.y;
 
         // Calculate number of tiles in each dimension
         int tilesX = width / TILE_SIZE;
@@ -230,42 +104,144 @@ void BackgroundSpriteCollidersStartSys()
         float tileWorldSize = tileWorldSizeX; // Assuming square tiles
                                               // in world space
 
-        // Set to store coordinates of collision tiles
-        std::unordered_set<size_t> collisionTiles;
+        std::vector<std::vector<bool>> colliderGrid(
+            tilesY, std::vector<bool>(tilesX, false));
 
-        // Scan all tiles
-        for (int tileY = 0; tileY < tilesY; tileY++)
+        // Analyze image data to determine which tiles need colliders
+        for (int y = 0; y < tilesY; y++)
         {
-            for (int tileX = 0; tileX < tilesX; tileX++)
+            for (int x = 0; x < tilesX; x++)
             {
-                if (IsTileCollider(bs->data, width, tileX, tileY,
-                                   TILE_SIZE))
+                bool createCollider = false;
+
+                // Check each pixel in the tile
+                for (int py = 0; py < TILE_SIZE && !createCollider;
+                     py++)
                 {
-                    collisionTiles.insert(CoordToKey(tileX, tileY));
+                    for (int px = 0;
+                         px < TILE_SIZE && !createCollider; px++)
+                    {
+                        int pixelX = x * TILE_SIZE + px;
+                        int pixelY = y * TILE_SIZE + py;
+
+                        if (pixelX < width && pixelY < height)
+                        {
+                            // Assuming data is stored as RGBA, 4
+                            // bytes per pixel
+                            int index = (pixelY * width + pixelX) * 4;
+                            unsigned char red = bs->data[index];
+
+                            if (red <= 80)
+                            {
+                                createCollider = true;
+                            }
+                        }
+                    }
+                }
+
+                colliderGrid[y][x] = createCollider;
+            }
+        }
+
+        // Merge adjacent colliders horizontally
+        std::vector<Rect> horizontalRects;
+        for (int y = 0; y < tilesY; y++)
+        {
+            int startX = -1;
+            for (int x = 0; x <= tilesX; x++)
+            {
+                if (x < tilesX && colliderGrid[y][x])
+                {
+                    if (startX == -1)
+                    {
+                        startX = x;
+                    }
+                }
+                else if (startX != -1)
+                {
+                    // Found the end of a horizontal strip
+                    int endX = x - 1;
+                    horizontalRects.push_back(
+                        {startX, y, endX - startX + 1, 1});
+                    startX = -1;
                 }
             }
         }
 
-        // auto tiles = MergeTiles(collisionTiles, tilesX, tilesY,
-        //                         tileWorldSize, trans->position);
+        // Merge vertical strips
+        std::vector<Rect> mergedRects;
+        for (size_t i = 0; i < horizontalRects.size(); i++)
+        {
+            if (horizontalRects[i].width == 0)
+                continue; // Skip already merged
 
-        // for (Rect& rect : tiles)
-        // {
-        //     EntityID colEnt = engineState.scene.AddEntity();
-        //     engineState.scene.AssignParam<Name>(colEnt,
-        //                                         "TileCollider");
-        //     auto colTrans = engineState.scene.AssignParam<Transform>(
-        //         colEnt, glm::vec3(rect.center, 0.0f), glm::vec3(0.0f),
-        //         glm::vec3(rect.halfWidths.x, rect.halfWidths.y, 0.0f));
-        //     auto colRigid =
-        //         engineState.scene.AssignParam<sm2d::Rigidbody>(
-        //             colEnt, sm2d::BodyType::sm2d_Static, colTrans,
-        //             1.0f, false, 0.98f, 0.98f, 0.1f, true, 0.5f, 0,
-        //             false, false);
-        //     engineState.scene.AssignParam<sm2d::Collider>(
-        //         colEnt, sm2d::ColliderType::sm2d_AABB,
-        //         sm2d::ColAABB(rect.halfWidths), colRigid, false);
-        // }
+            Rect current = horizontalRects[i];
+
+            // Try to extend vertically
+            for (size_t j = i + 1; j < horizontalRects.size(); j++)
+            {
+                Rect& next = horizontalRects[j];
+
+                if (next.width == 0)
+                    continue; // Skip already merged
+
+                if (next.x == current.x &&
+                    next.width == current.width &&
+                    next.y == current.y + current.height)
+                {
+                    // Can merge vertically
+                    current.height += next.height;
+                    next.width = 0; // Mark as merged
+                }
+            }
+
+            mergedRects.push_back(current);
+        }
+
+        // Create actual colliders from the merged rectangles
+        for (const auto& rect : mergedRects)
+        {
+            // Calculate world position of the rectangle center
+            float worldX =
+                trans->position.x - (trans->scale.x / 2.0f) +
+                (rect.x + rect.width / 2.0f) * tileWorldSizeX;
+            float worldY =
+                trans->position.y - (trans->scale.y / 2.0f) +
+                (rect.y + rect.height / 2.0f) * tileWorldSizeY;
+
+            // Calculate half-widths
+            float halfWidth = (rect.width * tileWorldSizeX) / 2.0f;
+            float halfHeight = (rect.height * tileWorldSizeY) / 2.0f;
+
+            // Create the collider
+            // MakeCol(glm::vec2(worldX, worldY),
+            //         glm::vec2(halfWidth, halfHeight));
+
+            EntityID tileCol = engineState.scene.AddEntity();
+            engineState.scene.AssignParam<Name>(tileCol,
+                                                "TileCollider");
+
+            auto tileColTrans =
+                engineState.scene.AssignParam<Transform>(
+                    tileCol, glm::vec3(worldX, worldY, 0.0f),
+                    glm::vec3(0.0f), glm::vec3(0.0f));
+
+            auto tileColBody =
+                engineState.scene.AssignParam<sm2d::Rigidbody>(
+                    tileCol, sm2d::BodyType::sm2d_Static,
+                    tileColTrans, 1.0f, false, 0.98f, 0.98f, 0.1f,
+                    true, 1.0f, 0, false, false);
+
+            sm2d::ColPolygon poly(
+                {glm::vec2(halfWidth, halfHeight),
+                 glm::vec2(halfWidth, -halfHeight),
+                 glm::vec2(-halfWidth, -halfHeight),
+                 glm::vec2(-halfWidth, halfHeight)});
+
+            engineState.scene.AssignParam<sm2d::Collider>(
+                tileCol, sm2d::ColliderType::sm2d_Polygon, poly,
+                tileColBody);
+        }
     }
 }
 
@@ -419,59 +395,54 @@ void BackgroundSpriteLoad(BackgroundSprite*     sprite,
                           const nlohmann::json& j)
 {
     sprite->texturePath = j["BsTexturePath"];
-    sprite->texture = Utils::LoadTexture(sprite->texturePath.c_str());
     sprite->depthTexturePath = j["BsDepthTexturePath"];
+    sprite->paletteTexturePath = j["BsPalletteTexturePath"];
+
     sprite->depthTexture =
         Utils::LoadTexture(sprite->depthTexturePath.c_str());
-    if (j.contains("BsPalletteTexturePath"))
+    sprite->paletteTexture =
+        Utils::LoadTexture(sprite->paletteTexturePath.c_str());
+
+    glGenTextures(1, &sprite->texture);
+
+    int width, height, nrComponents;
+    sprite->data = stbi_load(sprite->texturePath.c_str(), &width,
+                             &height, &nrComponents, 0);
+    if (sprite->data)
     {
-        sprite->paletteTexturePath = j["BsPalletteTexturePath"];
-        glGenTextures(1, &sprite->paletteTexture);
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
 
-        int width, height, nrComponents;
-        sprite->data = stbi_load(sprite->paletteTexturePath.c_str(),
-                                 &width, &height, &nrComponents, 0);
-        if (sprite->data)
-        {
-            GLenum format;
-            if (nrComponents == 1)
-                format = GL_RED;
-            else if (nrComponents == 3)
-                format = GL_RGB;
-            else if (nrComponents == 4)
-                format = GL_RGBA;
+        glBindTexture(GL_TEXTURE_2D, sprite->texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0,
+                     format, GL_UNSIGNED_BYTE, sprite->data);
+        glGenerateMipmap(GL_TEXTURE_2D);
 
-            std::cout << "nrComponents: " << nrComponents << '\n';
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                        format == GL_RGBA ? GL_CLAMP_TO_EDGE
+                                          : GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+                        format == GL_RGBA ? GL_CLAMP_TO_EDGE
+                                          : GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                        GL_NEAREST_MIPMAP_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                        GL_NEAREST);
 
-            glBindTexture(GL_TEXTURE_2D, sprite->paletteTexture);
-            glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0,
-                         format, GL_UNSIGNED_BYTE, sprite->data);
-            glGenerateMipmap(GL_TEXTURE_2D);
+        sprite->dimensions = glm::vec2(width, height);
 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-                            format == GL_RGBA ? GL_CLAMP_TO_EDGE
-                                              : GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
-                            format == GL_RGBA ? GL_CLAMP_TO_EDGE
-                                              : GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                            GL_NEAREST_MIPMAP_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                            GL_NEAREST);
-
-            sprite->dimensions = glm::vec2(width, height);
-
-            glBindTexture(GL_TEXTURE_2D, 0);
-        }
-        else
-        {
-            std::cout << "Texture failed to load at path: "
-                      << sprite->paletteTexturePath << '\n';
-        }
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
-    if (j.contains("BsDimensions"))
-        sprite->dimensions = {j["BsDimensions"][0],
-                              j["BsDimensions"][1]};
+    else
+    {
+        std::cout << "Texture failed to load at path: "
+                  << sprite->texturePath << '\n';
+    }
 }
 
 REGISTER_COMPONENT(BackgroundSprite, BackgroundSpriteDraw,
