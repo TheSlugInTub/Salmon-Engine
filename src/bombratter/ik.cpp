@@ -323,7 +323,7 @@ void PlayerIKSys()
         {
             if (Input::GetKeyDown(Key::Z))
             {
-                ik->legCollider->body->linearVelocity.y += 2.0f;
+                ik->legCollider->body->linearVelocity.y += ik->jumpSpeed * engineState.deltaTime;
             }
 
             if (Input::GetKeyDown(Key::Up))
@@ -587,7 +587,8 @@ nlohmann::json PlayerIKSave(PlayerIK* ik)
          {ik->crawlingHandRoot[0].x, ik->crawlingHandRoot[0].y}},
         {"CrawlingHandRoot2",
          {ik->crawlingHandRoot[1].x, ik->crawlingHandRoot[1].y}},
-        {"HandLength", ik->handLength}};
+        {"HandLength", ik->handLength},
+        {"JumpSpeed", ik->jumpSpeed}};
 
     return j;
 }
@@ -628,6 +629,8 @@ void PlayerIKLoad(PlayerIK* ik, const nlohmann::json& j)
     if (j.contains("CrawlingHandRoot2"))
         ik->crawlingHandRoot[1] = {j["CrawlingHandRoot2"][0],
                                    j["CrawlingHandRoot2"][1]};
+    if (j.contains("JumpSpeed"))
+        ik->jumpSpeed = j["JumpSpeed"];
 }
 
 REGISTER_COMPONENT(PlayerIK, PlayerIKDraw, PlayerIKSave,

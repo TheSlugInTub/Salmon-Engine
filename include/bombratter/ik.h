@@ -57,6 +57,7 @@ struct PlayerIK
     float speed = 0.0f;
     float maxSpeed = 0.0f;
     float maxCrawlSpeed = 0.0f;
+    float jumpSpeed = 200.0f;
 
     PlayerIK() {}
 };
