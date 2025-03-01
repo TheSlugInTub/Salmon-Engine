@@ -37,12 +37,6 @@ struct Rigidbody2D
     b2BodyId  bodyID;
 
     Rigidbody2D() {}
-
-    ~Rigidbody2D() 
-    {
-        b2DestroyBody(bodyID);
-        bodyID = b2_nullBodyId;
-    }
 };
 
 struct Collider2D
@@ -75,12 +69,6 @@ struct Collider2D
     }
 
     Collider2D() {}
-
-    ~Collider2D() 
-    {
-        b2DestroyShape(shapeID, false);
-        shapeID = b2_nullShapeId;
-    }
 };
 
 inline b2WorldDef worldDef;

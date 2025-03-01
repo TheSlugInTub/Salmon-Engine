@@ -6,6 +6,7 @@
 #include <sm2d/colliders.h>
 #include <sm2d/functions.h>
 #include <filesystem>
+#include <salmon/physics_2d.h>
 
 void DrawHierarchy()
 {
@@ -156,6 +157,22 @@ void LoadScene(const std::string& filename)
 
     nlohmann::json j;
     file >> j;
+    
+    for (EntityID ent : SceneView<Rigidbody2D>(engineState.scene))
+    {
+        auto rigid = engineState.scene.Get<Rigidbody2D>(ent);
+        auto col = engineState.scene.Get<Collider2D>(ent);
+
+        std::cout << "Hey\n";
+        b2DestroyBody(rigid->bodyID);
+        rigid->bodyID = b2_nullBodyId;
+
+        if (col != nullptr)
+        {
+            b2DestroyShape(col->shapeID, false);
+            col->shapeID = b2_nullShapeId;
+        }
+    }
 
     engineState.scene.Clear();
     sm2d::bvh.nodes.clear();
