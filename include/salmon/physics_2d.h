@@ -1,6 +1,5 @@
 #pragma once
 
-#include "box2d/id.h"
 #include <box2d/box2d.h>
 #include <salmon/components.h>
 #include <salmon/json.hpp>
@@ -78,3 +77,5 @@ inline b2DebugDraw debugDraw;
 void InitPhysics2D();
 void StepPhysics2D();
 void DestroyPhysics2D();
+
+void Collider2DDebugSys();

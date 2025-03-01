@@ -16,7 +16,6 @@ void DebugDrawPolygon(const b2Vec2* vertices, int vertexCount,
     }
 
     Renderer::RenderLine2D(points, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-    Renderer::RenderLine2D(points, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
 }
 
 void DebugDrawSolidPolygon(b2Transform   transform,
@@ -24,6 +23,14 @@ void DebugDrawSolidPolygon(b2Transform   transform,
                            int32_t vertexCount, float radius,
                            b2HexColor color, void* context)
 {
+    std::vector<glm::vec2> points = {};
+
+    for (int i = 0; i < vertexCount; i++)
+    {
+        points.push_back(glm::vec2(vertices[i].x, vertices[i].y));
+    }
+
+    Renderer::RenderLine2D(points, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
 }
 
 void DebugDrawCircle(b2Vec2 center, float radius, b2HexColor color,
@@ -42,6 +49,14 @@ void DebugDrawCircle(b2Vec2 center, float radius, b2HexColor color,
 void DebugDrawSolidCircle(b2Transform transform, float radius,
                           b2HexColor color, void* context)
 {
+    glm::vec2 centroid = glm::vec2(transform.p.x, transform.p.y);
+    std::vector<glm::vec2> points = {
+        glm::vec2(centroid.x + radius, centroid.y + radius),
+        glm::vec2(centroid.x - radius, centroid.y + radius),
+        glm::vec2(centroid.x - radius, centroid.y - radius),
+        glm::vec2(centroid.x + radius, centroid.y - radius)};
+
+    Renderer::RenderLine2D(points, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
 }
 
 void DebugDrawSolidCapsule(b2Vec2 p1, b2Vec2 p2, float radius,
@@ -165,7 +180,7 @@ void Rigidbody2DSys()
         b2Rot  rot = b2Body_GetRotation(rigid->bodyID);
 
         rigid->transform->position = glm::vec3(pos.x, pos.y, 0.0f);
-        rigid->transform->rotation.z = b2Rot_GetAngle(rot);   
+        rigid->transform->rotation.z = b2Rot_GetAngle(rot);
     }
 }
 
@@ -191,8 +206,8 @@ void Collider2DStartSys()
                     col->shapeDef.restitution = rigid->restitution;
                 }
 
-                col->shapeID = b2CreatePolygonShape(col->body->bodyID,
-                                     &col->shapeDef, &col->polygon);
+                col->shapeID = b2CreatePolygonShape(
+                    col->body->bodyID, &col->shapeDef, &col->polygon);
                 break;
             }
             case rg2d_Circle:
@@ -211,13 +226,14 @@ void Collider2DStartSys()
                     b2Vec2(col->body->transform->position.x,
                            col->body->transform->position.y);
 
-                col->shapeID = b2CreateCircleShape(col->body->bodyID, &col->shapeDef,
-                                    &col->circle);
+                col->shapeID = b2CreateCircleShape(
+                    col->body->bodyID, &col->shapeDef, &col->circle);
                 break;
             }
             case rg2d_Polygon:
             {
                 b2Vec2 points[100] = {};
+                glm::vec2 pos = col->body->transform->position;
 
                 for (int i = 0; i < col->points.size(); ++i)
                 {
@@ -230,6 +246,13 @@ void Collider2DStartSys()
                 float radius = 0.1f;
                 col->polygon = b2MakePolygon(&hull, radius);
 
+                if (hull.count < 3)
+                {
+                    std::cout << "Degenerate polygon hull was created\n";
+                }
+
+                col->shapeDef = b2DefaultShapeDef();
+
                 if (col->body->type == rg2d_Dynamic)
                 {
                     col->shapeDef.friction = rigid->friction;
@@ -237,8 +260,14 @@ void Collider2DStartSys()
                     col->shapeDef.restitution = rigid->restitution;
                 }
 
-                col->shapeID = b2CreatePolygonShape(col->body->bodyID,
-                                     &col->shapeDef, &col->polygon);
+                col->shapeID = b2CreatePolygonShape(
+                    col->body->bodyID, &col->shapeDef, &col->polygon);
+
+                if (!b2Shape_IsValid(col->shapeID))
+                {
+                    std::cout << "Polygn shape ain't valid yo!\n";
+                }
+                
                 break;
             }
         }
@@ -266,94 +295,130 @@ REGISTER_SYSTEM(Rigidbody2DSys);
 
 void Collider2DDebugSys()
 {
-    if (!playing)
+    for (EntityID ent : SceneView<Collider2D>(engineState.scene))
     {
-        for (EntityID ent : SceneView<Collider2D>(engineState.scene))
+        auto col = engineState.scene.Get<Collider2D>(ent);
+        auto rigid = engineState.scene.Get<Rigidbody2D>(ent);
+        auto trans = engineState.scene.Get<Transform>(ent);
+
+        if (rigid == nullptr)
         {
-            auto col = engineState.scene.Get<Collider2D>(ent);
-            auto rigid = engineState.scene.Get<Rigidbody2D>(ent);
-            auto trans = engineState.scene.Get<Transform>(ent);
+            continue;
+        }
 
-            if (rigid == nullptr)
+        if (col->body == nullptr)
+        {
+            col->body = rigid;
+        }
+
+        if (col->body->transform == nullptr)
+        {
+            col->body->transform = trans;
+        }
+
+        if (col->colliderType == rg2d_Circle)
+        {
+            glm::vec2 topLeft =
+                glm::vec2(col->body->transform->position) -
+                glm::vec2(col->radius, col->radius);
+            glm::vec2 topRight =
+                glm::vec2(col->body->transform->position) +
+                glm::vec2(col->radius, -col->radius);
+            glm::vec2 bottomRight =
+                glm::vec2(col->body->transform->position) +
+                glm::vec2(-col->radius, col->radius);
+            glm::vec2 bottomLeft =
+                glm::vec2(col->body->transform->position) +
+                glm::vec2(col->radius, col->radius);
+
+            std::vector<glm::vec2> points = {topLeft, bottomRight,
+                                             bottomLeft, topRight};
+
+            Renderer::RenderLine2D(points,
+                                   glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+        }
+        else if (col->colliderType == rg2d_Box)
+        {
+            // Get the rotation angle from transform
+            float rotation =
+                col->body->transform->rotation.z; // in radians
+            float cosAngle = cos(rotation);
+            float sinAngle = sin(rotation);
+
+            // Calculate the four corners relative to center (before
+            // rotation and translation)
+            glm::vec2 relTopLeft(-col->halfwidths.x,
+                                 col->halfwidths.y);
+            glm::vec2 relTopRight(col->halfwidths.x,
+                                  col->halfwidths.y);
+            glm::vec2 relBottomRight(col->halfwidths.x,
+                                     -col->halfwidths.y);
+            glm::vec2 relBottomLeft(-col->halfwidths.x,
+                                    -col->halfwidths.y);
+
+            // Apply rotation to each corner
+            glm::vec2 topLeft =
+                glm::vec2(relTopLeft.x * cosAngle -
+                              relTopLeft.y * sinAngle,
+                          relTopLeft.x * sinAngle +
+                              relTopLeft.y * cosAngle) +
+                glm::vec2(col->body->transform->position);
+
+            glm::vec2 topRight =
+                glm::vec2(relTopRight.x * cosAngle -
+                              relTopRight.y * sinAngle,
+                          relTopRight.x * sinAngle +
+                              relTopRight.y * cosAngle) +
+                glm::vec2(col->body->transform->position);
+
+            glm::vec2 bottomRight =
+                glm::vec2(relBottomRight.x * cosAngle -
+                              relBottomRight.y * sinAngle,
+                          relBottomRight.x * sinAngle +
+                              relBottomRight.y * cosAngle) +
+                glm::vec2(col->body->transform->position);
+
+            glm::vec2 bottomLeft =
+                glm::vec2(relBottomLeft.x * cosAngle -
+                              relBottomLeft.y * sinAngle,
+                          relBottomLeft.x * sinAngle +
+                              relBottomLeft.y * cosAngle) +
+                glm::vec2(col->body->transform->position);
+
+            std::vector<glm::vec2> points = {bottomLeft, topLeft,
+                                             topRight, bottomRight};
+
+            Renderer::RenderLine2D(points,
+                                   glm::vec4(0.0f, 1.0f, 0.0f, 1.0));
+        }
+        else if (col->colliderType == rg2d_Polygon)
+        {
+            std::vector<glm::vec2> threedpoints;
+            for (auto& point : col->points)
             {
-                continue;
+                // Get the rotation angle from transform
+                float rotation =
+                    col->body->transform->rotation.z; // in radians
+
+                // First create rotated point (before translation)
+                float cosAngle = cos(rotation);
+                float sinAngle = sin(rotation);
+
+                glm::vec2 rotatedPoint(
+                    point.x * cosAngle - point.y * sinAngle,
+                    point.x * sinAngle + point.y * cosAngle);
+
+                // Then add the position (translation)
+                threedpoints.push_back(
+                    rotatedPoint +
+                    glm::vec2(col->body->transform->position));
             }
 
-            if (col->body == nullptr)
-            {
-                col->body = rigid;
-            }
-
-            if (col->body->transform == nullptr)
-            {
-                col->body->transform = trans;
-            }
-
-            if (col->colliderType == rg2d_Circle)
-            {
-                glm::vec2 topLeft =
-                    glm::vec2(col->body->transform->position) -
-                    glm::vec2(col->radius, col->radius);
-                glm::vec2 topRight =
-                    glm::vec2(col->body->transform->position) +
-                    glm::vec2(col->radius, -col->radius);
-                glm::vec2 bottomRight =
-                    glm::vec2(col->body->transform->position) +
-                    glm::vec2(-col->radius, col->radius);
-                glm::vec2 bottomLeft =
-                    glm::vec2(col->body->transform->position) +
-                    glm::vec2(col->radius, col->radius);
-
-                std::vector<glm::vec2> points = {
-                    topLeft, bottomRight, bottomLeft, topRight};
-
-                Renderer::RenderLine2D(
-                    points,
-                    glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-            }
-            else if (col->colliderType == rg2d_Box)
-            {
-                glm::vec2 topLeft =
-                    glm::vec2(col->body->transform->position) +
-                    glm::vec2(-col->halfwidths.x, col->halfwidths.y);
-                glm::vec2 topRight =
-                    glm::vec2(col->body->transform->position) +
-                    glm::vec2(col->halfwidths.x, col->halfwidths.y);
-                glm::vec2 bottomRight =
-                    glm::vec2(col->body->transform->position) +
-                    glm::vec2(col->halfwidths.x, -col->halfwidths.y);
-                glm::vec2 bottomLeft =
-                    glm::vec2(col->body->transform->position) +
-                    glm::vec2(-col->halfwidths.x, -col->halfwidths.y);
-
-                std::vector<glm::vec2> points = {
-                    bottomLeft, topLeft, topRight, bottomRight};              
-
-                Renderer::RenderLine2D(
-                    points, glm::vec4(0.0f, 1.0f, 0.0f, 1.0));
-            }
-            else if (col->colliderType == rg2d_Polygon)
-            {
-                std::vector<glm::vec2> threedpoints;
-                for (auto& point : col->points)
-                {
-                    threedpoints.push_back(glm::vec2(
-                        point +
-                        glm::vec2(col->body->transform->position)));
-                }
-
-                Renderer::RenderLine2D(
-                    threedpoints, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-            }
+            Renderer::RenderLine2D(threedpoints,
+                                   glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
         }
     }
-    else
-    {
-        b2World_Draw(worldID, &debugDraw);
-    }
 }
-
-REGISTER_EDITOR_SYSTEM(Collider2DDebugSys);
 
 void Rigidbody2DDraw(Rigidbody2D* rb)
 {

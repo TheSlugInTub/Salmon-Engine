@@ -62,7 +62,7 @@
         {
             "Position": [
                 0.0,
-                0.0,
+                3.0199999809265137,
                 0.0
             ],
             "Rotation": [
@@ -106,6 +106,75 @@
                 0.5
             ],
             "Type": 0,
+            "type": "Collider2D"
+        }
+    ],
+    [
+        {
+            "EntName": "asd",
+            "type": "Name"
+        },
+        {
+            "Position": [
+                0.5799999833106995,
+                1.590000033378601,
+                0.0
+            ],
+            "Rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "type": "Transform"
+        },
+        {
+            "Billboard": false,
+            "Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "TexturePath": "res/textures/wall_depth.png",
+            "type": "SpriteRenderer"
+        },
+        {
+            "AlwaysAwake": false,
+            "AngularDamping": 0.9800000190734863,
+            "FixedRotation": false,
+            "Friction": 1.0,
+            "LinearDamping": 0.9800000190734863,
+            "Mass": 1.0269999504089355,
+            "Restitution": 0.0,
+            "Type": 1,
+            "UserData": 0,
+            "type": "Rigidbody2D"
+        },
+        {
+            "Points": [
+                [
+                    0.5,
+                    0.5
+                ],
+                [
+                    -0.5247214436531067,
+                    0.5513142347335815
+                ],
+                [
+                    -0.5293081402778625,
+                    -0.5423575639724731
+                ],
+                [
+                    0.5165546536445618,
+                    -0.5200356245040894
+                ]
+            ],
+            "Type": 2,
             "type": "Collider2D"
         }
     ]

@@ -10,6 +10,7 @@
 #include <salmon/ui.h>
 #include <salmon/tilemap.h>
 #include <bombratter/background_sprite.h>
+#include <salmon/physics_2d.h>
 
 void MeshRendererSys()
 {
@@ -347,5 +348,6 @@ REGISTER_EDITOR_SYSTEM (ParticleSystemSys);
 REGISTER_EDITOR_SYSTEM (ButtonSys);
 REGISTER_EDITOR_SYSTEM (TextSys);
 REGISTER_EDITOR_SYSTEM (TilemapSys);
+REGISTER_EDITOR_SYSTEM (Collider2DDebugSys);
 REGISTER_EDITOR_SYSTEM (BackgroundSpriteSys);
 REGISTER_EDITOR_SYSTEM (RenderQuadSys);
