@@ -10,7 +10,7 @@
 inline int componentCounter = 0;
 
 // Max constants
-const int MAX_COMPONENTS = 64;
+const int MAX_COMPONENTS = 150;
 const int MAX_ENTITIES = 1000;
 
 // Typedefs to aid in reading

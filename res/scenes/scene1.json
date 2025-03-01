@@ -1,56 +1,13 @@
 [
     [
         {
-            "Acceleration": 5.0,
-            "CrawlingHandRoot1": [
-                0.0,
-                0.0
-            ],
-            "CrawlingHandRoot2": [
-                0.0,
-                0.0
-            ],
-            "CrawlingLegRoot1": [
-                0.0,
-                0.0
-            ],
-            "CrawlingLegRoot2": [
-                0.0,
-                0.0
-            ],
-            "Deceleration": 6.0,
-            "HandLength": 0.07000000029802322,
-            "HandRoot1": [
-                0.07000000029802322,
-                0.18000000715255737
-            ],
-            "HandRoot2": [
-                -0.07000000029802322,
-                0.18000000715255737
-            ],
-            "JumpSpeed": 200.0,
-            "LegLength": 0.10000000149011612,
-            "LegRoot1": [
-                0.07999999821186066,
-                0.10000000149011612
-            ],
-            "LegRoot2": [
-                -0.07999999821186066,
-                0.10000000149011612
-            ],
-            "LegThreshold": 0.23000000417232513,
-            "MaxCrawlSpeed": 0.800000011920929,
-            "MaxSpeed": 1.5,
-            "type": "PlayerIK"
-        },
-        {
-            "EntName": "Player",
+            "EntName": "Ground",
             "type": "Name"
         },
         {
             "Position": [
                 0.0,
-                0.0,
+                -3.0,
                 0.0
             ],
             "Rotation": [
@@ -59,32 +16,8 @@
                 0.0
             ],
             "Scale": [
+                9.0,
                 1.0,
-                1.0,
-                1.0
-            ],
-            "type": "Transform"
-        }
-    ],
-    [
-        {
-            "EntName": "Item",
-            "type": "Name"
-        },
-        {
-            "Position": [
-                1.1100000143051147,
-                -0.5400000214576721,
-                0.0
-            ],
-            "Rotation": [
-                0.0,
-                0.0,
-                0.7900000214576721
-            ],
-            "Scale": [
-                0.23000000417232513,
-                0.20999999344348907,
                 1.0
             ],
             "type": "Transform"
@@ -97,76 +30,49 @@
                 1.0,
                 1.0
             ],
-            "TexturePath": "res/textures/SlugariusTriangle.png",
+            "TexturePath": "res/textures/wall.png",
             "type": "SpriteRenderer"
         },
         {
             "AlwaysAwake": false,
             "AngularDamping": 0.9800000190734863,
-            "AngularVelocity": 0.0,
-            "ApplyGravity": true,
-            "Awake": true,
             "FixedRotation": false,
-            "Force": [
-                0.0,
-                0.0
-            ],
+            "Friction": 1.0,
             "LinearDamping": 0.9800000190734863,
-            "LinearVelocity": [
-                0.0,
-                0.0
-            ],
-            "Mass": 5.0,
-            "MomentOfInertia": 0.1850000023841858,
-            "Restitution": 0.10000000149011612,
-            "Torque": 0.0,
-            "Type": 1,
-            "UserData": 500,
-            "type": "Rigidbody"
+            "Mass": 1.0,
+            "Restitution": 0.0,
+            "Type": 0,
+            "UserData": 0,
+            "type": "Rigidbody2D"
         },
         {
-            "Center": [
-                1.1132938861846924,
-                -0.4851015508174896
+            "HalfWidths": [
+                4.5,
+                0.5
             ],
-            "IgnoreTag": 255,
-            "Points": [
-                [
-                    -0.106986403465271,
-                    0.10402190685272217
-                ],
-                [
-                    0.11597323417663574,
-                    -0.10111570358276367
-                ],
-                [
-                    0.11496007442474365,
-                    0.1059945821762085
-                ]
-            ],
-            "Type": 3,
-            "type": "Collider"
+            "Type": 0,
+            "type": "Collider2D"
         }
     ],
     [
         {
-            "EntName": "Item2",
+            "EntName": "Entity",
             "type": "Name"
         },
         {
             "Position": [
-                -2.119999885559082,
-                -0.5400000214576721,
+                0.0,
+                0.0,
                 0.0
             ],
             "Rotation": [
                 0.0,
                 0.0,
-                0.7900000214576721
+                0.0
             ],
             "Scale": [
-                0.23000000417232513,
-                0.20999999344348907,
+                1.0,
+                1.0,
                 1.0
             ],
             "type": "Transform"
@@ -179,89 +85,28 @@
                 1.0,
                 1.0
             ],
-            "TexturePath": "res/textures/SlugariusTriangle.png",
+            "TexturePath": "res/textures/wall_depth.png",
             "type": "SpriteRenderer"
         },
         {
             "AlwaysAwake": false,
-            "AngularDamping": 0.9800000190734863,
-            "AngularVelocity": 0.0,
-            "ApplyGravity": true,
-            "Awake": true,
+            "AngularDamping": 0.10000000149011612,
             "FixedRotation": false,
-            "Force": [
-                0.0,
-                0.0
-            ],
-            "LinearDamping": 0.9800000190734863,
-            "LinearVelocity": [
-                0.0,
-                0.0
-            ],
-            "Mass": 5.0,
-            "MomentOfInertia": 0.1850000023841858,
-            "Restitution": 0.10000000149011612,
-            "Torque": 0.0,
+            "Friction": 1.0,
+            "LinearDamping": 0.10000000149011612,
+            "Mass": 1.0,
+            "Restitution": 0.0,
             "Type": 1,
-            "UserData": 500,
-            "type": "Rigidbody"
+            "UserData": 0,
+            "type": "Rigidbody2D"
         },
         {
-            "Center": [
-                -2.116706132888794,
-                -0.4851015508174896
+            "HalfWidths": [
+                0.5,
+                0.5
             ],
-            "IgnoreTag": 255,
-            "Points": [
-                [
-                    -0.106986403465271,
-                    0.10402190685272217
-                ],
-                [
-                    0.11597323417663574,
-                    -0.10111570358276367
-                ],
-                [
-                    0.11496007442474365,
-                    0.1059945821762085
-                ]
-            ],
-            "Type": 3,
-            "type": "Collider"
-        }
-    ],
-    [
-        {
-            "BsDepthTexturePath": "editor/stockade_depth.png",
-            "BsDimensions": [
-                1280.0,
-                960.0
-            ],
-            "BsPalletteTexturePath": "res/textures/pallettes/stockade_pallette.png",
-            "BsTexturePath": "editor/stockade.png",
-            "type": "BackgroundSprite"
-        },
-        {
-            "EntName": "Background",
-            "type": "Name"
-        },
-        {
-            "Position": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "Rotation": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "Scale": [
-                24.0,
-                18.0,
-                1.0
-            ],
-            "type": "Transform"
+            "Type": 0,
+            "type": "Collider2D"
         }
     ]
 ]

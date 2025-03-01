@@ -1,5 +1,6 @@
 #include <salmon/salmon.h>
 #include <salmon/tilemap.h>
+#include <salmon/physics_2d.h>
 
 // settings
 const unsigned int SCR_WIDTH = 1920;
@@ -27,6 +28,8 @@ int main(int argc, char** argv)
     Renderer::Init2D();
     Renderer::InitTilemaps();
 
+    InitPhysics2D();
+
     StartEditorStartSystems();
 
     ImGuiLayer::Init();
@@ -45,6 +48,7 @@ int main(int argc, char** argv)
         if (playing)
         {
             UpdateSystems();
+            StepPhysics2D();
         }
 
         // Main loop logic
@@ -60,7 +64,7 @@ int main(int argc, char** argv)
         colResults.clear();
         sm2d::GetCollisionsInTree(sm2d::bvh, colResults);
         sm2d::ResolveCollisions(sm2d::bvh, colResults);
-
+        
         // Update FPS every second
         auto currentTime = std::chrono::high_resolution_clock::now();
 
@@ -103,6 +107,7 @@ int main(int argc, char** argv)
         window.Update();
     }
 
+    DestroyPhysics2D();
     ImGuiLayer::Terminate();
 
     return 0;
