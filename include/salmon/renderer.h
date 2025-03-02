@@ -78,7 +78,7 @@ void RenderSprite(EntityID ent, const glm::mat4& projection, const glm::mat4& vi
 void RenderParticleSystem(const ParticleSystem& par, const glm::mat4& projection,
                           const glm::mat4& view);
 // Renders text
-void RenderText(const Text& item, const glm::mat4& projection);
+void RenderText(const TextUI& item, const glm::mat4& projection);
 // Renders an orthographic quad
 void RenderQuad(glm::vec2 position, glm::vec2 scale, float rotation, const glm::mat4& projection,
                 unsigned int texture, const glm::vec4& color);

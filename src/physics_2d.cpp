@@ -156,6 +156,11 @@ void Rigidbody2DStartSys()
     {
         auto rigid = engineState.scene.Get<Rigidbody2D>(ent);
 
+        if (b2Body_IsValid(rigid->bodyID))
+        {
+            continue;
+        }
+
         rigid->bodyDef = b2DefaultBodyDef();
 
         rigid->bodyDef.position =
@@ -169,7 +174,7 @@ void Rigidbody2DStartSys()
             rigid->bodyDef.linearDamping = rigid->linearDamping;
             rigid->bodyDef.fixedRotation = rigid->fixedRotation;
             rigid->bodyDef.enableSleep = !rigid->alwaysAwake;
-            rigid->bodyDef.userData = (void*)rigid->userData;
+            rigid->bodyDef.userData = (void*)rigid;
         }
 
         rigid->bodyID = b2CreateBody(worldID, &rigid->bodyDef);
@@ -197,6 +202,9 @@ void Collider2DStartSys()
         auto col = engineState.scene.Get<Collider2D>(ent);
         auto rigid = col->body;
 
+        if (!b2Shape_IsValid(col->shapeID))
+            continue;
+
         switch (col->colliderType)
         {
             case rg2d_Box:
@@ -212,6 +220,10 @@ void Collider2DStartSys()
                     col->shapeDef.restitution = rigid->restitution;
                 }
 
+                col->shapeDef.filter.categoryBits = col->categoryBits;
+                col->shapeDef.filter.maskBits = col->maskBits;
+                col->shapeDef.userData = (void*)col;
+
                 col->shapeID = b2CreatePolygonShape(
                     col->body->bodyID, &col->shapeDef, &col->polygon);
                 break;
@@ -226,6 +238,10 @@ void Collider2DStartSys()
                     col->shapeDef.density = rigid->mass;
                     col->shapeDef.restitution = rigid->restitution;
                 }
+
+                col->shapeDef.filter.categoryBits = col->categoryBits;
+                col->shapeDef.filter.maskBits = col->maskBits;
+                col->shapeDef.userData = (void*)col;
 
                 col->circle.radius = col->radius;
                 col->circle.center =
@@ -266,6 +282,10 @@ void Collider2DStartSys()
                     col->shapeDef.density = rigid->mass;
                     col->shapeDef.restitution = rigid->restitution;
                 }
+
+                col->shapeDef.filter.categoryBits = col->categoryBits;
+                col->shapeDef.filter.maskBits = col->maskBits;
+                col->shapeDef.userData = (void*)col;
 
                 col->shapeID = b2CreatePolygonShape(
                     col->body->bodyID, &col->shapeDef, &col->polygon);
@@ -311,6 +331,16 @@ void CreateRevoluteJoint(Joint2D& joint, const glm::vec2& anchorA,
     joint.revoluteJointDef.bodyIdA = bodyA;
     joint.revoluteJointDef.bodyIdB = bodyB;
 
+    std::cout << "Rev created\n";
+    if (!b2Body_IsValid(bodyA))
+    {
+        std::cout << "BodA ain't valid yo!";
+    }
+    if (!b2Body_IsValid(bodyB))
+    {
+        std::cout << "BodB ain't valid yo!";
+    }
+
     joint.revoluteJointDef.localAnchorA =
         b2Vec2(anchorA.x, anchorA.y);
     joint.revoluteJointDef.localAnchorB =
@@ -328,7 +358,7 @@ void CreateDistanceJoint(Joint2D& joint, const glm::vec2& anchorA,
                          const glm::vec2& anchorB, b2BodyId bodyA,
                          b2BodyId bodyB, float distance)
 {
-    joint.type = rg2d_Revolute;
+    joint.type = rg2d_Distance;
     joint.bodyA = bodyA;
     joint.bodyB = bodyB;
     joint.anchorA = anchorA;
@@ -344,10 +374,10 @@ void CreateDistanceJoint(Joint2D& joint, const glm::vec2& anchorA,
     joint.distanceJointDef.localAnchorB =
         b2Vec2(anchorB.x, anchorB.y);
 
-    b2Vec2 anchorAb2 =
-        b2Body_GetWorldPoint(bodyA, joint.distanceJointDef.localAnchorA);
-    b2Vec2 anchorBb2 =
-        b2Body_GetWorldPoint(bodyB, joint.distanceJointDef.localAnchorB);
+    b2Vec2 anchorAb2 = b2Body_GetWorldPoint(
+        bodyA, joint.distanceJointDef.localAnchorA);
+    b2Vec2 anchorBb2 = b2Body_GetWorldPoint(
+        bodyB, joint.distanceJointDef.localAnchorB);
 
     joint.distanceJointDef.length = b2Distance(anchorAb2, anchorBb2);
     joint.distanceJointDef.collideConnected = true;
@@ -511,7 +541,6 @@ void Rigidbody2DDraw(Rigidbody2D* rb)
                          0.0f, 1.0f);
         ImGui::Checkbox("rg2d Fixed Rotation", &rb->fixedRotation);
         ImGui::Checkbox("rg2d Always Awake", &rb->alwaysAwake);
-        ImGui::InputInt("rg2d UserData", &rb->userData);
     }
 }
 
@@ -523,7 +552,6 @@ nlohmann::json Rigidbody2DSave(Rigidbody2D* rb)
         {"AngularDamping", rb->angularDamping},
         {"Restitution", rb->restitution},
         {"FixedRotation", rb->fixedRotation},
-        {"UserData", rb->userData},
         {"AlwaysAwake", rb->alwaysAwake},
         {"Friction", rb->friction},
         {"Type", rb->type},
@@ -537,7 +565,6 @@ void Rigidbody2DLoad(Rigidbody2D* rb, const nlohmann::json& j)
     rb->angularDamping = j["AngularDamping"];
     rb->restitution = j["Restitution"];
     rb->fixedRotation = j["FixedRotation"];
-    rb->userData = j["UserData"];
     rb->alwaysAwake = j["AlwaysAwake"];
     rb->friction = j["Friction"];
     if (j.contains("Type"))
@@ -558,6 +585,13 @@ void Collider2DDraw(Collider2D* col)
             col->colliderType =
                 static_cast<Collider2DType>(colTypeValue);
         }
+
+        ImGui::InputScalar("CategoryBits", ImGuiDataType_U32,
+                           &col->categoryBits, NULL, NULL, "%08X",
+                           ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::InputScalar("MaskBits", ImGuiDataType_U32,
+                           &col->maskBits, NULL, NULL, "%08X",
+                           ImGuiInputTextFlags_CharsHexadecimal);
 
         switch (col->colliderType)
         {
@@ -625,8 +659,9 @@ void Collider2DDraw(Collider2D* col)
 
 nlohmann::json Collider2DSave(Collider2D* col)
 {
-    nlohmann::json j = {
-        {"Type", static_cast<int>(col->colliderType)}};
+    nlohmann::json j = {{"Type", static_cast<int>(col->colliderType)},
+                        {"CategoryBits", col->categoryBits},
+                        {"MaskBits", col->maskBits}};
 
     switch (col->colliderType)
     {
@@ -654,6 +689,10 @@ nlohmann::json Collider2DSave(Collider2D* col)
 void Collider2DLoad(Collider2D* col, const nlohmann::json& j)
 {
     col->colliderType = static_cast<Collider2DType>(j["Type"]);
+    if (j.contains("CategoryBits"))
+    col->categoryBits = j["CategoryBits"];
+    if (j.contains("MaskBits"))
+        col->maskBits = j["MaskBits"];
 
     switch (col->colliderType)
     {

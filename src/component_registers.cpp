@@ -167,14 +167,14 @@ void RigidBody3DDraw(RigidBody3D* rigid)
     int         currentType = static_cast<int>(rigid->colliderType);
     if (ImGui::Combo("Collider Type", &currentType, types, 3))
     {
-        rigid->colliderType = static_cast<ColliderType>(currentType);
+        rigid->colliderType = static_cast<ColliderType3D>(currentType);
     }
 
     const char* states[] = {"Dynamic", "Static"};
     int         currentState = static_cast<int>(rigid->state);
     if (ImGui::Combo("Collider Type", &currentState, states, 3))
     {
-        rigid->state = static_cast<BodyState>(currentState);
+        rigid->state = static_cast<BodyState3D>(currentState);
     }
 
     ImGui::DragFloat3("BoxSize", glm::value_ptr(rigid->boxSize));

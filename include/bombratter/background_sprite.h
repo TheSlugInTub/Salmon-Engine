@@ -1,3 +1,5 @@
+#pragma once
+
 #include <salmon/engine.h>
 #include <salmon/shader.h>
 #include <string>

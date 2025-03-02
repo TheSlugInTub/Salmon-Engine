@@ -12,7 +12,7 @@
 // This file creates a bunch of core components that are neccessary for the engine to run
 
 // Enum to specify what shape the collider is
-enum ColliderType
+enum ColliderType3D
 {
     Box = 0,
     Sphere,
@@ -21,7 +21,7 @@ enum ColliderType
 };
 
 // Do it move?
-enum BodyState
+enum BodyState3D
 {
     Dynamic = 0,
     Static
@@ -66,8 +66,8 @@ struct SpriteRenderer
 // Component that simulates physics on the entity's transform with Jolt Physics
 struct RigidBody3D
 {
-    ColliderType colliderType;
-    BodyState    state;
+    ColliderType3D colliderType;
+    BodyState3D    state;
     glm::vec3    boxSize;
     float        sphereRadius = 1.0f;
     float        capsuleRadius = 1.0f;
@@ -79,27 +79,27 @@ struct RigidBody3D
     JPH::Body* body = nullptr;
     int        groupID = 0;
 
-    RigidBody3D(ColliderType type, BodyState state, glm::vec3 size, int groupID = 0,
+    RigidBody3D(ColliderType3D type, BodyState3D state, glm::vec3 size, int groupID = 0,
                 glm::vec3 offset = glm::vec3(0.0f))
        : colliderType(type), boxSize(size), state(state), groupID(groupID), offset(offset)
     {
     }
 
-    RigidBody3D(ColliderType type, BodyState state, float capRad, float capHeight, int groupID = 0,
+    RigidBody3D(ColliderType3D type, BodyState3D state, float capRad, float capHeight, int groupID = 0,
                 glm::vec3 offset = glm::vec3(0.0f))
        : colliderType(type), capsuleHeight(capHeight), capsuleRadius(capRad), state(state),
          groupID(groupID), offset(offset)
     {
     }
 
-    RigidBody3D(ColliderType type, BodyState state, float sphereRadius, int groupID = 0,
+    RigidBody3D(ColliderType3D type, BodyState3D state, float sphereRadius, int groupID = 0,
                 glm::vec3 offset = glm::vec3(0.0f))
        : colliderType(type), sphereRadius(sphereRadius), state(state), groupID(groupID),
          offset(offset)
     {
     }
 
-    RigidBody3D(ColliderType type, BodyState state, int groupID = 0,
+    RigidBody3D(ColliderType3D type, BodyState3D state, int groupID = 0,
                 glm::vec3 offset = glm::vec3(0.0f))
        : colliderType(type), state(state), groupID(groupID), offset(offset)
     {

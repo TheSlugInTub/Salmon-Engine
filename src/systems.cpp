@@ -85,7 +85,7 @@ void RigidBody3DStartSys()
         JPH::Vec3  transPosition(trans->position.x, trans->position.y, trans->position.z);
         JPH::RVec3 RtransPosition = transPosition;
 
-        if (rigid->colliderType == ColliderType::Box)
+        if (rigid->colliderType == ColliderType3D::Box)
         {
             JPH::Vec3 bodyScale(rigid->boxSize.x, rigid->boxSize.y, rigid->boxSize.z);
 
@@ -109,9 +109,9 @@ void RigidBody3DStartSys()
             // properties like the restitution / friction.
             JPH::BodyCreationSettings floor_settings(
                 floor_shape, RtransPosition, joltQuat,
-                rigid->state == BodyState::Dynamic ? JPH::EMotionType::Dynamic
+                rigid->state == BodyState3D::Dynamic ? JPH::EMotionType::Dynamic
                                                    : JPH::EMotionType::Static,
-                rigid->state == BodyState::Dynamic ? Layers::MOVING : Layers::NON_MOVING);
+                rigid->state == BodyState3D::Dynamic ? Layers::MOVING : Layers::NON_MOVING);
 
             floor_settings.mCollisionGroup.SetGroupID(rigid->groupID);
             // Create the actual rigid body
@@ -124,7 +124,7 @@ void RigidBody3DStartSys()
                 bodyInterface.AddBody(rigid->body->GetID(), JPH::EActivation::Activate);
             }
         }
-        else if (rigid->colliderType == ColliderType::Capsule)
+        else if (rigid->colliderType == ColliderType3D::Capsule)
         {
             float radius = rigid->capsuleRadius;
             float height = rigid->capsuleHeight;
@@ -147,9 +147,9 @@ void RigidBody3DStartSys()
 
             JPH::BodyCreationSettings capsule_settings(
                 capsule_shape, RtransPosition, joltQuat,
-                rigid->state == BodyState::Dynamic ? JPH::EMotionType::Dynamic
+                rigid->state == BodyState3D::Dynamic ? JPH::EMotionType::Dynamic
                                                    : JPH::EMotionType::Static,
-                rigid->state == BodyState::Dynamic ? Layers::MOVING : Layers::NON_MOVING);
+                rigid->state == BodyState3D::Dynamic ? Layers::MOVING : Layers::NON_MOVING);
 
             capsule_settings.mCollisionGroup.SetGroupID(rigid->groupID);
             // Create the actual rigid body
@@ -161,7 +161,7 @@ void RigidBody3DStartSys()
                 bodyInterface.AddBody(rigid->body->GetID(), JPH::EActivation::Activate);
             }
         }
-        else if (rigid->colliderType == ColliderType::Sphere)
+        else if (rigid->colliderType == ColliderType3D::Sphere)
         {
             float radius = rigid->sphereRadius; // Define sphere radius in RigidBody3D
 
@@ -175,9 +175,9 @@ void RigidBody3DStartSys()
 
             JPH::BodyCreationSettings sphere_settings(
                 sphere_shape, RtransPosition, JPH::Quat::sIdentity(),
-                rigid->state == BodyState::Dynamic ? JPH::EMotionType::Dynamic
+                rigid->state == BodyState3D::Dynamic ? JPH::EMotionType::Dynamic
                                                    : JPH::EMotionType::Static,
-                rigid->state == BodyState::Dynamic ? Layers::MOVING : Layers::NON_MOVING);
+                rigid->state == BodyState3D::Dynamic ? Layers::MOVING : Layers::NON_MOVING);
 
             sphere_settings.mCollisionGroup.SetGroupID(rigid->groupID);
             // Create the actual rigid body
@@ -202,7 +202,7 @@ void RigidBody3DSys()
     {
         auto rigid = engineState.scene.Get<RigidBody3D>(ent);
 
-        if (rigid->state == BodyState::Static)
+        if (rigid->state == BodyState3D::Static)
         {
             continue;
         }

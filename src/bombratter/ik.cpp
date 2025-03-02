@@ -1,4 +1,3 @@
-#include <chrono>
 #include <salmon/editor.h>
 #include <imgui/imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -10,59 +9,27 @@
 #include <sm2d/functions.h>
 #include <bombratter/background_sprite.h>
 
+ShapeCastContext2D context;
+bool               itemInReach = false;
+
+float HandCastCallback(b2ShapeId shapeId, b2Vec2 point, b2Vec2 normal,
+                       float fraction, void* context)
+{
+    itemInReach = true;
+
+    ShapeCastContext2D* myContext = (ShapeCastContext2D*)context;
+    myContext->collidingShape = shapeId;
+    myContext->collidingBody = b2Shape_GetBody(shapeId);
+
+    return fraction;
+}
+
 void PlayerIKStartSys()
 {
     for (EntityID ent : SceneView<PlayerIK>(engineState.scene))
     {
         auto ik = engineState.scene.Get<PlayerIK>(ent);
         auto trans = engineState.scene.Get<Transform>(ent);
-
-        EntityID sen1 = engineState.scene.AddEntity();
-        engineState.scene.AssignParam<Name>(sen1, "Sen1");
-
-        auto trans1 = engineState.scene.AssignParam<Transform>(
-            sen1, glm::vec3(ik->legRoot[0], 0.0f), glm::vec3(0.0f),
-            glm::vec3(1.0f, 1.0f, 0.0f));
-
-        auto rigid = engineState.scene.AssignParam<sm2d::Rigidbody>(
-            sen1, sm2d::BodyType::sm2d_Static, trans1);
-
-        ik->groundSensor[0] =
-            engineState.scene.AssignParam<sm2d::Collider>(
-                sen1, sm2d::ColliderType::sm2d_AABB,
-                sm2d::ColAABB(glm::vec2(0.15f, 0.06f)), rigid, true);
-
-        EntityID sen2 = engineState.scene.AddEntity();
-        engineState.scene.AssignParam<Name>(sen2, "Sen2");
-
-        auto trans2 = engineState.scene.AssignParam<Transform>(
-            sen2, glm::vec3(ik->legRoot[1], 0.0f), glm::vec3(0.0f),
-            glm::vec3(1.0f, 1.0f, 0.0f));
-
-        auto rigid2 = engineState.scene.AssignParam<sm2d::Rigidbody>(
-            sen2, sm2d::BodyType::sm2d_Static, trans2);
-
-        ik->groundSensor[1] =
-            engineState.scene.AssignParam<sm2d::Collider>(
-                sen2, sm2d::ColliderType::sm2d_AABB,
-                sm2d::ColAABB(glm::vec2(0.15f, 0.06f)), rigid2, true);
-
-        EntityID itemSen = engineState.scene.AddEntity();
-        engineState.scene.AssignParam<Name>(itemSen, "ItemSen");
-        auto itemTrans = engineState.scene.AssignParam<Transform>(
-            itemSen, glm::vec3(0.0f), glm::vec3(0.0f),
-            glm::vec3(0.0f));
-        auto itemRigid =
-            engineState.scene.AssignParam<sm2d::Rigidbody>(
-                itemSen, sm2d::BodyType::sm2d_Static, itemTrans);
-        ik->itemSensor =
-            engineState.scene.AssignParam<sm2d::Collider>(
-                itemSen, sm2d::ColliderType::sm2d_AABB,
-                sm2d::ColAABB(glm::vec2(0.5f, 0.5f)), itemRigid,
-                true);
-        ik->itemSensor->sensorTag = 500;
-
-        // -----
 
         EntityID legEnt = engineState.scene.AddEntity();
         engineState.scene.AssignParam<Name>(legEnt, "LegEnt");
@@ -71,16 +38,12 @@ void PlayerIKStartSys()
             legEnt, trans->position + glm::vec3(0.0f, -0.2f, 0.0f),
             glm::vec3(0.0f), glm::vec3(0.0f));
 
-        auto legEntBody =
-            engineState.scene.AssignParam<sm2d::Rigidbody>(
-                legEnt, sm2d::BodyType::sm2d_Dynamic, legEntTrans,
-                1.0f, true, 0.6f, 0.6f, 0.1f, true, 1.0f, 255, true,
-                true);
+        auto legEntBody = engineState.scene.AssignParam<Rigidbody2D>(
+            legEnt, rg2d_Dynamic, legEntTrans, 1.0f, 1.0f, 0.1f, 0.1f,
+            0.1f, false, true, 255);
 
-        ik->legCollider =
-            engineState.scene.AssignParam<sm2d::Collider>(
-                legEnt, sm2d::ColliderType::sm2d_Circle,
-                sm2d::ColCircle(0.08f), legEntBody);
+        ik->legCollider = engineState.scene.AssignParam<Collider2D>(
+            legEnt, legEntBody, 0.08f, col_Player);
 
         ik->legIK[0] = IKSolver2D(ik->legRoot[0], glm::vec2(0.0f), 3,
                                   ik->legLength);
@@ -103,16 +66,12 @@ void PlayerIKStartSys()
                     bodyEnt, trans->position, glm::vec3(0.0f),
                     glm::vec3(0.2f));
 
-            ik->body[i] =
-                engineState.scene.AssignParam<sm2d::Rigidbody>(
-                    bodyEnt, sm2d::BodyType::sm2d_Dynamic,
-                    bodyEntTrans, 0.1f, true, 0.98f, 0.98f, 0.1f,
-                    true, 1.0f, 255, false, true);
-            ik->body[i]->resLink = ik->legCollider->body;
+            ik->body[i] = engineState.scene.AssignParam<Rigidbody2D>(
+                bodyEnt, rg2d_Dynamic, bodyEntTrans, 1.0f, 1.0f, 0.1f,
+                0.1f, 0.1f, false, true, 255);
 
-            engineState.scene.AssignParam<sm2d::Collider>(
-                bodyEnt, sm2d::ColliderType::sm2d_Circle,
-                sm2d::ColCircle(0.05f), ik->body[i], false, 255);
+            engineState.scene.AssignParam<Collider2D>(
+                bodyEnt, ik->body[i], 0.05f, col_Player);
 
             engineState.scene.AssignParam<SpriteRenderer>(
                 bodyEnt,
@@ -126,13 +85,12 @@ void PlayerIKStartSys()
             headEnt, trans->position + glm::vec3(0.0f, 0.3f, 0.0f),
             glm::vec3(0.0f), glm::vec3(0.2f));
 
-        ik->head = engineState.scene.AssignParam<sm2d::Rigidbody>(
-            headEnt, sm2d::BodyType::sm2d_Dynamic, headEntTrans, 1.0f,
-            true, 0.98f, 0.98f, 0.1f, true, 1.0f, 255, false, true);
+        ik->head = engineState.scene.AssignParam<Rigidbody2D>(
+            headEnt, rg2d_Dynamic, headEntTrans, 1.0f, 1.0f, 0.1f,
+            0.1f, 0.1f, false, true, 255);
 
-        engineState.scene.AssignParam<sm2d::Collider>(
-            headEnt, sm2d::ColliderType::sm2d_Circle,
-            sm2d::ColCircle(0.07f), ik->head);
+        engineState.scene.AssignParam<Collider2D>(headEnt, ik->head,
+                                                  0.07f, col_Player);
 
         engineState.scene.AssignParam<SpriteRenderer>(
             headEnt,
@@ -151,6 +109,28 @@ void PlayerIKStartSys()
             glm::vec3(0.25f, 0.25f, 0.0f));
         ik->eyes = engineState.scene.AssignParam<SpriteRenderer>(
             eyesEnt, ik->eyesTexture);
+
+        Rigidbody2DStartSys();
+        Collider2DStartSys();
+        Rigidbody2DFixCollidersStartSys();
+
+        CreateRevoluteJoint(
+            ik->revoluteJoints[0], glm::vec2(0.0f, 0.0f),
+            glm::vec2(0.0f, 3.0f / 2), ik->body[0]->bodyID,
+            ik->body[1]->bodyID, -0.25f * B2_PI, 0.25f * B2_PI);
+        CreateRevoluteJoint(
+            ik->revoluteJoints[1], glm::vec2(0.0f, 0.0f),
+            glm::vec2(0.0f, 3.0f / 2), ik->body[1]->bodyID,
+            ik->head->bodyID, -0.25f * B2_PI, 0.25f * B2_PI);
+        
+        CreateDistanceJoint(
+            ik->distanceJoints[0], glm::vec2(0.0f, 0.0f),
+            glm::vec2(0.0f, 3.0f / 2), ik->body[0]->bodyID,
+            ik->body[1]->bodyID, 0.5f);
+        CreateDistanceJoint(
+            ik->distanceJoints[1], glm::vec2(0.0f, 0.0f),
+            glm::vec2(0.0f, 3.0f / 2), ik->head->bodyID,
+            ik->head->bodyID, 0.5f);
     }
 }
 
@@ -214,40 +194,10 @@ void PlayerIKSys()
         {
             case PlayerState::Walking:
             {
-                sm2d::ApplySpringJointWithinAngle(
-                    ik->head,
-                    ik->body[1]->transform->position +
-                        glm::vec3(0.0f, 0.1f, 0.0f),
-                    0.01f, 160.0f, 0.0f, 140, 40);
-                sm2d::ApplySpringJointWithinAngle(
-                    ik->body[1],
-                    ik->body[0]->transform->position +
-                        glm::vec3(0.0f, 0.08f, 0.0f),
-                    0.01f, 160.0f, 0.0f, 140, 40);
-                sm2d::ApplySpringJointWithinAngle(
-                    ik->body[0],
-                    ik->legCollider->body->transform->position +
-                        glm::vec3(0.0f, 0.15f, 0.0f),
-                    0.01f, 160.0f, 0.0f, 140, 40);
                 break;
             }
             case PlayerState::Crawling:
             {
-                sm2d::ApplySpringJointWithinAngle(
-                    ik->head,
-                    ik->body[1]->transform->position +
-                        glm::vec3(0.1f * multiplier, 0.0f, 0.0f),
-                    0.01f, 160.0f, 0.0f, 140, 40);
-                sm2d::ApplySpringJointWithinAngle(
-                    ik->body[1],
-                    ik->body[0]->transform->position +
-                        glm::vec3(0.08f * multiplier, 0.0f, 0.0f),
-                    0.01f, 160.0f, 0.0f, 140, 40);
-                sm2d::ApplySpringJointWithinAngle(
-                    ik->body[0],
-                    ik->legCollider->body->transform->position +
-                        glm::vec3(0.15f * multiplier, 0.0f, 0.0f),
-                    0.01f, 160.0f, 0.0f, 140, 40);
                 break;
             }
         }
@@ -260,10 +210,13 @@ void PlayerIKSys()
             glm::distance(ik->legIK[1].endpoint,
                           worldSpaceLegRoot[1]) > ik->legThreshold;
 
-        unsigned char notNull1 =
-            ik->groundSensor[0]->sensorCollider != nullptr;
-        unsigned char notNull2 =
-            ik->groundSensor[1]->sensorCollider != nullptr;
+        b2ContactData contactData[10];
+        int           shapeContactCount = b2Shape_GetContactData(
+            ik->legCollider->shapeID, contactData, 10);
+        int bodyContactCount = b2Body_GetContactData(
+            ik->legCollider->body->bodyID, contactData, 10);
+
+        unsigned char notNull = bodyContactCount != 0;
 
         static bool  leg1CanMove = true;
         static float legMoveTimer = 0.0f;
@@ -278,25 +231,41 @@ void PlayerIKSys()
         // Handle leg movement with alternation
         if (legMoveTimer >= LEG_MOVE_DELAY)
         {
-            if (leg1Moved && notNull1 && leg1CanMove)
+            if (leg1Moved && notNull && leg1CanMove)
             {
                 ResetIK2D(ik->legIK[0], glm::vec2(multiplier, 0.0f));
+
+                b2ShapeId polygonID =
+                    b2Shape_GetFilter(contactData[0].shapeIdA)
+                                .categoryBits == col_Static
+                        ? contactData[0].shapeIdA
+                        : contactData[0].shapeIdB;
+                glm::vec2 ourLeg = worldSpaceLegRoot[0] +
+                                   glm::vec2(0.1f * multiplier, 0.0f);
+                b2Vec2 closestPoint = b2Shape_GetClosestPoint(
+                    polygonID, b2Vec2(ourLeg.x, ourLeg.y));
                 ik->legIK[0].endpoint =
-                    sm2d::FindClosestPointOnPolygon(
-                        ik->groundSensor[0]->sensorCollider->polygon,
-                        worldSpaceLegRoot[0] +
-                            glm::vec2(0.1f * multiplier, 0.0f));
+                    glm::vec2(closestPoint.x, closestPoint.y);
+
                 leg1CanMove = false;
                 legMoveTimer = 0.0f;
             }
-            else if (leg2Moved && notNull2 && !leg1CanMove)
+            else if (leg2Moved && notNull && !leg1CanMove)
             {
                 ResetIK2D(ik->legIK[1], glm::vec2(multiplier, 0.0f));
+
+                b2ShapeId polygonID =
+                    b2Shape_GetFilter(contactData[0].shapeIdA)
+                                .categoryBits == col_Static
+                        ? contactData[0].shapeIdA
+                        : contactData[0].shapeIdB;
+                glm::vec2 ourLeg = worldSpaceLegRoot[1] +
+                                   glm::vec2(0.1f * multiplier, 0.0f);
+                b2Vec2 closestPoint = b2Shape_GetClosestPoint(
+                    polygonID, b2Vec2(ourLeg.x, ourLeg.y));
                 ik->legIK[1].endpoint =
-                    sm2d::FindClosestPointOnPolygon(
-                        ik->groundSensor[1]->sensorCollider->polygon,
-                        worldSpaceLegRoot[1] +
-                            glm::vec2(0.1f * multiplier, 0.0f));
+                    glm::vec2(closestPoint.x, closestPoint.y);
+
                 leg1CanMove = true;
                 legMoveTimer = 0.0f;
             }
@@ -319,14 +288,20 @@ void PlayerIKSys()
 
         ik->eyesTransform->position = ik->head->transform->position;
 
-        if (notNull1 && notNull2)
+        if (notNull)
         {
             if (Input::GetKeyDown(Key::Z))
             {
-                ik->legCollider->body->linearVelocity.y = 0.0f;
-                ik->body[0]->linearVelocity.y = 0.0f;
-                ik->body[1]->linearVelocity.y = 0.0f;
-                ik->legCollider->body->force.y += ik->jumpSpeed;
+                b2Body_SetLinearVelocity(
+                    ik->legCollider->body->bodyID,
+                    b2Vec2(0.0f, 0.0f));
+                b2Body_SetLinearVelocity(ik->body[0]->bodyID,
+                                         b2Vec2(0.0f, 0.0f));
+                b2Body_SetLinearVelocity(ik->body[1]->bodyID,
+                                         b2Vec2(0.0f, 0.0f));
+                b2Body_ApplyForceToCenter(
+                    ik->legCollider->body->bodyID,
+                    b2Vec2(0.0f, ik->jumpSpeed), true);
             }
 
             if (Input::GetKeyDown(Key::Up))
@@ -344,13 +319,6 @@ void PlayerIKSys()
 
         SolveIK2D(ik->legIK[0]);
         SolveIK2D(ik->legIK[1]);
-
-        ik->groundSensor[0]->body->transform->position = glm::vec3(
-            worldSpaceLegRoot[0] - glm::vec2(0.0f, 0.2f), 0.0f);
-        ik->groundSensor[1]->body->transform->position = glm::vec3(
-            worldSpaceLegRoot[1] - glm::vec2(0.0f, 0.2f), 0.0f);
-        ik->itemSensor->body->transform->position =
-            ik->body[1]->transform->position;
 
         switch (ik->state)
         {
@@ -407,13 +375,17 @@ void PlayerIKSys()
                 multiplier = -1.0f;
             }
             float targetSpeed = -ik->speed;
-            float currentSpeed =
-                ik->legCollider->body->linearVelocity.x;
+            float currentSpeed = b2Body_GetLinearVelocity(
+                                     ik->legCollider->body->bodyID)
+                                     .x;
             float acceleration =
                 ik->acceleration * engineState.deltaTime;
 
-            ik->legCollider->body->linearVelocity.x =
-                MoveTowards(currentSpeed, targetSpeed, acceleration);
+            b2Body_SetLinearVelocity(
+                ik->legCollider->body->bodyID,
+                b2Vec2(MoveTowards(currentSpeed, targetSpeed,
+                                   acceleration),
+                       0.0f));
         }
         else if (Input::GetKey(Key::Right))
         {
@@ -422,66 +394,78 @@ void PlayerIKSys()
                 multiplier = 1.0f;
             }
             float targetSpeed = ik->speed;
-            float currentSpeed =
-                ik->legCollider->body->linearVelocity.x;
+            float currentSpeed = b2Body_GetLinearVelocity(
+                                     ik->legCollider->body->bodyID)
+                                     .x;
             float acceleration =
                 ik->acceleration * engineState.deltaTime;
 
-            ik->legCollider->body->linearVelocity.x =
-                MoveTowards(currentSpeed, targetSpeed, acceleration);
+            b2Body_SetLinearVelocity(
+                ik->legCollider->body->bodyID,
+                b2Vec2(MoveTowards(currentSpeed, targetSpeed,
+                                   acceleration),
+                       0.0f));
         }
         else
         {
             // Decelerate when no input
             float deceleration =
                 ik->deceleration * engineState.deltaTime;
-            ik->legCollider->body->linearVelocity.x =
-                MoveTowards(ik->legCollider->body->linearVelocity.x,
-                            0.0f, deceleration);
+
+            float curVel = b2Body_GetLinearVelocity(
+                               ik->legCollider->body->bodyID)
+                               .x;
+
+            b2Body_SetLinearVelocity(
+                ik->legCollider->body->bodyID,
+                b2Vec2(MoveTowards(curVel, 0.0f, deceleration),
+                       0.0f));
         }
 
-        if (Input::GetKeyDown(Key::LShift) &&
-            ik->itemSensor->sensorCollider != nullptr)
+        if (Input::GetKeyDown(Key::LShift))
         {
+            itemInReach = false;
+
+            b2Circle    circle = {b2Vec2_zero, {0.05f}};
+            b2Transform originTransform;
+            glm::vec2   originPos = ik->body[0]->transform->position;
+            originTransform.p = b2Vec2(originPos.x, originPos.y);
+            originTransform.q = b2Rot_identity;
+
+            b2QueryFilter filter = b2DefaultQueryFilter();
+            filter.maskBits = col_Item;
+
+            b2Vec2 translation = {10.0f, -5.0f};
+            b2World_CastCircle(worldID, &circle, originTransform,
+                               translation, filter, HandCastCallback,
+                               &context);
+
             if (ik->handHold[0] && !ik->handHold[1])
             {
                 ik->handHold[1] = true;
-                ik->itemSensor->sensorCollider->ignoreTag = 255;
-                ik->itemSensor->sensorCollider->body->userData = 0;
-                ik->itemSensor->sensorCollider->body->applyGravity =
-                    false;
-                ik->itemSensor->sensorCollider->body->fixedRotation =
-                    true;
-                ik->itemSensor->sensorCollider->body
-                    ->angularVelocity = 0.0f;
-                ik->heldObjects[1] =
-                    ik->itemSensor->sensorCollider->body;
+                ik->heldObjects[1] = (Collider2D*)b2Shape_GetUserData(
+                    context.collidingShape);
+                b2Filter filter = b2DefaultFilter();
+                filter.categoryBits = col_Static;
+                b2Shape_SetFilter(context.collidingShape, filter);
             }
             else if (ik->handHold[1] && !ik->handHold[0])
             {
                 ik->handHold[0] = true;
-                ik->itemSensor->sensorCollider->body->userData = 0;
-                ik->itemSensor->sensorCollider->body->applyGravity =
-                    false;
-                ik->itemSensor->sensorCollider->body->fixedRotation =
-                    true;
-                ik->itemSensor->sensorCollider->body
-                    ->angularVelocity = 0.0f;
-                ik->heldObjects[0] =
-                    ik->itemSensor->sensorCollider->body;
+                ik->heldObjects[0] = (Collider2D*)b2Shape_GetUserData(
+                    context.collidingShape);
+                b2Filter filter = b2DefaultFilter();
+                filter.categoryBits = col_Static;
+                b2Shape_SetFilter(context.collidingShape, filter);
             }
             else if (!ik->handHold[1] && !ik->handHold[0])
             {
                 ik->handHold[0] = true;
-                ik->itemSensor->sensorCollider->body->userData = 0;
-                ik->itemSensor->sensorCollider->body->applyGravity =
-                    false;
-                ik->itemSensor->sensorCollider->body->fixedRotation =
-                    true;
-                ik->itemSensor->sensorCollider->body
-                    ->angularVelocity = 0.0f;
-                ik->heldObjects[0] =
-                    ik->itemSensor->sensorCollider->body;
+                ik->heldObjects[0] = (Collider2D*)b2Shape_GetUserData(
+                    context.collidingShape);
+                b2Filter filter = b2DefaultFilter();
+                filter.categoryBits = col_Static;
+                b2Shape_SetFilter(context.collidingShape, filter);
             }
         }
 
@@ -489,23 +473,27 @@ void PlayerIKSys()
         {
             if (ik->handHold[0])
             {
-                ik->heldObjects[0]->applyGravity = true;
-                ik->heldObjects[0]->fixedRotation = false;
-                ik->heldObjects[0]->userData = 500;
+                b2Filter filter = b2DefaultFilter();
+                filter.categoryBits = col_Item;
+                b2Shape_SetFilter(ik->heldObjects[0]->shapeID,
+                                  filter);
 
-                ik->heldObjects[0]->linearVelocity =
-                    glm::vec2(multiplier * 3.0f, 0.0f);
+                b2Body_ApplyForceToCenter(
+                    b2Shape_GetBody(ik->heldObjects[0]->shapeID),
+                    b2Vec2(multiplier * 3.0f, 0.0f), true);
                 ik->handHold[0] = false;
                 ik->heldObjects[0] = nullptr;
             }
             else if (ik->handHold[1])
             {
-                ik->heldObjects[1]->applyGravity = true;
-                ik->heldObjects[1]->fixedRotation = false;
-                ik->heldObjects[1]->userData = 500;
+                b2Filter filter = b2DefaultFilter();
+                filter.categoryBits = col_Item;
+                b2Shape_SetFilter(ik->heldObjects[0]->shapeID,
+                                  filter);
 
-                ik->heldObjects[1]->linearVelocity =
-                    glm::vec2(multiplier * 3.0f, 0.0f);
+                b2Body_ApplyForceToCenter(
+                    b2Shape_GetBody(ik->heldObjects[0]->shapeID),
+                    b2Vec2(multiplier * 3.0f, 0.0f), true);
                 ik->handHold[1] = false;
                 ik->heldObjects[1] = nullptr;
             }
@@ -513,13 +501,19 @@ void PlayerIKSys()
 
         if (ik->handHold[0])
         {
-            ik->heldObjects[0]->transform->position =
-                glm::vec3(ik->handIK[0].endpoint, 0.0f);
+            b2Body_SetTransform(
+                b2Shape_GetBody(ik->heldObjects[0]->shapeID),
+                b2Vec2(ik->handIK[0].endpoint.x,
+                       ik->handIK[0].endpoint.y),
+                b2Rot_identity);
         }
         if (ik->handHold[1])
         {
-            ik->heldObjects[1]->transform->position =
-                glm::vec3(ik->handIK[1].endpoint, 0.0f);
+            b2Body_SetTransform(
+                b2Shape_GetBody(ik->heldObjects[1]->shapeID),
+                b2Vec2(ik->handIK[1].endpoint.x,
+                       ik->handIK[1].endpoint.y),
+                b2Rot_identity);
         }
 
         Renderer::RenderLine2D(ik->legIK[0].points,

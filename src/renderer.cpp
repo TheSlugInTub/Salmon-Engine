@@ -528,7 +528,7 @@ void RenderParticleSystem(const ParticleSystem& par,
     glEnable(GL_DEPTH_TEST);
 }
 
-void RenderText(const Text& item, const glm::mat4& projection)
+void RenderText(const TextUI& item, const glm::mat4& projection)
 {
     textShader.use();
     glBindVertexArray(textVAO);

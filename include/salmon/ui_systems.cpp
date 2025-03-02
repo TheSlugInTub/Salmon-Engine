@@ -1,4 +1,3 @@
-#include "salmon/input.h"
 #include <salmon/ui.h>
 #include <salmon/ecs.h>
 #include <salmon/engine.h>
@@ -6,18 +5,18 @@
 
 void TextStartSys()
 {
-    for (EntityID ent : SceneView<Text>(engineState.scene))
+    for (EntityID ent : SceneView<TextUI>(engineState.scene))
     {
-        auto text = engineState.scene.Get<Text>(ent);
+        auto text = engineState.scene.Get<TextUI>(ent);
         LoadFont(text->font, text->fontPixelSize);
     }
 }
 
 void TextSys()
 {
-    for (EntityID ent : SceneView<Text>(engineState.scene))
+    for (EntityID ent : SceneView<TextUI>(engineState.scene))
     {
-        auto text = engineState.scene.Get<Text>(ent);
+        auto text = engineState.scene.Get<TextUI>(ent);
         Renderer::RenderText(*text, engineState.orthoProjMat);
     }
 }

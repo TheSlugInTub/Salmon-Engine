@@ -10,6 +10,8 @@
 
 #include <stdbool.h>
 
+#define _Static_assert static_assert
+
 /**
  * @defgroup world World
  * These functions allow you to create a simulation world.

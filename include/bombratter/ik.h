@@ -5,6 +5,7 @@
 #include <sm2d/types.h>
 #include <sm2d/colliders.h>
 #include <salmon/rope.h>
+#include <salmon/physics_2d.h>
 
 #define GEN_INPUT_FIELD(inputText, target, stmt)                  \
     char##target##Buffer[128];                                    \
@@ -21,21 +22,30 @@ enum PlayerState : unsigned char
     Crawling
 };
 
+enum Category
+{
+    col_Static = 0x00000001,
+    col_Player = 0x00000002,
+    col_Enemy = 0x00000004,
+    col_Item = 0x00000008
+};
+
 struct PlayerIK
 {
     PlayerState state = PlayerState::Walking;
 
-    sm2d::Rigidbody* head = nullptr;
-    sm2d::Rigidbody* body[2] = {nullptr, nullptr};
+    Rigidbody2D* head = nullptr;
+    Rigidbody2D* body[2] = {nullptr, nullptr};
 
     IKSolver2D legIK[2];
     IKSolver2D handIK[2];
 
-    sm2d::Collider* groundSensor[2];
-    sm2d::Collider* legCollider = nullptr;
+    Collider2D* legCollider = nullptr;
 
-    sm2d::Collider* itemSensor = nullptr;
-    sm2d::Rigidbody* heldObjects[2];
+    Collider2D* heldObjects[2];
+
+    Joint2D revoluteJoints[3];
+    Joint2D distanceJoints[2];
 
     SpriteRenderer* eyes;
     Transform*      eyesTransform;

@@ -16,7 +16,7 @@ struct Character
     unsigned int Advance;
 };
 
-struct Text
+struct TextUI
 {
     std::string text;
     glm::vec2   position;

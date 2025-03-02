@@ -109,10 +109,11 @@
             "Mass": 1.0,
             "Restitution": 0.12399999797344208,
             "Type": 1,
-            "UserData": 0,
             "type": "Rigidbody2D"
         },
         {
+            "CategoryBits": 0,
+            "MaskBits": 4294967295,
             "Points": [
                 [
                     0.11321580410003662,
@@ -174,10 +175,11 @@
             "Mass": 1.0,
             "Restitution": 0.10000000149011612,
             "Type": 1,
-            "UserData": 0,
             "type": "Rigidbody2D"
         },
         {
+            "CategoryBits": 0,
+            "MaskBits": 4294967295,
             "Points": [
                 [
                     -0.10577774047851563,
