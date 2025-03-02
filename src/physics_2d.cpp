@@ -249,7 +249,7 @@ void Collider2DStartSys()
 
                 b2Hull hull =
                     b2ComputeHull(points, col->points.size());
-                float radius = 0.1f;
+                float radius = 0.0f;
                 col->polygon = b2MakePolygon(&hull, radius);
 
                 if (hull.count < 3)

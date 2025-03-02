@@ -36,6 +36,17 @@ struct Rigidbody2D
     b2BodyId  bodyID;
 
     Rigidbody2D() {}
+    Rigidbody2D(Rigidbody2DType type, Transform* transform, float mass,
+                float friction, float linearDamping,
+                float angularDamping, float restitution,
+                bool fixedRotation, bool alwaysAwake, int userData)
+       : type(type), transform(transform), mass(mass),
+         friction(friction), linearDamping(linearDamping),
+         angularDamping(angularDamping), restitution(restitution),
+         fixedRotation(fixedRotation), alwaysAwake(alwaysAwake),
+         userData(userData)
+    {
+    }
 };
 
 struct Collider2D
@@ -46,24 +57,24 @@ struct Collider2D
     std::vector<glm::vec2> points;     // Polygon
 
     b2ShapeDef shapeDef;
-    b2ShapeId shapeID;
+    b2ShapeId  shapeID;
     b2Polygon  polygon;
     b2Circle   circle;
 
     Rigidbody2D* body = nullptr;
 
-    Collider2D(float radius)
-       : colliderType(rg2d_Circle), radius(radius)
+    Collider2D(Rigidbody2D* body, float radius)
+       : colliderType(rg2d_Circle), radius(radius), body(body)
     {
     }
 
-    Collider2D(glm::vec2 halfwidths)
-       : colliderType(rg2d_Box), halfwidths(halfwidths)
+    Collider2D(Rigidbody2D* body, glm::vec2 halfwidths)
+       : colliderType(rg2d_Box), halfwidths(halfwidths), body(body)
     {
     }
 
-    Collider2D(const std::vector<glm::vec2>& points)
-       : colliderType(rg2d_Box), points(points)
+    Collider2D(Rigidbody2D* body, const std::vector<glm::vec2>& points)
+       : colliderType(rg2d_Box), points(points), body(body)
     {
     }
 
@@ -79,8 +90,8 @@ enum Joint2DType
 struct Joint2D
 {
     Joint2DType type;
-    b2BodyId bodyA;
-    b2BodyId bodyB;
+    b2BodyId    bodyA;
+    b2BodyId    bodyB;
 
     glm::vec2 anchorA = glm::vec2(0.0f);
     glm::vec2 anchorB = glm::vec2(0.0f);
@@ -97,8 +108,8 @@ struct Joint2D
     b2JointId jointID;
 };
 
-inline b2WorldDef worldDef;
-inline b2WorldId  worldID;
+inline b2WorldDef  worldDef;
+inline b2WorldId   worldID;
 inline b2DebugDraw debugDraw;
 
 void InitPhysics2D();
@@ -108,4 +119,4 @@ void DestroyPhysics2D();
 void Collider2DDebugSys();
 
 glm::vec2 b2ToGLM(b2Vec2 vec);
-b2Vec2 b2ToGLM(glm::vec2 vec);
+b2Vec2    b2ToGLM(glm::vec2 vec);

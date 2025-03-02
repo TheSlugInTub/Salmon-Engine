@@ -3,6 +3,7 @@
 #include <salmon/components.h>
 #include <glm/gtx/string_cast.hpp>
 #include <sm2d/colliders.h>
+#include <salmon/physics_2d.h>
 
 void CalculateBackgroundScreenMinMax(
     glm::vec3 backgroundPosition, glm::vec3 backgroundScale,
@@ -221,26 +222,18 @@ void BackgroundSpriteCollidersStartSys()
             engineState.scene.AssignParam<Name>(tileCol,
                                                 "TileCollider");
 
-            auto tileColTrans =
+            Transform* tileColTrans =
                 engineState.scene.AssignParam<Transform>(
                     tileCol, glm::vec3(worldX, worldY, 0.0f),
                     glm::vec3(0.0f), glm::vec3(0.0f));
 
-            auto tileColBody =
-                engineState.scene.AssignParam<sm2d::Rigidbody>(
-                    tileCol, sm2d::BodyType::sm2d_Static,
-                    tileColTrans, 1.0f, false, 0.98f, 0.98f, 0.1f,
-                    true, 1.0f, 0, false, false);
+            auto rigid =
+            engineState.scene.AssignParam<Rigidbody2D>(
+                tileCol, Rigidbody2DType::rg2d_Static, tileColTrans, 1.0f, 1.0f, 0.98f,
+                0.98f, 0.1f, true, false, 0);
 
-            sm2d::ColPolygon poly(
-                {glm::vec2(halfWidth, halfHeight),
-                 glm::vec2(halfWidth, -halfHeight),
-                 glm::vec2(-halfWidth, -halfHeight),
-                 glm::vec2(-halfWidth, halfHeight)});
-
-            engineState.scene.AssignParam<sm2d::Collider>(
-                tileCol, sm2d::ColliderType::sm2d_Polygon, poly,
-                tileColBody);
+            engineState.scene.AssignParam<Collider2D>(
+                tileCol, rigid, glm::vec2(halfWidth, halfHeight));
         }
     }
 }
