@@ -163,15 +163,14 @@ void LoadScene(const std::string& filename)
         auto rigid = engineState.scene.Get<Rigidbody2D>(ent);
         auto col = engineState.scene.Get<Collider2D>(ent);
 
-        std::cout << "Hey\n";
-        b2DestroyBody(rigid->bodyID);
-        rigid->bodyID = b2_nullBodyId;
-
         if (col != nullptr)
         {
             b2DestroyShape(col->shapeID, false);
             col->shapeID = b2_nullShapeId;
         }
+
+        b2DestroyBody(rigid->bodyID);
+        rigid->bodyID = b2_nullBodyId;
     }
 
     engineState.scene.Clear();

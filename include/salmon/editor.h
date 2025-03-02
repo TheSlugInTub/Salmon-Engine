@@ -20,10 +20,13 @@ void LoadScene(const std::string& filename);
 
 // Each component type will have its own draw function signature
 template<typename T> using ComponentDrawFuncT = void (*)(T*);
-template<typename T> using ComponentSaveFuncT = nlohmann::json (*)(T*);
-template<typename T> using ComponentLoadFuncT = void (*)(T*, const nlohmann::json&);
+template<typename T>
+using ComponentSaveFuncT = nlohmann::json (*)(T*);
+template<typename T>
+using ComponentLoadFuncT = void (*)(T*, const nlohmann::json&);
 
-// Registry to store component draw functions and their implementations
+// Registry to store component draw functions and their
+// implementations
 class ComponentRegistry
 {
   public:
@@ -34,20 +37,38 @@ class ComponentRegistry
     }
 
     template<typename T>
-    void RegisterDrawFunction(ComponentDrawFuncT<T> func, EntityID* selectedEnt)
+    void RegisterDrawFunction(ComponentDrawFuncT<T> func,
+                              EntityID*             selectedEnt)
     {
         // Store lambda that captures the typed draw function
         drawFunctions.push_back(
             [func, selectedEnt]()
             {
-                if (auto* comp = engineState.scene.Get<T>(*selectedEnt))
+                if (auto* comp =
+                        engineState.scene.Get<T>(*selectedEnt))
                 {
-                    func(comp); // Call the draw function with the component pointer
+                    func(comp); // Call the draw function with the
+                                // component pointer
+
+                    // Create a unique ID for this button using typeid
+                    std::string buttonLabel =
+                        "Remove##" + std::string(typeid(T).name());
+
+                    if (ImGui::Button(
+                            buttonLabel.c_str(),
+                            ImVec2(-1, 0))) // Full width button
+                    {
+                        // Remove the component from the selected
+                        // entity
+                        engineState.scene.Remove<T>(*selectedEnt);
+                    }
                 }
             });
     }
 
-    template<typename T> void RegisterSaveFunction(ComponentSaveFuncT<T> func, const char* type)
+    template<typename T>
+    void RegisterSaveFunction(ComponentSaveFuncT<T> func,
+                              const char*           type)
     {
         // Store lambda that captures the typed save function
         saveFunctions.push_back(
@@ -56,26 +77,32 @@ class ComponentRegistry
                 if (auto* comp = engineState.scene.Get<T>(ent))
                 {
                     compType = type;
-                    return func(comp); // Call the save function with the component pointer and
-                                       // JSON object
+                    return func(
+                        comp); // Call the save function with the
+                               // component pointer and JSON object
                 }
-                return nlohmann::json{};
+                return nlohmann::json {};
             });
     }
 
-    template<typename T> void RegisterLoadFunction(ComponentLoadFuncT<T> func, const char* type)
+    template<typename T>
+    void RegisterLoadFunction(ComponentLoadFuncT<T> func,
+                              const char*           type)
     {
         // Store lambda that captures the typed load function
-        loadFunctions[type] = [func](EntityID ent, const nlohmann::json& json)
+        loadFunctions[type] =
+            [func](EntityID ent, const nlohmann::json& json)
         {
             if (auto* comp = engineState.scene.Assign<T>(ent))
             {
-                func(comp, json); // Call the load function with the component pointer
+                func(comp, json); // Call the load function with the
+                                  // component pointer
             }
         };
     }
 
-    template<typename T> void RegisterAddFunction(EntityID* selectedEnt, const char* type)
+    template<typename T>
+    void RegisterAddFunction(EntityID* selectedEnt, const char* type)
     {
         // Store lambda that captures the typed load function
         addFunctions.push_back(
@@ -113,7 +140,10 @@ class ComponentRegistry
                 std::string    type;
                 nlohmann::json compData = func(ent, type);
                 compData["type"] = type;
-                if (!type.empty()) { entityData.push_back(compData); }
+                if (!type.empty())
+                {
+                    entityData.push_back(compData);
+                }
             }
             jsonObj.push_back(entityData);
         }
@@ -139,30 +169,38 @@ class ComponentRegistry
     }
 
   private:
-    std::vector<std::function<void()>>                                 drawFunctions;
-    std::vector<std::function<nlohmann::json(EntityID, std::string&)>> saveFunctions;
-    std::vector<std::function<void()>>                                 addFunctions;
-    std::unordered_map<std::string, std::function<void(EntityID, const nlohmann::json&)>>
+    std::vector<std::function<void()>> drawFunctions;
+    std::vector<std::function<nlohmann::json(EntityID, std::string&)>>
+                                       saveFunctions;
+    std::vector<std::function<void()>> addFunctions;
+    std::unordered_map<
+        std::string,
+        std::function<void(EntityID, const nlohmann::json&)>>
         loadFunctions;
     ComponentRegistry() = default;
 };
 
 // The macro that users will use to register components
-#define REGISTER_COMPONENT(ComponentType, DrawFunc, SaveFunc, LoadFunc)                         \
-    namespace                                                                                   \
-    {                                                                                           \
-    struct Register##ComponentType##DrawSaveLoad                                                \
-    {                                                                                           \
-        Register##ComponentType##DrawSaveLoad()                                                 \
-        {                                                                                       \
-            ComponentRegistry::Instance().RegisterDrawFunction<ComponentType>(DrawFunc,         \
-                                                                              &selectedEntity); \
-            ComponentRegistry::Instance().RegisterSaveFunction<ComponentType>(SaveFunc,         \
-                                                                              #ComponentType);  \
-            ComponentRegistry::Instance().RegisterLoadFunction<ComponentType>(LoadFunc,         \
-                                                                              #ComponentType);  \
-            ComponentRegistry::Instance().RegisterAddFunction<ComponentType>(&selectedEntity,   \
-                                                                             #ComponentType);   \
-        }                                                                                       \
-    } g_register##ComponentType##DrawSaveLoad;                                                  \
+#define REGISTER_COMPONENT(ComponentType, DrawFunc, SaveFunc,        \
+                           LoadFunc)                                 \
+    namespace                                                        \
+    {                                                                \
+    struct Register##ComponentType##DrawSaveLoad                     \
+    {                                                                \
+        Register##ComponentType##DrawSaveLoad()                      \
+        {                                                            \
+            ComponentRegistry::Instance()                            \
+                .RegisterDrawFunction<ComponentType>(                \
+                    DrawFunc, &selectedEntity);                      \
+            ComponentRegistry::Instance()                            \
+                .RegisterSaveFunction<ComponentType>(                \
+                    SaveFunc, #ComponentType);                       \
+            ComponentRegistry::Instance()                            \
+                .RegisterLoadFunction<ComponentType>(                \
+                    LoadFunc, #ComponentType);                       \
+            ComponentRegistry::Instance()                            \
+                .RegisterAddFunction<ComponentType>(&selectedEntity, \
+                                                    #ComponentType); \
+        }                                                            \
+    } g_register##ComponentType##DrawSaveLoad;                       \
     }

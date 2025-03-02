@@ -1,9 +1,15 @@
 #include "box2d/box2d.h"
+#include "box2d/types.h"
 #include <salmon/physics_2d.h>
 #include <salmon/engine.h>
 #include <imgui/imgui.h>
 #include <glm/ext.hpp>
 #include <salmon/editor.h>
+
+glm::vec2 b2ToGLM(b2Vec2 vec)
+{
+    return glm::vec2(vec.x, vec.y);
+}
 
 void DebugDrawPolygon(const b2Vec2* vertices, int vertexCount,
                       b2HexColor color, void* context)
@@ -232,7 +238,7 @@ void Collider2DStartSys()
             }
             case rg2d_Polygon:
             {
-                b2Vec2 points[100] = {};
+                b2Vec2    points[100] = {};
                 glm::vec2 pos = col->body->transform->position;
 
                 for (int i = 0; i < col->points.size(); ++i)
@@ -248,7 +254,8 @@ void Collider2DStartSys()
 
                 if (hull.count < 3)
                 {
-                    std::cout << "Degenerate polygon hull was created\n";
+                    std::cout
+                        << "Degenerate polygon hull was created\n";
                 }
 
                 col->shapeDef = b2DefaultShapeDef();
@@ -267,7 +274,7 @@ void Collider2DStartSys()
                 {
                     std::cout << "Polygn shape ain't valid yo!\n";
                 }
-                
+
                 break;
             }
         }
@@ -285,6 +292,68 @@ void StepPhysics2D()
 void DestroyPhysics2D()
 {
     b2DestroyWorld(worldID);
+}
+
+void CreateRevoluteJoint(Joint2D& joint, const glm::vec2& anchorA,
+                         const glm::vec2& anchorB, b2BodyId bodyA,
+                         b2BodyId bodyB, float lowerAngle,
+                         float upperAngle)
+{
+    joint.type = rg2d_Revolute;
+    joint.bodyA = bodyA;
+    joint.bodyB = bodyB;
+    joint.anchorA = anchorA;
+    joint.anchorB = anchorB;
+    joint.lowerAngle = lowerAngle;
+    joint.upperAngle = upperAngle;
+
+    joint.revoluteJointDef = b2DefaultRevoluteJointDef();
+    joint.revoluteJointDef.bodyIdA = bodyA;
+    joint.revoluteJointDef.bodyIdB = bodyB;
+
+    joint.revoluteJointDef.localAnchorA =
+        b2Vec2(anchorA.x, anchorA.y);
+    joint.revoluteJointDef.localAnchorB =
+        b2Vec2(anchorB.x, anchorB.y);
+
+    joint.revoluteJointDef.enableLimit = true;
+    joint.revoluteJointDef.lowerAngle = lowerAngle;
+    joint.revoluteJointDef.upperAngle = upperAngle;
+
+    joint.jointID =
+        b2CreateRevoluteJoint(worldID, &joint.revoluteJointDef);
+}
+
+void CreateDistanceJoint(Joint2D& joint, const glm::vec2& anchorA,
+                         const glm::vec2& anchorB, b2BodyId bodyA,
+                         b2BodyId bodyB, float distance)
+{
+    joint.type = rg2d_Revolute;
+    joint.bodyA = bodyA;
+    joint.bodyB = bodyB;
+    joint.anchorA = anchorA;
+    joint.anchorB = anchorB;
+    joint.distance = distance;
+
+    joint.distanceJointDef = b2DefaultDistanceJointDef();
+    joint.distanceJointDef.bodyIdA = bodyA;
+    joint.distanceJointDef.bodyIdB = bodyB;
+
+    joint.distanceJointDef.localAnchorA =
+        b2Vec2(anchorA.x, anchorA.y);
+    joint.distanceJointDef.localAnchorB =
+        b2Vec2(anchorB.x, anchorB.y);
+
+    b2Vec2 anchorAb2 =
+        b2Body_GetWorldPoint(bodyA, joint.distanceJointDef.localAnchorA);
+    b2Vec2 anchorBb2 =
+        b2Body_GetWorldPoint(bodyB, joint.distanceJointDef.localAnchorB);
+
+    joint.distanceJointDef.length = b2Distance(anchorAb2, anchorBb2);
+    joint.distanceJointDef.collideConnected = true;
+
+    joint.jointID =
+        b2CreateDistanceJoint(worldID, &joint.distanceJointDef);
 }
 
 REGISTER_START_SYSTEM(Rigidbody2DStartSys);

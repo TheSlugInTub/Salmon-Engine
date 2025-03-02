@@ -70,6 +70,33 @@ struct Collider2D
     Collider2D() {}
 };
 
+enum Joint2DType
+{
+    rg2d_Revolute,
+    rg2d_Distance
+};
+
+struct Joint2D
+{
+    Joint2DType type;
+    b2BodyId bodyA;
+    b2BodyId bodyB;
+
+    glm::vec2 anchorA = glm::vec2(0.0f);
+    glm::vec2 anchorB = glm::vec2(0.0f);
+
+    float lowerAngle = 1.0f, upperAngle = 1.0f;
+    float distance = 1.0f;
+
+    union
+    {
+        b2RevoluteJointDef revoluteJointDef;
+        b2DistanceJointDef distanceJointDef;
+    };
+
+    b2JointId jointID;
+};
+
 inline b2WorldDef worldDef;
 inline b2WorldId  worldID;
 inline b2DebugDraw debugDraw;
@@ -79,3 +106,6 @@ void StepPhysics2D();
 void DestroyPhysics2D();
 
 void Collider2DDebugSys();
+
+glm::vec2 b2ToGLM(b2Vec2 vec);
+b2Vec2 b2ToGLM(glm::vec2 vec);
