@@ -1,6 +1,6 @@
 #include <salmon/camera.h>
 #include <salmon/engine.h>
-#include <iostream>
+#include <salmon/stl_pch.h>
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch, float fov)
    : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(2.5f), MouseSensitivity(0.1f), Zoom(45.0f)

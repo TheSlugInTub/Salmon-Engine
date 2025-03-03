@@ -1,12 +1,6 @@
 #include <salmon/utils.h>
 #include <salmon/stb_image.h>
 #include <glad/glad.h>
-#include <iostream>
-#include <random>
-#include <glm/gtc/quaternion.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
-#include <iostream>
 
 namespace Utils
 {

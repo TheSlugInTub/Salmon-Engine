@@ -6,13 +6,10 @@
 
 #include <glad/glad.h> // holds all OpenGL type declarations
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <salmon/stl_pch.h>
+#include <salmon/glm_pch.h>
 
 #include <salmon/shader.h>
-
-#include <string>
-#include <vector>
 
 #define MAX_BONE_INFLUENCE 4
 

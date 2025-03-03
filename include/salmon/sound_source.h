@@ -2,8 +2,6 @@
 
 #include <AL\al.h>
 #include <salmon/sound_buffer.h>
-#include <iostream>
-#include <memory>
 
 class SoundSource : public std::enable_shared_from_this<SoundSource>
 {

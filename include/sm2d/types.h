@@ -1,6 +1,8 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <salmon/stl_pch.h>
+#include <salmon/glm_pch.h>
+
 #include <salmon/components.h>
 
 #define SM_PI (3.14159265359f)

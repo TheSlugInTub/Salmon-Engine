@@ -26,7 +26,6 @@
                        broadPhaseLayerInterface, objectVsBroadphaseLayerFilter,              \
                        objectVsObjectLayerFilter);
 
-#include <glm/gtc/quaternion.hpp>
 #include <salmon/utils.h>
 #include <salmon/window.h>
 #include <salmon/input.h>
@@ -41,9 +40,6 @@
 #include <salmon/renderer.h>
 #include <salmon/physics.h>
 #include <salmon/imgui_layer.h>
-#include <imgui/imgui.h>
-#include <imgui/imgui_impl_glfw.h>
-#include <imgui/imgui_impl_opengl3.h>
 #include <salmon/sound_buffer.h>
 #include <salmon/sound_device.h>
 #include <salmon/sound_source.h>

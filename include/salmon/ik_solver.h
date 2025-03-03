@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
-#include <glm/glm.hpp>
+#include <salmon/stl_pch.h>
+#include <salmon/glm_pch.h>
 
 struct IKSolver2D
 {

@@ -1,5 +1,3 @@
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
 #include <salmon/renderer.h>
 #include <salmon/engine.h>
 

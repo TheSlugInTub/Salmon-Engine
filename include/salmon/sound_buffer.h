@@ -2,7 +2,7 @@
 #define SOUND_BUFFER_H
 
 #include <AL\al.h>
-#include <vector>
+#include <salmon/stl_pch.h>
 
 struct Sound
 {

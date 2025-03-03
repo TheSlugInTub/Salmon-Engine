@@ -1,10 +1,7 @@
 #include <salmon/editor.h>
 #include <imgui/imgui.h>
-#include <glm/gtc/type_ptr.hpp>
 #include <bombratter/ik.h>
 #include <salmon/json.hpp>
-#include <glm/gtx/fast_square_root.hpp>
-#include <glm/gtx/string_cast.hpp>
 #include <salmon/ik_solver.h>
 #include <sm2d/functions.h>
 #include <bombratter/background_sprite.h>
@@ -110,27 +107,27 @@ void PlayerIKStartSys()
         ik->eyes = engineState.scene.AssignParam<SpriteRenderer>(
             eyesEnt, ik->eyesTexture);
 
-        Rigidbody2DStartSys();
-        Collider2DStartSys();
-        Rigidbody2DFixCollidersStartSys();
+        // Rigidbody2DStartSys();
+        // Collider2DStartSys();
+        // Rigidbody2DFixCollidersStartSys();
 
-        CreateRevoluteJoint(
-            ik->revoluteJoints[0], glm::vec2(0.0f, 0.0f),
-            glm::vec2(0.0f, 3.0f / 2), ik->body[0]->bodyID,
-            ik->body[1]->bodyID, -0.25f * B2_PI, 0.25f * B2_PI);
-        CreateRevoluteJoint(
-            ik->revoluteJoints[1], glm::vec2(0.0f, 0.0f),
-            glm::vec2(0.0f, 3.0f / 2), ik->body[1]->bodyID,
-            ik->head->bodyID, -0.25f * B2_PI, 0.25f * B2_PI);
-        
-        CreateDistanceJoint(
-            ik->distanceJoints[0], glm::vec2(0.0f, 0.0f),
-            glm::vec2(0.0f, 3.0f / 2), ik->body[0]->bodyID,
-            ik->body[1]->bodyID, 0.5f);
-        CreateDistanceJoint(
-            ik->distanceJoints[1], glm::vec2(0.0f, 0.0f),
-            glm::vec2(0.0f, 3.0f / 2), ik->head->bodyID,
-            ik->head->bodyID, 0.5f);
+        // CreateRevoluteJoint(
+        //     ik->revoluteJoints[0], glm::vec2(0.0f, 0.0f),
+        //     glm::vec2(0.0f, 3.0f / 2), ik->body[0]->bodyID,
+        //     ik->body[1]->bodyID, -0.25f * B2_PI, 0.25f * B2_PI);
+        // CreateRevoluteJoint(
+        //     ik->revoluteJoints[1], glm::vec2(0.0f, 0.0f),
+        //     glm::vec2(0.0f, 3.0f / 2), ik->body[1]->bodyID,
+        //     ik->head->bodyID, -0.25f * B2_PI, 0.25f * B2_PI);
+        // 
+        // CreateDistanceJoint(
+        //     ik->distanceJoints[0], glm::vec2(0.0f, 0.0f),
+        //     glm::vec2(0.0f, 3.0f / 2), ik->body[0]->bodyID,
+        //     ik->body[1]->bodyID, 0.5f);
+        // CreateDistanceJoint(
+        //     ik->distanceJoints[1], glm::vec2(0.0f, 0.0f),
+        //     glm::vec2(0.0f, 3.0f / 2), ik->head->bodyID,
+        //     ik->head->bodyID, 0.5f);
     }
 }
 

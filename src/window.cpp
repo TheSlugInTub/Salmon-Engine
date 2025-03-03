@@ -1,6 +1,5 @@
 #include <salmon/window.h>
 #include <salmon/engine.h>
-#include <iostream>
 
 Window::Window(const char* title, int width, int height, bool fullscreen, bool maximize)
    : title(title), width(width), height(height)

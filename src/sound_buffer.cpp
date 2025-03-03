@@ -2,8 +2,7 @@
 #include <salmon/audiofile.h>
 #include <inttypes.h>
 #include <AL/alext.h>
-#include <vector>
-#include <iostream>
+#include <salmon/stl_pch.h>
 
 SoundBuffer* SoundBuffer::Get()
 {

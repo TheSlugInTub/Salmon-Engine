@@ -1,9 +1,7 @@
 #include "box2d/box2d.h"
-#include "box2d/types.h"
 #include <salmon/physics_2d.h>
 #include <salmon/engine.h>
-#include <imgui/imgui.h>
-#include <glm/ext.hpp>
+#include <salmon/imgui_pch.h>
 #include <salmon/editor.h>
 
 glm::vec2 b2ToGLM(b2Vec2 vec)
@@ -98,35 +96,7 @@ void InitPhysics2D()
 
     worldID = b2CreateWorld(&worldDef);
 
-    b2World_EnableSleeping(worldID, false);
-
     b2AABB bounds = {{-FLT_MAX, -FLT_MAX}, {FLT_MAX, FLT_MAX}};
-
-    debugDraw = {};
-
-    debugDraw.DrawPolygon = DebugDrawPolygon;
-    debugDraw.DrawSolidPolygon = DebugDrawSolidPolygon;
-    debugDraw.DrawCircle = DebugDrawCircle;
-    debugDraw.DrawSolidCircle = DebugDrawSolidCircle;
-    debugDraw.DrawSolidCapsule = DebugDrawSolidCapsule;
-    debugDraw.DrawSegment = DebugDrawSegment;
-    debugDraw.DrawTransform = DebugDrawTransform;
-    debugDraw.DrawPoint = DebugDrawPoint;
-    debugDraw.drawingBounds = bounds;
-
-    debugDraw.useDrawingBounds = false;
-    debugDraw.drawShapes = true;
-    debugDraw.drawJoints = true;
-    debugDraw.drawJointExtras = false;
-    debugDraw.drawAABBs = false;
-    debugDraw.drawMass = false;
-    debugDraw.drawContacts = false;
-    debugDraw.drawGraphColors = false;
-    debugDraw.drawContactNormals = false;
-    debugDraw.drawContactImpulses = false;
-    debugDraw.drawFrictionImpulses = false;
-
-    debugDraw.context = malloc(sizeof(char));
 }
 
 void Rigidbody2DFixCollidersStartSys()
@@ -178,6 +148,13 @@ void Rigidbody2DStartSys()
         }
 
         rigid->bodyID = b2CreateBody(worldID, &rigid->bodyDef);
+
+        if (!b2Body_IsValid(rigid->bodyID))
+        {
+            std::cout << "Body of "
+                      << engineState.scene.Get<Name>(ent)->name
+                      << " is not valid\n";
+        }
     }
 }
 
@@ -186,6 +163,9 @@ void Rigidbody2DSys()
     for (EntityID ent : SceneView<Rigidbody2D>(engineState.scene))
     {
         auto rigid = engineState.scene.Get<Rigidbody2D>(ent);
+    
+        if (rigid->type == rg2d_Static)
+            continue;
 
         b2Vec2 pos = b2Body_GetPosition(rigid->bodyID);
         b2Rot  rot = b2Body_GetRotation(rigid->bodyID);
@@ -226,6 +206,9 @@ void Collider2DStartSys()
 
                 col->shapeID = b2CreatePolygonShape(
                     col->body->bodyID, &col->shapeDef, &col->polygon);
+                std::cout << "Box shape of "
+                          << engineState.scene.Get<Name>(ent)->name
+                          << " is not valid\n";
                 break;
             }
             case rg2d_Circle:
@@ -250,6 +233,13 @@ void Collider2DStartSys()
 
                 col->shapeID = b2CreateCircleShape(
                     col->body->bodyID, &col->shapeDef, &col->circle);
+
+                if (!b2Shape_IsValid(col->shapeID))
+                {
+                    std::cout << "Circle shape of "
+                              << engineState.scene.Get<Name>(ent)->name
+                              << " is not valid\n";
+                }
                 break;
             }
             case rg2d_Polygon:
@@ -292,7 +282,9 @@ void Collider2DStartSys()
 
                 if (!b2Shape_IsValid(col->shapeID))
                 {
-                    std::cout << "Polygn shape ain't valid yo!\n";
+                    std::cout << "Polygon shape of "
+                              << engineState.scene.Get<Name>(ent)->name
+                              << " is not valid\n";
                 }
 
                 break;
@@ -690,7 +682,7 @@ void Collider2DLoad(Collider2D* col, const nlohmann::json& j)
 {
     col->colliderType = static_cast<Collider2DType>(j["Type"]);
     if (j.contains("CategoryBits"))
-    col->categoryBits = j["CategoryBits"];
+        col->categoryBits = j["CategoryBits"];
     if (j.contains("MaskBits"))
         col->maskBits = j["MaskBits"];
 

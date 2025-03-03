@@ -1,5 +1,4 @@
 #include <salmon/ui.h>
-#include <salmon/ecs.h>
 #include <salmon/engine.h>
 #include <salmon/renderer.h>
 

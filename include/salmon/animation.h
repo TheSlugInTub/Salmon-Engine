@@ -1,11 +1,8 @@
 #pragma once
 
-#include <vector>
-#include <map>
-#include <glm/glm.hpp>
-#include <assimp/scene.h>
+#include <salmon/stl_pch.h>
+#include <salmon/glm_pch.h>
 #include <salmon/bone.h>
-#include <functional>
 #include <salmon/model.h>
 
 // Courtesy of https://learnopengl.com

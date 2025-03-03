@@ -1,7 +1,6 @@
 #include <salmon/editor.h>
 #include <bombratter/background_sprite.h>
 #include <salmon/components.h>
-#include <glm/gtx/string_cast.hpp>
 #include <sm2d/colliders.h>
 #include <salmon/physics_2d.h>
 

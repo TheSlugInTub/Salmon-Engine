@@ -50,7 +50,7 @@
         {
             "Position": [
                 0.0,
-                0.0,
+                -0.17000000178813934,
                 0.0
             ],
             "Rotation": [
@@ -167,7 +167,7 @@
             "type": "SpriteRenderer"
         },
         {
-            "AlwaysAwake": false,
+            "AlwaysAwake": true,
             "AngularDamping": 0.10000000149011612,
             "FixedRotation": false,
             "Friction": 1.0,

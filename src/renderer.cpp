@@ -1,16 +1,10 @@
-#include "salmon/shader.h"
 #include <salmon/renderer.h>
 #include <salmon/model.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <salmon/engine.h>
 #include <salmon/components.h>
-#include <salmon/utils.h>
 #include <salmon/stb_image.h>
 #include <salmon/particle_system.h>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/common.hpp>
-#include <glm/gtx/string_cast.hpp>
 #include <salmon/clock.h>
 
 namespace Renderer

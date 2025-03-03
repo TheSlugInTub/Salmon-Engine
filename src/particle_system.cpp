@@ -1,8 +1,6 @@
 #include <salmon/particle_system.h>
 #include <salmon/ecs.h>
 #include <salmon/engine.h>
-#include <algorithm>
-#include <glm/gtc/random.hpp>
 #include <salmon/renderer.h>
 
 void ParticleSystemSys()

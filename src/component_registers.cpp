@@ -1,13 +1,11 @@
 #include <sm2d/functions.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <imgui/imgui.h>
+#include <salmon/imgui_pch.h>
 #include <salmon/editor.h>
 #include <salmon/components.h>
 #include <sm2d/types.h>
 #include <salmon/particle_system.h>
 #include <salmon/sprite_animation.h>
 #include <salmon/tilemap.h>
-#include <glm/gtx/string_cast.hpp>
 
 // -------------------
 

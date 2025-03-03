@@ -1,8 +1,6 @@
 #include <salmon/imgui_layer.h>
-#include <imgui/imgui.h>
-#include <imgui/imgui_impl_glfw.h>
-#include <imgui/imgui_impl_opengl3.h>
 #include <salmon/engine.h>
+#include <salmon/imgui_pch.h>
 
 namespace ImGuiLayer
 {

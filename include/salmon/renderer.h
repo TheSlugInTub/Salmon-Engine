@@ -2,10 +2,8 @@
 
 // 3D renderer for the engine
 
-#include <glm/glm.hpp>
 #include <salmon/ecs.h>
 #include <salmon/shader.h>
-#include <vector>
 #include <salmon/ui.h>
 #include <salmon/tilemap.h>
 

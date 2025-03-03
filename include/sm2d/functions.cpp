@@ -1,4 +1,3 @@
-#include "sm2d/types.h"
 #include <sm2d/functions.h>
 #include <cassert>
 #include <cmath>

@@ -1,8 +1,7 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <string>
-#include <map>
+#include <salmon/stl_pch.h>
+#include <salmon/glm_pch.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

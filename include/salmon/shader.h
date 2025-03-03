@@ -1,12 +1,9 @@
 #pragma once
 
 #include <glad/glad.h>
-#include <glm/glm.hpp>
 
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
+#include <salmon/stl_pch.h>
+#include <salmon/glm_pch.h>
 
 // Shader class for the engine
 // Courtesy of https://learnopengl.com

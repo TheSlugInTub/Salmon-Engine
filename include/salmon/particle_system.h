@@ -1,8 +1,7 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <vector>
-#include <string>
+#include <salmon/stl_pch.h>
+#include <salmon/glm_pch.h>
 
 struct Particle
 {

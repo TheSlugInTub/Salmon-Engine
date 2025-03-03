@@ -1,6 +1,4 @@
 #include <salmon/sound_source.h>
-#include <iostream>
-#include <thread>
 
 SoundSource::SoundSource()
 {

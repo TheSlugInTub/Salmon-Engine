@@ -1,6 +1,4 @@
 #include <salmon/input.h>
-#include <unordered_map>
-#include <map>
 #include <salmon/engine.h>
 
 namespace Input

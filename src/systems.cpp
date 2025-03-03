@@ -1,14 +1,8 @@
-#include "salmon/window.h"
 #include <salmon/components.h>
-#include <salmon/ecs.h>
 #include <salmon/engine.h>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/ext.hpp>
 #include <salmon/renderer.h>
 #include <GLFW/glfw3.h>
 #include <salmon/particle_system.h>
-#include <salmon/ui.h>
-#include <salmon/tilemap.h>
 #include <bombratter/background_sprite.h>
 #include <salmon/physics_2d.h>
 

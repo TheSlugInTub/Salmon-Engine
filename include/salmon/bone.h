@@ -2,13 +2,10 @@
 
 /* Container for bone data */
 
-#include <assimp/scene.h>
-#include <glm/glm.hpp>
-#include <list>
-#include <vector>
-#define GLM_ENABLE_EXPERIMENTAL
+#include <salmon/assimp_pch.h>
+
 #include <salmon/assimp_glm_helpers.h>
-#include <glm/gtx/quaternion.hpp>
+#include <salmon/stl_pch.h>
 
 // Courtesy of https://learnopengl.com
 

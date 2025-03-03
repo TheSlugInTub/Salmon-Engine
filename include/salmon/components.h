@@ -1,9 +1,10 @@
 #pragma once
 
+#include <salmon/stl_pch.h>
+#include <salmon/glm_pch.h>
+
 #include <salmon/ecs.h>
-#include <glm/glm.hpp>
 #include <salmon/model.h>
-#include <string>
 #include <salmon/physics.h>
 #include <salmon/bone.h>
 #include <salmon/animation.h>

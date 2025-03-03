@@ -1,8 +1,6 @@
 #pragma once
 
-#include <bitset>
-#include <vector>
-#include <functional>
+#include <salmon/stl_pch.h>
 
 // This file implements a basic ECS which is the core of the engine
 

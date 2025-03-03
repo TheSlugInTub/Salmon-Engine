@@ -3,10 +3,10 @@
 // This file contains all of the stuff related to Jolt Physics
 // Contains stuff like structs and initialization of various things because jolt needs them
 
-#include "input.h"
+#include <salmon/input.h>
+#include <salmon/stl_pch.h>
+#include <salmon/glm_pch.h>
 #include <Jolt/Jolt.h>
-
-// Jolt includes
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
 #include <Jolt/Core/TempAllocator.h>
@@ -25,7 +25,6 @@
 #include <Jolt/Physics/Collision/CastResult.h>
 #include <salmon/renderer.h>
 #include <salmon/engine.h>
-#include <functional>
 
 #ifdef JPH_DEBUG_RENDERER
 #    include <Jolt/Renderer/DebugRenderer.h>
@@ -45,11 +44,6 @@
 
 #include <Jolt/Core/Mutex.h>
 #include <Jolt/Core/UnorderedMap.h>
-
-// STL includes
-#include <iostream>
-#include <cstdarg>
-#include <thread>
 
 // Disable common warnings triggered by Jolt, you can use JPH_SUPPRESS_WARNING_PUSH /
 // JPH_SUPPRESS_WARNING_POP to store and restore the warning state

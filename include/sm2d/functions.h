@@ -2,7 +2,6 @@
 
 #include <sm2d/types.h>
 #include <sm2d/colliders.h>
-#include <optional>
 
 namespace sm2d
 {

@@ -5,22 +5,12 @@
 
 #include <glad/glad.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <salmon/stb_image.h>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#include <salmon/assimp_pch.h>
 
 #include <salmon/mesh.h>
 #include <salmon/shader.h>
 
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <map>
-#include <vector>
 #include <salmon/assimp_glm_helpers.h>
 
 inline unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma = false);

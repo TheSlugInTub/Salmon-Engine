@@ -1,7 +1,7 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <salmon/stl_pch.h>
+#include <salmon/glm_pch.h>
 
 // Courtesy of https://learnopengl.com
 

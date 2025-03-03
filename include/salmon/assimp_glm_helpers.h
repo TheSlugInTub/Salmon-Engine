@@ -1,10 +1,7 @@
 #pragma once
 
-#include <assimp/quaternion.h>
-#include <assimp/vector3.h>
-#include <assimp/matrix4x4.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include <salmon/assimp_pch.h>
+#include <salmon/glm_pch.h>
 
 // Courtesy of https://learnopengl.com
 

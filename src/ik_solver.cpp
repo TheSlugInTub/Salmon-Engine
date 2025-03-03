@@ -1,9 +1,6 @@
 #include <salmon/ik_solver.h>
 #include <salmon/editor.h>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/fast_square_root.hpp>
-#include <glm/gtx/string_cast.hpp>
-#include <iostream>
 
 // Starting from the end of the point list, move the last point to the
 // end point Calculate the ik.pointDistance between n and n-1 point,
